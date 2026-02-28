@@ -111,6 +111,12 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
+          {error}
+        </div>
+      )}
+
       {/* Portefeuille */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border">
         <h2 className="text-lg font-semibold mb-4">Mon portefeuille</h2>
