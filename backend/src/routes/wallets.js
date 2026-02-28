@@ -76,7 +76,7 @@ router.post('/topup', authMiddleware, async (req, res) => {
     res.json({ url: session.url });
   } catch (err) {
     console.error('Erreur création paiement Stripe:', err);
-    res.status(500).json({ error: 'Erreur lors de la création du paiement' });
+    res.status(500).json({ error: err.message || 'Erreur lors de la création du paiement' });
   }
 });
 
