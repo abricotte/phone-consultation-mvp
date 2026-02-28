@@ -55,6 +55,10 @@ router.post('/initiate', authMiddleware, async (req, res) => {
 
     // Créer l'appel via Twilio
     // On appelle d'abord le client, puis on connecte au consultant
+    if (!twilio) {
+      return res.status(503).json({ error: 'Twilio non configuré. Vérifiez TWILIO_ACCOUNT_SID et TWILIO_AUTH_TOKEN.' });
+    }
+
     const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
 
     const call = await twilio.calls.create({
@@ -83,7 +87,7 @@ router.post('/initiate', authMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error('Erreur initiation appel:', err);
-    res.status(500).json({ error: 'Erreur lors du lancement de l\'appel' });
+    res.status(500).json({ error: err.message || 'Erreur lors du lancement de l\'appel' });
   }
 });
 
