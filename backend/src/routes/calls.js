@@ -6,6 +6,22 @@ const { VoiceResponse } = require('twilio').twiml;
 
 const router = express.Router();
 
+// Normaliser un numéro de téléphone au format international
+function normalizePhone(phone) {
+  if (!phone) return phone;
+  // Supprimer les espaces, tirets, points
+  let cleaned = phone.replace(/[\s\-\.]/g, '');
+  // Convertir format français 06/07 → +336/+337
+  if (cleaned.startsWith('0') && cleaned.length === 10) {
+    cleaned = '+33' + cleaned.substring(1);
+  }
+  // Ajouter + si manquant pour les numéros internationaux
+  if (cleaned.startsWith('33') && !cleaned.startsWith('+')) {
+    cleaned = '+' + cleaned;
+  }
+  return cleaned;
+}
+
 // POST /api/calls/initiate - Lancer un appel vers le consultant
 router.post('/initiate', authMiddleware, async (req, res) => {
   try {
@@ -61,10 +77,13 @@ router.post('/initiate', authMiddleware, async (req, res) => {
 
     const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
 
+    const clientPhone = normalizePhone(clientUser.phone);
+    const consultantPhone = normalizePhone(consultantUser.phone);
+
     const call = await twilio.calls.create({
-      to: clientUser.phone,
+      to: clientPhone,
       from: process.env.TWILIO_PHONE_NUMBER,
-      url: `${backendUrl}/api/calls/twiml/connect?consultantPhone=${encodeURIComponent(consultantUser.phone)}&sessionId=${sessionId}`,
+      url: `${backendUrl}/api/calls/twiml/connect?consultantPhone=${encodeURIComponent(consultantPhone)}&sessionId=${sessionId}`,
       statusCallback: `${backendUrl}/api/calls/status`,
       statusCallbackEvent: ['initiated', 'answered', 'completed'],
       statusCallbackMethod: 'POST',
