@@ -48,6 +48,10 @@ router.post('/topup', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Portefeuille non trouvé' });
     }
 
+    if (!stripe) {
+      return res.status(503).json({ error: 'Stripe non configuré. Vérifiez STRIPE_SECRET_KEY.' });
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
