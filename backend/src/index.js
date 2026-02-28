@@ -28,7 +28,7 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/calls', callRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: '1.1.0', timestamp: new Date().toISOString() });
 });
 
 app.listen(PORT, () => {
