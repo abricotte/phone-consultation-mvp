@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream text-ink font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif text-aubergine;
+  }
+}
+
+@layer utilities {
+  /* Léger dégradé chaleureux pour les sections d'accroche */
+  .bg-warm {
+    background-image: linear-gradient(160deg, #fff7f4 0%, #fcf9f1 55%, #f8efea 100%);
+  }
+  /* Filet doré discret */
+  .rule-gold {
+    height: 1px;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      #c9a96e 50%,
+      transparent
+    );
+  }
+}

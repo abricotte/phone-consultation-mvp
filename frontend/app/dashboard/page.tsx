@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import RechargeSelector from "@/components/RechargeSelector";
 
 interface User {
   id: string;
@@ -27,7 +28,6 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [topUpAmount, setTopUpAmount] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -65,21 +65,6 @@ export default function DashboardPage() {
       })
       .finally(() => setLoading(false));
   }, []);
-
-  async function handleTopUp() {
-    const amount = parseFloat(topUpAmount);
-    if (!amount || amount < 1) return;
-
-    try {
-      const data = await api.topUp(amount);
-      // Redirection vers Stripe Checkout
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur");
-    }
-  }
 
   function handleLogout() {
     localStorage.removeItem("token");
@@ -123,23 +108,7 @@ export default function DashboardPage() {
         <p className="text-3xl font-bold text-blue-600 mb-4">
           {wallet?.balance?.toFixed(2) ?? "0.00"}€
         </p>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            placeholder="Montant en €"
-            value={topUpAmount}
-            onChange={(e) => setTopUpAmount(e.target.value)}
-            min="1"
-            step="0.01"
-            className="border rounded-lg px-3 py-2 w-40"
-          />
-          <button
-            onClick={handleTopUp}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-          >
-            Recharger
-          </button>
-        </div>
+        <RechargeSelector />
       </div>
 
       {/* Historique des transactions */}

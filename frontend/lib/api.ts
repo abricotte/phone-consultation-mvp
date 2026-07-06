@@ -37,12 +37,25 @@ export const api = {
 
   // Wallet
   getWallet: () => request("/wallets/me"),
-  topUp: (amount: number) =>
+  topUp: (minutes: number) =>
     request("/wallets/topup", {
       method: "POST",
-      body: JSON.stringify({ amount }),
+      body: JSON.stringify({ minutes }),
     }),
   getTransactions: () => request("/wallets/transactions"),
+
+  // Config publique (tarifs de recharge, statut en ligne)
+  getRechargeConfig: () => request("/config/recharge"),
+  getStatut: () => request("/config/statut"),
+
+  // Admin (praticienne)
+  adminGetStatut: () => request("/admin/statut"),
+  adminSetStatut: (enLigne: boolean) =>
+    request("/admin/statut", {
+      method: "PATCH",
+      body: JSON.stringify({ enLigne }),
+    }),
+  adminGetJour: () => request("/admin/jour"),
 
   // Sessions
   createSession: (consultantId: string) =>
