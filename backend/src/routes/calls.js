@@ -2,12 +2,13 @@ const express = require('express');
 const twilio = require('../config/twilio');
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
+const twilioSignature = require('../middleware/twilioSignature');
 const { VoiceResponse } = require('twilio').twiml;
 
 const router = express.Router();
 
 // Délai d'avertissement avant la coupure automatique (en secondes)
-const WARNING_SECONDS = 5 * 60;
+const WARNING_SECONDS = 2 * 60;
 
 // Normaliser un numéro de téléphone au format international
 function normalizePhone(phone) {
@@ -150,7 +151,7 @@ router.post('/initiate', authMiddleware, async (req, res) => {
 });
 
 // GET /api/calls/twiml/join - Fait rejoindre la conférence au participant
-router.get('/twiml/join', (req, res) => {
+router.get('/twiml/join', twilioSignature, (req, res) => {
   const { sessionId, role } = req.query;
   const backendUrl = getBackendUrl();
 
@@ -159,7 +160,7 @@ router.get('/twiml/join', (req, res) => {
     { language: 'fr-FR' },
     role === 'consultant'
       ? 'Connexion à votre client. Veuillez patienter.'
-      : 'Connexion à votre consultant. Veuillez patienter.'
+      : 'Connexion à votre consultante. Un signal discret vous préviendra deux minutes avant la fin de la consultation. Veuillez patienter.'
   );
 
   const dial = response.dial({ callerId: process.env.TWILIO_PHONE_NUMBER });
@@ -182,7 +183,7 @@ router.get('/twiml/join', (req, res) => {
 });
 
 // POST /api/calls/conference-status - Événements de la conférence (Twilio)
-router.post('/conference-status', async (req, res) => {
+router.post('/conference-status', twilioSignature, async (req, res) => {
   // Répondre immédiatement à Twilio, traiter ensuite
   res.status(200).send('OK');
 
@@ -265,21 +266,21 @@ async function playWarning(conferenceSid) {
       )
     );
 
-    console.log(`Avertissement 5 min joué (conférence ${conferenceSid})`);
+    console.log(`Avertissement 2 min joué (conférence ${conferenceSid})`);
   } catch (err) {
     console.error('Erreur lecture avertissement:', err);
   }
 }
 
-// GET /api/calls/twiml/warning - Bip + message « il vous reste 5 minutes »
-router.get('/twiml/warning', (req, res) => {
+// GET /api/calls/twiml/warning - Bip + message « il vous reste 2 minutes »
+router.get('/twiml/warning', twilioSignature, (req, res) => {
   const response = new VoiceResponse();
   // Bip sonore via tonalité DTMF. Pour un vrai « bip » audio, remplacer par :
   //   response.play('https://<votre-domaine>/beep.mp3');
   response.play({ digits: '99' });
   response.say(
     { language: 'fr-FR' },
-    'Attention, il vous reste environ cinq minutes de communication.'
+    'Attention, il vous reste environ deux minutes de communication.'
   );
   res.type('text/xml');
   res.send(response.toString());
@@ -353,7 +354,7 @@ async function finalizeSession(sessionId) {
 }
 
 // POST /api/calls/status - Callback statut des appels individuels (Twilio)
-router.post('/status', async (req, res) => {
+router.post('/status', twilioSignature, async (req, res) => {
   res.status(200).send('OK');
 
   const { CallSid, CallStatus } = req.body;

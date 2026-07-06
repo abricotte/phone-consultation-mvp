@@ -3,11 +3,12 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
+const { loginLimiter, registerLimiter } = require('../middleware/rateLimits');
 
 const router = express.Router();
 
 // POST /api/auth/register - Inscription
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
   try {
     const { email, password, firstName, lastName, phone, role } = req.body;
 
@@ -89,7 +90,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /api/auth/login - Connexion
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 

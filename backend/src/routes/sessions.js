@@ -35,10 +35,12 @@ router.post('/', authMiddleware, async (req, res) => {
       .eq('user_id', req.user.id)
       .single();
 
-    const minBalance = consultant.rate_per_minute * 5;
+    const minBalance = parseFloat(consultant.rate_per_minute) * 5;
     if (!wallet || parseFloat(wallet.balance) < minBalance) {
       return res.status(400).json({
-        error: `Solde insuffisant. Minimum requis : ${minBalance}€ (5 minutes)`,
+        error: `Crédit insuffisant : un minimum de 5 minutes (${minBalance
+          .toFixed(2)
+          .replace('.', ',')} €) est requis pour lancer l'appel. Rechargez votre crédit pour continuer.`,
       });
     }
 

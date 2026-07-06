@@ -1,6 +1,8 @@
 const express = require('express');
 const supabase = require('../config/supabase');
 const stripe = require('../config/stripe');
+const { getTarifs } = require('../config/praticienne');
+const { topupLimiter } = require('../middleware/rateLimits');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
@@ -30,13 +32,27 @@ router.get('/me', authMiddleware, async (req, res) => {
 });
 
 // POST /api/wallets/topup - Créer une session Stripe Checkout
-router.post('/topup', authMiddleware, async (req, res) => {
+router.post('/topup', topupLimiter, authMiddleware, async (req, res) => {
   try {
-    const { amount } = req.body;
+    const { minutes } = req.body;
+    const tarifs = await getTarifs();
+    const { minMinutes, maxMinutes, pasMinutes } = tarifs.recharge;
 
-    if (!amount || amount < 1) {
-      return res.status(400).json({ error: 'Montant minimum : 1€' });
+    // Bornes appliquées CÔTÉ SERVEUR — jamais confiance au front.
+    const m = Number(minutes);
+    if (
+      !Number.isInteger(m) ||
+      m < minMinutes ||
+      m > maxMinutes ||
+      m % pasMinutes !== 0
+    ) {
+      return res.status(400).json({
+        error: `Durée invalide : choisissez entre ${minMinutes} et ${maxMinutes} minutes, par pas de ${pasMinutes}.`,
+      });
     }
+
+    // Montant en CENTIMES entiers (jamais de float sur l'argent)
+    const amountCents = m * tarifs.prixMinuteCents;
 
     const { data: wallet } = await supabase
       .from('wallets')
@@ -60,18 +76,22 @@ router.post('/topup', authMiddleware, async (req, res) => {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: 'Rechargement ConsultPhone',
-              description: `Rechargement de ${amount}€ sur votre portefeuille`,
+              name: `Crédit consultation — ${m} minutes`,
+              description: `Recharge de votre crédit de consultation — ${tarifs.nomPublic}`,
             },
-            unit_amount: Math.round(amount * 100), // Stripe = centimes
+            unit_amount: amountCents,
           },
           quantity: 1,
         },
       ],
+      payment_intent_data: {
+        statement_descriptor: 'ELENA WOLSKA', // relevé bancaire de la cliente
+      },
       metadata: {
         user_id: req.user.id,
         wallet_id: wallet.id,
-        amount: amount.toString(),
+        amount: (amountCents / 100).toFixed(2),
+        minutes: String(m),
       },
       success_url: `${process.env.FRONTEND_URL}/dashboard?payment=success`,
       cancel_url: `${process.env.FRONTEND_URL}/dashboard?payment=cancel`,
