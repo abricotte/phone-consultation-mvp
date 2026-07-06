@@ -40,7 +40,20 @@ app.use('/api/config', configRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '1.2.0', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    version: '1.2.0',
+    timestamp: new Date().toISOString(),
+    // Drapeaux booléens uniquement — aucun secret exposé
+    config: {
+      supabase: !!process.env.SUPABASE_URL,
+      stripe: !!process.env.STRIPE_SECRET_KEY,
+      twilio: !!process.env.TWILIO_ACCOUNT_SID,
+      backendUrl: !!process.env.BACKEND_URL,
+      frontendUrl: !!process.env.FRONTEND_URL,
+      nodeEnv: process.env.NODE_ENV || 'non défini',
+    },
+  });
 });
 
 app.listen(PORT, () => {
