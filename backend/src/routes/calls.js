@@ -3,13 +3,21 @@ const twilio = require('../config/twilio');
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
 const twilioSignature = require('../middleware/twilioSignature');
-const { verrouillerConsultation, libererConsultation } = require('../config/praticienne');
+const { verrouillerConsultation, libererConsultation, getPraticienne } = require('../config/praticienne');
 const { VoiceResponse } = require('twilio').twiml;
 
 const router = express.Router();
 
 // Délai d'avertissement avant la coupure automatique (en secondes)
 const WARNING_SECONDS = 2 * 60;
+
+// Consultation Immédiate uniquement : si la mise en relation n'aboutit pas
+// (Elena ne rejoint jamais la conférence), on coupe proprement plutôt que
+// de laisser la cliente en silence indéfiniment.
+const MISE_EN_RELATION_TIMEOUT_SECONDS = 75; // fenêtre demandée : 60-90s
+// Cadence du message d'attente : ~7s (parole ~4,4s + pause), volontairement lent
+const ATTENTE_PAUSE_SECONDES = 3;
+const ATTENTE_REPETITIONS = 12; // couvre largement le timeout, puis auto-boucle via <Redirect>
 
 // Normaliser un numéro de téléphone au format international
 function normalizePhone(phone) {
@@ -155,6 +163,15 @@ router.post('/initiate', authMiddleware, async (req, res) => {
       })
       .eq('id', sessionId);
 
+    // Filet de sécurité : si Elena ne rejoint jamais, on coupe proprement
+    // après MISE_EN_RELATION_TIMEOUT_SECONDS plutôt que de laisser la
+    // cliente en attente indéfiniment (le waitUrl seul ne suffit pas —
+    // Twilio ne termine pas une conférence à un seul participant tout seul).
+    setTimeout(
+      () => handleMiseEnRelationTimeout(sessionId, clientCall.sid),
+      MISE_EN_RELATION_TIMEOUT_SECONDS * 1000
+    );
+
     res.json({
       message: 'Appel en cours de connexion...',
       callSid: clientCall.sid,
@@ -176,8 +193,10 @@ router.get('/twiml/join', twilioSignature, (req, res) => {
   response.say(
     { language: 'fr-FR' },
     role === 'consultant'
-      ? 'Connexion à votre client. Veuillez patienter.'
-      : 'Connexion à votre consultante. Un signal discret vous préviendra deux minutes avant la fin de la consultation. Veuillez patienter.'
+      ? 'Connexion à votre client.'
+      // "Veuillez patienter" retiré ici : le message d'attente qui suit
+      // (waitUrl) prend le relais de ce rôle, pas de redondance.
+      : 'Connexion à votre consultante. Un signal discret vous préviendra deux minutes avant la fin de la consultation.'
   );
 
   const dial = response.dial({ callerId: process.env.TWILIO_PHONE_NUMBER });
@@ -186,14 +205,57 @@ router.get('/twiml/join', twilioSignature, (req, res) => {
       startConferenceOnEnter: true,
       // Si l'un des deux raccroche, la conférence se termine pour les deux
       endConferenceOnExit: true,
-      // Silence (pas de musique d'attente) tant que le second n'a pas rejoint
-      waitUrl: '',
+      // Message vocal rassurant en boucle tant que l'autre n'a pas rejoint
+      // (remplace le silence — voir /twiml/attente)
+      waitUrl: `${backendUrl}/api/calls/twiml/attente?role=${role}`,
+      waitMethod: 'GET',
       statusCallback: `${backendUrl}/api/calls/conference-status?sessionId=${sessionId}`,
       statusCallbackEvent: 'join leave end',
       statusCallbackMethod: 'POST',
     },
     conferenceName(sessionId)
   );
+
+  res.type('text/xml');
+  res.send(response.toString());
+});
+
+// GET /api/calls/twiml/attente - Message d'attente en boucle (remplace le
+// silence tant que l'autre participant n'a pas rejoint la conférence).
+// Extensible : si praticiennes.messages_vocaux.attente est configuré (URL
+// d'un fichier audio — voix d'Elena, éventuellement mixée à une nappe
+// sonore douce), on le joue en boucle. Sinon, repli en TTS français.
+router.get('/twiml/attente', twilioSignature, async (req, res) => {
+  const { role } = req.query;
+  const response = new VoiceResponse();
+
+  try {
+    const p = await getPraticienne();
+    const audioUrl = p.messages_vocaux?.attente;
+
+    if (audioUrl) {
+      // Fichier unique en boucle infinie — peut déjà contenir une ambiance
+      // sonore mixée par la praticienne, sans aucun changement de code ici.
+      response.play({ loop: 0 }, audioUrl);
+    } else {
+      const message =
+        role === 'consultant'
+          ? 'Connexion en cours. Merci de patienter.'
+          : 'Elena arrive dans un instant. Restez en ligne, elle se connecte à vous.';
+
+      for (let i = 0; i < ATTENTE_REPETITIONS; i++) {
+        response.say({ language: 'fr-FR' }, message);
+        response.pause({ length: ATTENTE_PAUSE_SECONDES });
+      }
+      // Filet de sécurité : si les répétitions s'épuisent avant que l'autre
+      // participant rejoigne, on se redemande à soi-même pour continuer
+      // plutôt que de laisser Twilio raccrocher.
+      response.redirect({ method: 'GET' }, `${getBackendUrl()}/api/calls/twiml/attente?role=${role || ''}`);
+    }
+  } catch (err) {
+    console.error('Erreur message attente:', err);
+    response.pause({ length: ATTENTE_PAUSE_SECONDES });
+  }
 
   res.type('text/xml');
   res.send(response.toString());
@@ -317,6 +379,59 @@ async function endConference(conferenceSid) {
     console.warn(`Fin de conférence ${conferenceSid} : ${err.message}`);
   }
 }
+
+// Consultation Immédiate : si Elena n'a jamais rejoint la conférence dans
+// le délai imparti, on redirige l'appel de la cliente vers un message de
+// fin propre plutôt que de la laisser en attente indéfiniment. Idempotent :
+// sans effet si la session a déjà démarré ou déjà été traitée entre-temps.
+async function handleMiseEnRelationTimeout(sessionId, clientCallSid) {
+  try {
+    const { data: session } = await supabase
+      .from('sessions')
+      .select('id, status, started_at')
+      .eq('id', sessionId)
+      .single();
+
+    // Déjà connectés, ou déjà terminée/annulée par un autre chemin → rien à faire
+    if (!session || session.started_at || session.status !== 'active') return;
+
+    console.log(`Timeout mise en relation : session ${sessionId} — Elena n'a pas rejoint à temps`);
+
+    await supabase
+      .from('sessions')
+      .update({ status: 'cancelled' })
+      .eq('id', sessionId);
+
+    // AUCUN débit n'a lieu ici : le wallet n'est jamais touché tant que
+    // finalizeSession() n'a pas vu started_at posé (cf. plus bas).
+    await libererConsultation();
+
+    if (!twilio) return;
+
+    const backendUrl = getBackendUrl();
+    await twilio
+      .calls(clientCallSid)
+      .update({ url: `${backendUrl}/api/calls/twiml/timeout`, method: 'POST' })
+      .catch((err) =>
+        console.warn(`Redirection timeout impossible (appel déjà terminé ?) : ${err.message}`)
+      );
+  } catch (err) {
+    console.error('Erreur timeout mise en relation:', err);
+  }
+}
+
+// POST /api/calls/twiml/timeout - Message de fin quand Elena n'a jamais
+// rejoint (aucun débit — le message le confirme explicitement à la cliente)
+router.post('/twiml/timeout', twilioSignature, (req, res) => {
+  const response = new VoiceResponse();
+  response.say(
+    { language: 'fr-FR' },
+    "Elena n'est pas disponible pour le moment. Vous n'avez pas été débitée. Réessayez dans quelques instants."
+  );
+  response.hangup();
+  res.type('text/xml');
+  res.send(response.toString());
+});
 
 // Joue le bip + message d'avertissement à TOUS les participants de la conférence
 async function playWarning(conferenceSid) {
