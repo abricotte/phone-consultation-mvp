@@ -77,7 +77,7 @@ export default function DashboardPage() {
     return <div className="text-center mt-16 text-red-600">{error}</div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-5 py-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-serif text-2xl font-semibold text-aubergine">
           Bonjour {user?.firstName} {user?.lastName}

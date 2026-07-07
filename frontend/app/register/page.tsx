@@ -36,7 +36,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-16 p-8 bg-ivory border border-greige/60 rounded-2xl shadow-soft">
+    <div className="px-4 py-16 sm:px-5">
+      <div className="mx-auto max-w-md p-8 bg-ivory border border-greige/60 rounded-2xl shadow-soft">
       <h1 className="font-serif text-2xl font-semibold text-aubergine mb-6">Créer un compte</h1>
 
       {error && (
@@ -109,18 +110,19 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-cta text-cta-text py-2 rounded-full font-medium hover:bg-cta-dark disabled:opacity-50"
+          className="w-full bg-cta text-cta-text py-3 rounded-full font-medium hover:bg-cta-dark disabled:opacity-50"
         >
           {loading ? "Inscription..." : "S'inscrire"}
         </button>
       </form>
 
-      <p className="text-sm text-gray-600 mt-4 text-center">
-        Déjà un compte ?{" "}
-        <a href="/login" className="text-prix hover:underline">
-          Se connecter
-        </a>
-      </p>
+        <p className="text-sm text-gray-600 mt-4 text-center">
+          Déjà un compte ?{" "}
+          <a href="/login" className="text-prix hover:underline">
+            Se connecter
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

@@ -11,6 +11,14 @@
   h3 {
     @apply font-serif text-aubergine;
   }
+  /* Compense le header collant : évite qu'un titre ou une ancre
+     ("#formules", scrollIntoView) ne se retrouve caché dessous. */
+  h1,
+  h2,
+  h3,
+  [id] {
+    scroll-margin-top: 6rem;
+  }
 }
 
 @layer utilities {

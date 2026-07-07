@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant, Open_Sans } from "next/font/google";
+import SiteHeader from "@/components/SiteHeader";
 import "./globals.css";
 
 // Cormorant en casse normale — les petites capitales ne survivent
@@ -32,35 +33,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${cormorant.variable} ${openSans.variable}`}>
       <body className="flex min-h-screen flex-col bg-cream">
-        <header className="sticky top-0 z-50 border-b border-greige/60 bg-cream/85 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-            <a href="/" className="flex items-center gap-2.5">
-              <span aria-hidden className="text-2xl leading-none text-aubergine/40">
-                ✦
-              </span>
-              <span className="font-serif text-2xl font-semibold tracking-wide text-aubergine">
-                Elena&nbsp;Wolska
-              </span>
-            </a>
-            <nav className="flex items-center gap-6 text-sm">
-              <a href="/#formules" className="hidden text-mention transition hover:text-cta sm:inline">
-                Formules
-              </a>
-              <a href="/consultation-minute" className="hidden text-mention transition hover:text-cta sm:inline">
-                Appeler maintenant
-              </a>
-              <a href="/dashboard" className="text-mention transition hover:text-cta">
-                Mon espace
-              </a>
-              <a
-                href="/login"
-                className="rounded-full bg-cta px-5 py-2 font-medium text-cta-text shadow-card transition hover:bg-cta-dark"
-              >
-                Connexion
-              </a>
-            </nav>
-          </div>
-        </header>
+        <SiteHeader />
 
         <main className="flex-1">{children}</main>
 
