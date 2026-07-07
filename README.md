@@ -104,6 +104,8 @@ n'est pas cochée :
 - [ ] Audit de toutes les routes — zéro page du template d'origine
       accessible (vérifier aussi les redirections 301 /consultants)
 - [ ] Passage en revue des warnings/suggestions de l'Advisor Supabase
+- [ ] Mot de passe FORT obligatoire sur le compte praticienne
+      (l'accès /cabinet-ew repose sur ce compte)
 
 ### Règle de sécurité — validation de signature Twilio
 

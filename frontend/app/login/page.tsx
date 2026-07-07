@@ -18,7 +18,13 @@ export default function LoginPage() {
       const data = await api.login({ email, password });
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      window.location.href = "/dashboard";
+      // La praticienne arrive directement dans son espace ;
+      // les clientes sur leur tableau de bord.
+      const role = data.user?.role;
+      window.location.href =
+        role === "consultant" || role === "admin"
+          ? "/cabinet-ew"
+          : "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur de connexion");
     } finally {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 
 interface Forfait {
@@ -48,6 +49,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
   const [error, setError] = useState("");
+  const [accesRefuse, setAccesRefuse] = useState(false);
 
   // Consultation minutée
   const [telephone, setTelephone] = useState("");
@@ -63,18 +65,17 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
+    // Pas de jeton, mauvais rôle, ou erreur d'accès → 404 générique.
+    // L'existence de cet espace ne doit être confirmée à personne.
     const token = localStorage.getItem("token");
     if (!token) {
-      window.location.href = "/login";
+      setAccesRefuse(true);
+      setLoading(false);
       return;
     }
 
     recharger()
-      .catch((err) =>
-        setError(
-          err instanceof Error ? err.message : "Accès refusé ou erreur serveur"
-        )
-      )
+      .catch(() => setAccesRefuse(true))
       .finally(() => setLoading(false));
 
     const id = setInterval(() => recharger().catch(() => {}), 30_000);
@@ -116,15 +117,8 @@ export default function AdminPage() {
   if (loading)
     return <div className="mt-16 text-center text-ink/60">Chargement…</div>;
 
-  if (error && !statut)
-    return (
-      <div className="mx-auto mt-16 max-w-md rounded-2xl border border-greige/70 bg-ivory p-8 text-center">
-        <p className="text-red-600">{error}</p>
-        <p className="mt-2 text-sm text-ink/60">
-          Cet espace est réservé à la praticienne.
-        </p>
-      </div>
-    );
+  // 404 générique, identique aux autres pages inexistantes du site
+  if (accesRefuse || (error && !statut)) notFound();
 
   const enConsultation = statut?.statut === "en_consultation";
   const disponible = statut?.statut === "disponible";
