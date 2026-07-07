@@ -12,7 +12,7 @@ export default function Home() {
             </p>
             <h1 className="font-serif text-5xl font-semibold leading-tight text-aubergine md:text-6xl">
               Voyante sur l&apos;Amour
-              <span className="block text-coral">&amp; Médium en flashs directs</span>
+              <span className="block text-coral">&amp; Médium sans support, en flashs directs</span>
             </h1>
             <p className="mt-6 max-w-md text-lg text-ink/75">
               Vous tournez en rond ? En une séance, je vous aide à remettre du

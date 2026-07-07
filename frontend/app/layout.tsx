@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Cormorant, Open_Sans } from "next/font/google";
+import { Cormorant_SC, Open_Sans } from "next/font/google";
 import "./globals.css";
 
-const cormorant = Cormorant({
+// Cormorant SC (petites capitales) — police des titres du site prod
+const cormorant = Cormorant_SC({
   subsets: ["latin"],
   variable: "--font-cormorant",
   weight: ["400", "500", "600", "700"],
@@ -16,7 +17,7 @@ const openSans = Open_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Elena Wolska — Voyante sur l'Amour & Médium en Flashs Directs",
+  title: "Elena Wolska — Voyante sur l'Amour & Médium sans Support, en Flashs Directs",
   description:
     "Consultations de voyance par téléphone avec Elena Wolska. Formules claires, paiement sécurisé, échange confidentiel. Simplement, sans fioritures.",
 };
@@ -61,40 +62,64 @@ export default function RootLayout({
 
         <main className="flex-1">{children}</main>
 
-        <footer className="mt-24 border-t border-greige/60 bg-aubergine text-cream/80">
-          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3">
+        {/* Footer aligné sur la structure et le ton d'elena-wolska.com */}
+        <footer className="mt-24 bg-aubergine text-white/80">
+          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:grid-cols-3">
             <div>
               <p className="font-serif text-xl text-white">Elena Wolska</p>
-              <p className="mt-2 text-sm text-cream/70">
-                Voyante sur l&apos;Amour &amp; Médium en flashs directs.
-                Simplement, sans fioritures.
+              <p className="mt-2 text-sm leading-relaxed text-white/60">
+                Voyante sur l&apos;Amour et Médium sans Support, en Flashs
+                Directs. 19 ans d&apos;expérience. 20&nbsp;000+ consultations.
               </p>
+              <a
+                href="https://elena-wolska.com"
+                className="mt-4 inline-block text-sm text-white/50 transition-colors hover:text-coral-light"
+              >
+                elena-wolska.com →
+              </a>
             </div>
             <div className="text-sm">
-              <p className="mb-3 font-medium text-white">Informations</p>
-              <ul className="space-y-2 text-cream/70">
-                <li><a href="/mentions-legales" className="hover:text-coral-light">Mentions légales</a></li>
-                <li><a href="/cgv" className="hover:text-coral-light">Conditions générales de vente</a></li>
-                <li><a href="/confidentialite" className="hover:text-coral-light">Confidentialité</a></li>
+              <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
+                Consultations
+              </h4>
+              <ul className="space-y-2">
+                <li><a href="/consultation-minute" className="text-white/50 transition-colors hover:text-white">Consultation Immédiate — à la minute</a></li>
+                <li><a href="https://elena-wolska.com/disponibilites" className="text-white/50 transition-colors hover:text-white">Consultation Découverte — 20 min</a></li>
+                <li><a href="https://elena-wolska.com/disponibilites" className="text-white/50 transition-colors hover:text-white">Consultation Complète — 45 min</a></li>
+                <li><a href="/register" className="text-white/50 transition-colors hover:text-white">Créer un compte</a></li>
               </ul>
             </div>
             <div className="text-sm">
-              <p className="mb-3 font-medium text-white">Consulter</p>
-              <ul className="space-y-2 text-cream/70">
-                <li><a href="/consultation-minute" className="hover:text-coral-light">Consultation Immédiate — à la minute</a></li>
-                <li><a href="https://elena-wolska.com/disponibilites" className="hover:text-coral-light">Consultation Découverte — 20 min</a></li>
-                <li><a href="https://elena-wolska.com/disponibilites" className="hover:text-coral-light">Consultation Complète — 45 min</a></li>
-                <li><a href="/register" className="hover:text-coral-light">Créer un compte</a></li>
+              <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
+                À propos
+              </h4>
+              <ul className="space-y-2">
+                <li><a href="https://elena-wolska.com/a-propos" className="text-white/50 transition-colors hover:text-white">Mon parcours</a></li>
+                <li><a href="https://elena-wolska.com/temoignages" className="text-white/50 transition-colors hover:text-white">Témoignages</a></li>
+                <li><a href="https://elena-wolska.com/ressources-gratuites" className="text-white/50 transition-colors hover:text-white">Ressources gratuites</a></li>
+                <li><a href="https://elena-wolska.com/contact" className="text-white/50 transition-colors hover:text-white">Contact</a></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-cream/10 px-5 py-5">
-            <p className="mx-auto max-w-6xl text-xs text-cream/50">
-              © {new Date().getFullYear()} Elena Wolska. Service de consultation
-              à caractère divinatoire, réservé aux personnes majeures. Les
-              consultations ne se substituent pas à un avis médical, juridique ou
-              financier.
-            </p>
+
+          <p className="px-5 pb-6 text-center text-xs italic leading-relaxed text-white/40">
+            Rien ne meurt, tout se transforme.
+            <br />
+            Le Phénix renaît, encore et toujours.
+          </p>
+
+          <div className="border-t border-white/10 px-5 py-5">
+            <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-xs text-white/30 md:flex-row">
+              <p>
+                © {new Date().getFullYear()} Elena Wolska — Voyance &amp;
+                Consultation en flashs directs. Réservé aux personnes majeures.
+              </p>
+              <div className="flex gap-4">
+                <a href="https://elena-wolska.com/mentions-legales" className="transition-colors hover:text-white/60">Mentions légales</a>
+                <a href="https://elena-wolska.com/cgv" className="transition-colors hover:text-white/60">CGV</a>
+                <a href="https://elena-wolska.com/confidentialite" className="transition-colors hover:text-white/60">Confidentialité</a>
+              </div>
+            </div>
           </div>
         </footer>
       </body>

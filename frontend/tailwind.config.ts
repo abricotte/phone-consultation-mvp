@@ -27,12 +27,13 @@ const config: Config = {
           DEFAULT: "#c9a96e",
           dark: "#8a6f3e",
         },
-        aubergine: "#3D2C3E", // titres
-        cream: "#fcf9f1", // fond chaleureux principal
+        // Alignement sur elena-wolska.com (sources prod, 2026-07-07)
+        aubergine: "#2b3a52", // titres & footer — "primary" bleu nuit du site prod
+        cream: "#fcf9f1", // fond chaleureux principal (= site-bg prod)
         ivory: "#fffaf8", // fond clair (cartes)
-        blush: "#fff7f4", // rose très pâle
-        greige: "#e0d5cc", // bordures douces
-        ink: "#5C4B42", // texte courant
+        blush: "#FDF2F0", // corail très pâle (= accent.subtle prod)
+        greige: "#e0d5cc", // bordures douces (= border-light prod)
+        ink: "#4a4a4a", // texte courant (= secondary prod)
       },
       fontFamily: {
         serif: ["var(--font-cormorant)", "Georgia", "serif"],
