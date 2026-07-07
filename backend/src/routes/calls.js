@@ -3,6 +3,7 @@ const twilio = require('../config/twilio');
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
 const twilioSignature = require('../middleware/twilioSignature');
+const { verrouillerConsultation, libererConsultation } = require('../config/praticienne');
 const { VoiceResponse } = require('twilio').twiml;
 
 const router = express.Router();
@@ -108,26 +109,42 @@ router.post('/initiate', authMiddleware, async (req, res) => {
     const consultantPhone = normalizePhone(consultantUser.phone);
     const confName = conferenceName(sessionId);
 
-    // Appel du client → rejoint la conférence.
-    // timeLimit = coupure matérielle de sécurité (filet de sécurité si le minuteur
-    // serveur tombe). La coupure « propre » se fait via la fin de conférence.
-    const clientCall = await twilio.calls.create({
-      to: clientPhone,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=client`,
-      timeLimit: maxSeconds,
-      statusCallback: `${backendUrl}/api/calls/status`,
-      statusCallbackEvent: ['failed', 'busy', 'no-answer', 'canceled', 'completed'],
-      statusCallbackMethod: 'POST',
-    });
+    // VERROU ATOMIQUE : disponible → en_consultation. Si la ligne vient
+    // d'être prise par une autre cliente, refus propre sans appel.
+    const verrou = await verrouillerConsultation(maxSeconds);
+    if (!verrou.ok) {
+      return res.status(409).json({
+        error: 'Elena vient de commencer une consultation. Réessayez dans quelques instants.',
+      });
+    }
 
-    // Appel du consultant → rejoint la même conférence
-    await twilio.calls.create({
-      to: consultantPhone,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=consultant`,
-      timeLimit: maxSeconds,
-    });
+    let clientCall;
+    try {
+      // Appel du client → rejoint la conférence.
+      // timeLimit = coupure matérielle de sécurité (filet de sécurité si le minuteur
+      // serveur tombe). La coupure « propre » se fait via la fin de conférence.
+      clientCall = await twilio.calls.create({
+        to: clientPhone,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=client`,
+        timeLimit: maxSeconds,
+        statusCallback: `${backendUrl}/api/calls/status`,
+        statusCallbackEvent: ['failed', 'busy', 'no-answer', 'canceled', 'completed'],
+        statusCallbackMethod: 'POST',
+      });
+
+      // Appel du consultant → rejoint la même conférence
+      await twilio.calls.create({
+        to: consultantPhone,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=consultant`,
+        timeLimit: maxSeconds,
+      });
+    } catch (twilioErr) {
+      // Échec du lancement → libérer immédiatement la praticienne
+      await libererConsultation();
+      throw twilioErr;
+    }
 
     // started_at sera fixé quand les DEUX participants sont connectés (cf. conference-status)
     await supabase
@@ -192,7 +209,6 @@ router.post('/conference-status', twilioSignature, async (req, res) => {
   const conferenceSid = req.body.ConferenceSid;
 
   try {
-    // Démarrer le chrono quand les DEUX participants sont présents
     if (event === 'participant-join') {
       if (!twilio || !conferenceSid) return;
 
@@ -200,34 +216,80 @@ router.post('/conference-status', twilioSignature, async (req, res) => {
         .conferences(conferenceSid)
         .participants.list({ limit: 5 });
 
-      if (participants.length < 2) return;
-
       const { data: session } = await supabase
         .from('sessions')
-        .select('id, started_at, rate_per_minute, client_id')
+        .select('id, type, started_at, rate_per_minute, client_id, forfait_minutes, telephone_cliente, cliente_call_sid')
         .eq('id', sessionId)
         .single();
 
-      // Déjà démarré → ne pas re-programmer (évite les doublons)
-      if (!session || session.started_at) return;
+      if (!session) return;
+
+      // FORFAIT MANUEL : Elena rejoint en premier → on compose alors la
+      // cliente. Garde anti-double-appel : cliente_call_sid posé de façon
+      // conditionnelle en base AVANT l'appel.
+      if (
+        session.type === 'forfait_manuel' &&
+        participants.length === 1 &&
+        !session.cliente_call_sid &&
+        session.telephone_cliente
+      ) {
+        const { data: garde } = await supabase
+          .from('sessions')
+          .update({ cliente_call_sid: 'en-cours' })
+          .eq('id', sessionId)
+          .is('cliente_call_sid', null)
+          .select('id');
+
+        if (!garde || garde.length === 0) return; // déjà pris en charge
+
+        const backendUrl = getBackendUrl();
+        const clienteCall = await twilio.calls.create({
+          to: session.telephone_cliente,
+          from: process.env.TWILIO_PHONE_NUMBER,
+          url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=client`,
+          timeLimit: session.forfait_minutes * 60 + 60, // filet de sécurité
+          statusCallback: `${backendUrl}/api/calls/status`,
+          statusCallbackEvent: ['failed', 'busy', 'no-answer', 'canceled', 'completed'],
+          statusCallbackMethod: 'POST',
+        });
+
+        await supabase
+          .from('sessions')
+          .update({ cliente_call_sid: clienteCall.sid })
+          .eq('id', sessionId);
+
+        console.log(`Forfait manuel ${sessionId} : Elena en ligne, cliente composée (${clienteCall.sid})`);
+        return;
+      }
+
+      // Démarrer le chrono quand les DEUX participants sont présents
+      if (participants.length < 2) return;
+      if (session.started_at) return; // déjà démarré (évite les doublons)
 
       await supabase
         .from('sessions')
         .update({ started_at: new Date().toISOString() })
         .eq('id', sessionId);
 
-      // Programmer le bip d'avertissement avant la coupure
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('balance')
-        .eq('user_id', session.client_id)
-        .single();
+      // Durée max : forfait fixe, ou solde du wallet pour la minute
+      let maxSeconds;
+      if (session.type === 'forfait_manuel' || session.type === 'forfait') {
+        maxSeconds = (session.forfait_minutes || 0) * 60;
+        // Coupure PROPRE du forfait : fin de conférence à l'heure exacte
+        setTimeout(() => endConference(conferenceSid), maxSeconds * 1000);
+      } else {
+        const { data: wallet } = await supabase
+          .from('wallets')
+          .select('balance')
+          .eq('user_id', session.client_id)
+          .single();
 
-      const rate = parseFloat(session.rate_per_minute);
-      const balance = wallet ? parseFloat(wallet.balance) : 0;
-      const maxSeconds = Math.floor(balance / rate) * 60;
+        const rate = parseFloat(session.rate_per_minute);
+        const balance = wallet ? parseFloat(wallet.balance) : 0;
+        maxSeconds = Math.floor(balance / rate) * 60;
+      }
+
       const warnInSeconds = maxSeconds - WARNING_SECONDS;
-
       if (warnInSeconds > 0) {
         setTimeout(() => playWarning(conferenceSid), warnInSeconds * 1000);
         console.log(`Avertissement programmé dans ${warnInSeconds}s (conférence ${conferenceSid})`);
@@ -235,7 +297,7 @@ router.post('/conference-status', twilioSignature, async (req, res) => {
       return;
     }
 
-    // Fin de conférence → facturation (un seul point de débit)
+    // Fin de conférence → facturation (un seul point) + libération du verrou
     if (event === 'conference-end') {
       await finalizeSession(sessionId);
     }
@@ -243,6 +305,18 @@ router.post('/conference-status', twilioSignature, async (req, res) => {
     console.error('Erreur conference-status:', err);
   }
 });
+
+// Termine proprement une conférence (coupure à l'heure exacte du forfait)
+async function endConference(conferenceSid) {
+  try {
+    if (!twilio) return;
+    await twilio.conferences(conferenceSid).update({ status: 'completed' });
+    console.log(`Conférence ${conferenceSid} terminée (fin de forfait)`);
+  } catch (err) {
+    // La conférence peut être déjà terminée — le timeLimit reste le filet
+    console.warn(`Fin de conférence ${conferenceSid} : ${err.message}`);
+  }
+}
 
 // Joue le bip + message d'avertissement à TOUS les participants de la conférence
 async function playWarning(conferenceSid) {
@@ -286,11 +360,12 @@ router.get('/twiml/warning', twilioSignature, (req, res) => {
   res.send(response.toString());
 });
 
-// Calcule la durée, met à jour la session et débite le client (idempotent)
+// Calcule la durée, met à jour la session, débite si nécessaire,
+// et LIBÈRE la praticienne (idempotent)
 async function finalizeSession(sessionId) {
   const { data: session } = await supabase
     .from('sessions')
-    .select('id, status, started_at, rate_per_minute, client_id')
+    .select('id, type, status, started_at, rate_per_minute, client_id, montant_paye')
     .eq('id', sessionId)
     .single();
 
@@ -305,6 +380,7 @@ async function finalizeSession(sessionId) {
       .from('sessions')
       .update({ status: 'cancelled' })
       .eq('id', sessionId);
+    await libererConsultation();
     return;
   }
 
@@ -312,7 +388,13 @@ async function finalizeSession(sessionId) {
   const endedAt = new Date();
   const durationSeconds = Math.max(0, Math.ceil((endedAt - startedAt) / 1000));
   const durationMinutes = Math.ceil(durationSeconds / 60);
-  const totalCost = durationMinutes * parseFloat(session.rate_per_minute);
+
+  // Forfait manuel : montant déjà encaissé via Calendly → pas de débit,
+  // total_cost = montant du forfait (pour la vue du jour)
+  const totalCost =
+    session.type === 'forfait_manuel'
+      ? parseFloat(session.montant_paye || 0)
+      : durationMinutes * parseFloat(session.rate_per_minute);
 
   await supabase
     .from('sessions')
@@ -324,33 +406,38 @@ async function finalizeSession(sessionId) {
     })
     .eq('id', sessionId);
 
-  // Débiter le client
-  const { data: wallet } = await supabase
-    .from('wallets')
-    .select('id, balance')
-    .eq('user_id', session.client_id)
-    .single();
-
-  if (wallet) {
-    const newBalance = Math.max(0, parseFloat(wallet.balance) - totalCost);
-
-    await supabase
+  // Débit du wallet : uniquement pour la consultation à la minute
+  if (session.type !== 'forfait_manuel' && session.client_id) {
+    const { data: wallet } = await supabase
       .from('wallets')
-      .update({ balance: newBalance })
-      .eq('id', wallet.id);
+      .select('id, balance')
+      .eq('user_id', session.client_id)
+      .single();
 
-    await supabase
-      .from('transactions')
-      .insert({
-        wallet_id: wallet.id,
-        type: 'debit',
-        amount: totalCost,
-        description: `Consultation téléphonique - ${durationMinutes} min`,
-        session_id: sessionId,
-      });
+    if (wallet) {
+      const newBalance = Math.max(0, parseFloat(wallet.balance) - totalCost);
+
+      await supabase
+        .from('wallets')
+        .update({ balance: newBalance })
+        .eq('id', wallet.id);
+
+      await supabase
+        .from('transactions')
+        .insert({
+          wallet_id: wallet.id,
+          type: 'debit',
+          amount: totalCost,
+          description: `Consultation téléphonique - ${durationMinutes} min`,
+          session_id: sessionId,
+        });
+    }
   }
 
-  console.log(`Appel terminé : session ${sessionId}, ${durationMinutes} min, ${totalCost}€`);
+  // Retour au statut antérieur du toggle (en_consultation → disponible/hors_ligne)
+  await libererConsultation();
+
+  console.log(`Appel terminé : session ${sessionId} (${session.type}), ${durationMinutes} min, ${totalCost}€`);
 }
 
 // POST /api/calls/status - Callback statut des appels individuels (Twilio)
@@ -360,12 +447,12 @@ router.post('/status', twilioSignature, async (req, res) => {
   const { CallSid, CallStatus } = req.body;
   console.log(`Statut appel ${CallSid}: ${CallStatus}`);
 
-  // Si l'appel du client échoue/n'aboutit pas, annuler la session
+  // Si l'appel échoue/n'aboutit pas, annuler la session et libérer Elena
   if (['failed', 'busy', 'no-answer', 'canceled'].includes(CallStatus)) {
     const { data: session } = await supabase
       .from('sessions')
       .select('id, status')
-      .eq('twilio_call_sid', CallSid)
+      .or(`twilio_call_sid.eq.${CallSid},cliente_call_sid.eq.${CallSid}`)
       .single();
 
     if (session && session.status !== 'completed') {
@@ -373,6 +460,7 @@ router.post('/status', twilioSignature, async (req, res) => {
         .from('sessions')
         .update({ status: 'cancelled' })
         .eq('id', session.id);
+      await libererConsultation();
     }
   }
 });

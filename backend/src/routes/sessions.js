@@ -1,6 +1,7 @@
 const express = require('express');
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
+const { getStatutEnLigne } = require('../config/praticienne');
 
 const router = express.Router();
 
@@ -26,6 +27,17 @@ router.post('/', authMiddleware, async (req, res) => {
 
     if (!consultant.is_available) {
       return res.status(400).json({ error: 'Ce consultant n\'est pas disponible' });
+    }
+
+    // Machine à états : la praticienne doit être "disponible"
+    const { statut } = await getStatutEnLigne();
+    if (statut === 'en_consultation') {
+      return res.status(409).json({
+        error: 'Elena vient de commencer une consultation. Réessayez dans quelques instants.',
+      });
+    }
+    if (statut !== 'disponible') {
+      return res.status(400).json({ error: 'Elena n\'est pas en ligne actuellement.' });
     }
 
     // Vérifier que le client a du solde (au moins 5 minutes)

@@ -85,37 +85,108 @@ function clearCache() {
   cacheAt = 0;
 }
 
-// Statut en ligne avec AUTO-OFF paresseux : si la praticienne est en
-// ligne depuis plus de auto_off_heures, on la repasse hors ligne en
-// base au moment de la lecture (pas besoin de cron).
+// Machine à états : hors_ligne | disponible | en_consultation | rdv_imminent
+// Lecture du statut avec AUTO-OFF paresseux : si la praticienne est
+// "disponible" depuis plus de auto_off_heures, elle repasse hors ligne
+// en base au moment de la lecture (pas besoin de cron).
 async function getStatutEnLigne() {
-  if (!supabase) return { enLigne: false, enLigneDepuis: null };
+  const horsLigne = { statut: 'hors_ligne', enLigne: false, enLigneDepuis: null, retourPrevu: null };
+  if (!supabase) return horsLigne;
 
   const { data, error } = await supabase
     .from('praticiennes')
-    .select('id, statut_en_ligne, en_ligne_depuis, auto_off_heures')
+    .select('id, statut, en_ligne_depuis, auto_off_heures, retour_prevu')
     .eq('slug', SLUG)
     .single();
 
-  if (error || !data) return { enLigne: false, enLigneDepuis: null };
+  if (error || !data) return horsLigne;
 
-  if (data.statut_en_ligne && data.en_ligne_depuis) {
+  if (data.statut === 'disponible' && data.en_ligne_depuis) {
     const limiteMs = (data.auto_off_heures || 4) * 3600 * 1000;
     if (Date.now() - new Date(data.en_ligne_depuis).getTime() > limiteMs) {
       await supabase
         .from('praticiennes')
-        .update({ statut_en_ligne: false, en_ligne_depuis: null })
-        .eq('id', data.id);
+        .update({
+          statut: 'hors_ligne',
+          statut_en_ligne: false, // legacy, synchronisé
+          en_ligne_depuis: null,
+          retour_prevu: null,
+        })
+        .eq('id', data.id)
+        .eq('statut', 'disponible'); // ne jamais écraser une consultation en cours
       clearCache();
       console.log(`Auto-off : praticienne ${SLUG} repassée hors ligne (limite ${data.auto_off_heures}h)`);
-      return { enLigne: false, enLigneDepuis: null, autoOff: true };
+      return { ...horsLigne, autoOff: true };
     }
   }
 
   return {
-    enLigne: data.statut_en_ligne,
+    statut: data.statut,
+    enLigne: data.statut === 'disponible', // compat indicateur existant
     enLigneDepuis: data.en_ligne_depuis,
+    retourPrevu: data.retour_prevu,
   };
 }
 
-module.exports = { getPraticienne, getTarifs, getStatutEnLigne, clearCache };
+// VERROU ATOMIQUE : disponible → en_consultation.
+// UPDATE conditionnel (WHERE statut = 'disponible') : si 0 ligne
+// affectée, quelqu'un d'autre vient de prendre la ligne → refus propre.
+async function verrouillerConsultation(dureeMaxSecondes) {
+  if (!supabase) return { ok: false };
+
+  const retourPrevu = new Date(Date.now() + dureeMaxSecondes * 1000).toISOString();
+
+  const { data, error } = await supabase
+    .from('praticiennes')
+    .update({
+      statut: 'en_consultation',
+      statut_precedent: 'disponible',
+      statut_en_ligne: false, // legacy : plus joignable pendant l'appel
+      retour_prevu: retourPrevu,
+    })
+    .eq('slug', SLUG)
+    .eq('statut', 'disponible')
+    .select('id');
+
+  clearCache();
+  if (error || !data || data.length === 0) return { ok: false };
+  return { ok: true, retourPrevu };
+}
+
+// Libération : en_consultation → statut antérieur du toggle.
+// Conditionnel (WHERE statut = 'en_consultation') : sans effet si
+// l'état a déjà changé (idempotent, appelable depuis tout callback).
+async function libererConsultation() {
+  if (!supabase) return;
+
+  const { data } = await supabase
+    .from('praticiennes')
+    .select('id, statut, statut_precedent')
+    .eq('slug', SLUG)
+    .single();
+
+  if (!data || data.statut !== 'en_consultation') return;
+
+  const retour = data.statut_precedent || 'disponible';
+  await supabase
+    .from('praticiennes')
+    .update({
+      statut: retour,
+      statut_en_ligne: retour === 'disponible', // legacy, synchronisé
+      retour_prevu: null,
+    })
+    .eq('id', data.id)
+    .eq('statut', 'en_consultation');
+
+  clearCache();
+  console.log(`Praticienne libérée : retour au statut "${retour}"`);
+}
+
+module.exports = {
+  getPraticienne,
+  getTarifs,
+  getStatutEnLigne,
+  verrouillerConsultation,
+  libererConsultation,
+  clearCache,
+};

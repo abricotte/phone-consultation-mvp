@@ -3,11 +3,11 @@ const { getTarifs, getStatutEnLigne } = require('../config/praticienne');
 
 const router = express.Router();
 
-// GET /api/config/statut - Statut en ligne public (indicateur temps réel)
+// GET /api/config/statut - Statut public (indicateur temps réel, 3 états)
 router.get('/statut', async (req, res) => {
   try {
-    const { enLigne } = await getStatutEnLigne();
-    res.json({ enLigne });
+    const { statut, enLigne } = await getStatutEnLigne();
+    res.json({ statut, enLigne }); // enLigne conservé pour compatibilité
   } catch (err) {
     console.error('Erreur statut public:', err);
     res.status(500).json({ error: 'Erreur serveur' });
