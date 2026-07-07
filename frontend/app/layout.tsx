@@ -82,8 +82,8 @@ export default function RootLayout({
               <p className="mb-3 font-medium text-white">Consulter</p>
               <ul className="space-y-2 text-cream/70">
                 <li><a href="/consultation-minute" className="hover:text-coral-light">Consultation Immédiate — à la minute</a></li>
-                <li><a href="/consultants?formule=decouverte" className="hover:text-coral-light">Consultation Découverte — 20 min</a></li>
-                <li><a href="/consultants?formule=complete" className="hover:text-coral-light">Consultation Complète — 45 min</a></li>
+                <li><a href="https://elena-wolska.com/disponibilites" className="hover:text-coral-light">Consultation Découverte — 20 min</a></li>
+                <li><a href="https://elena-wolska.com/disponibilites" className="hover:text-coral-light">Consultation Complète — 45 min</a></li>
                 <li><a href="/register" className="hover:text-coral-light">Créer un compte</a></li>
               </ul>
             </div>

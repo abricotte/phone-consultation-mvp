@@ -113,7 +113,7 @@ export default function Formules() {
 
         {/* TODO Phase 3 : lien réservation (Calendly conservé) */}
         <a
-          href="/consultants?formule=decouverte"
+          href="https://elena-wolska.com/disponibilites"
           className="mt-6 block rounded-full border border-cta px-6 py-3 text-center font-medium text-cta transition hover:bg-cta hover:text-cta-text"
         >
           Je prends rendez-vous
@@ -141,7 +141,7 @@ export default function Formules() {
 
         {/* TODO Phase 3 : lien réservation (Calendly conservé) */}
         <a
-          href="/consultants?formule=complete"
+          href="https://elena-wolska.com/disponibilites"
           className="mt-6 block rounded-full bg-cta px-6 py-3 text-center font-medium text-cta-text shadow-card transition hover:bg-cta-dark"
         >
           Je prends rendez-vous

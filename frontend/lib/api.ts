@@ -62,11 +62,11 @@ export const api = {
       body: JSON.stringify({ telephone, forfaitCode }),
     }),
 
-  // Sessions
-  createSession: (consultantId: string) =>
+  // Sessions (mono-praticienne : le consultant est résolu côté backend)
+  createSession: () =>
     request("/sessions", {
       method: "POST",
-      body: JSON.stringify({ consultantId }),
+      body: JSON.stringify({}),
     }),
   endSession: (id: string) =>
     request(`/sessions/${id}/end`, { method: "PATCH" }),

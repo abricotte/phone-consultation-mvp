@@ -101,6 +101,9 @@ n'est pas cochée :
 - [ ] Signature Twilio (X-Twilio-Signature) active et **testée en appel réel**
 - [ ] Rate limiting en place : login, inscription, recharge, notifications
 - [ ] SPF/DKIM validés sur elena-wolska.com (emails Resend + reçus Stripe)
+- [ ] Audit de toutes les routes — zéro page du template d'origine
+      accessible (vérifier aussi les redirections 301 /consultants)
+- [ ] Passage en revue des warnings/suggestions de l'Advisor Supabase
 
 ### Règle de sécurité — validation de signature Twilio
 

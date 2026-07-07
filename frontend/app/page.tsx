@@ -26,7 +26,7 @@ export default function Home() {
                 Découvrir les formules
               </a>
               <a
-                href="/consultants"
+                href="/consultation-minute"
                 className="rounded-full border border-aubergine/25 px-7 py-3.5 font-medium text-aubergine transition hover:border-coral hover:text-coral"
               >
                 Consulter maintenant
@@ -124,7 +124,7 @@ export default function Home() {
           bienveillante — plus de 20 000 consultations en 19 ans.
         </p>
         <a
-          href="/consultants"
+          href="/consultation-minute"
           className="mt-8 inline-block rounded-full bg-coral px-7 py-3.5 font-medium text-white shadow-card transition hover:bg-coral-dark"
         >
           Prendre une consultation

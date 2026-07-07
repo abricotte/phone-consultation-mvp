@@ -79,7 +79,7 @@ export default function DashboardPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">
+        <h1 className="font-serif text-2xl font-semibold text-aubergine">
           Bonjour {user?.firstName} {user?.lastName}
         </h1>
         <button
@@ -103,16 +103,16 @@ export default function DashboardPage() {
       )}
 
       {/* Portefeuille */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border">
+      <div className="bg-ivory rounded-2xl shadow-soft p-6 mb-6 border border-greige/60">
         <h2 className="text-lg font-semibold mb-4">Mon portefeuille</h2>
-        <p className="text-3xl font-bold text-blue-600 mb-4">
+        <p className="font-serif text-3xl font-semibold text-prix mb-4">
           {wallet?.balance?.toFixed(2) ?? "0.00"}€
         </p>
         <RechargeSelector />
       </div>
 
       {/* Historique des transactions */}
-      <div className="bg-white rounded-lg shadow-sm p-6 border">
+      <div className="bg-ivory rounded-2xl shadow-soft p-6 border border-greige/60">
         <h2 className="text-lg font-semibold mb-4">
           Historique des transactions
         </h2>

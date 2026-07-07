@@ -1,34 +1,15 @@
 const express = require('express');
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
-const { getStatutEnLigne } = require('../config/praticienne');
+const { getPraticienne, getTarifs, getStatutEnLigne } = require('../config/praticienne');
 
 const router = express.Router();
 
-// POST /api/sessions - Démarrer une session (demander un appel)
+// POST /api/sessions - Démarrer une session de Consultation Immédiate.
+// Mono-praticienne : le consultant est résolu automatiquement, le tarif
+// vient de config_tarifs (jamais de la fiche consultant).
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { consultantId } = req.body;
-
-    if (!consultantId) {
-      return res.status(400).json({ error: 'ID du consultant requis' });
-    }
-
-    // Vérifier que le consultant existe et est disponible
-    const { data: consultant, error: consultantError } = await supabase
-      .from('consultants')
-      .select('id, rate_per_minute, is_available')
-      .eq('id', consultantId)
-      .single();
-
-    if (consultantError || !consultant) {
-      return res.status(404).json({ error: 'Consultant non trouvé' });
-    }
-
-    if (!consultant.is_available) {
-      return res.status(400).json({ error: 'Ce consultant n\'est pas disponible' });
-    }
-
     // Machine à états : la praticienne doit être "disponible"
     const { statut } = await getStatutEnLigne();
     if (statut === 'en_consultation') {
@@ -40,17 +21,35 @@ router.post('/', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Elena n\'est pas en ligne actuellement.' });
     }
 
-    // Vérifier que le client a du solde (au moins 5 minutes)
+    // Résoudre le profil consultant de la praticienne (pour le téléphone)
+    const p = await getPraticienne();
+    const { data: consultant, error: consultantError } = await supabase
+      .from('consultants')
+      .select('id')
+      .eq('praticienne_id', p.id)
+      .limit(1)
+      .single();
+
+    if (consultantError || !consultant) {
+      return res.status(500).json({ error: 'Profil praticienne introuvable.' });
+    }
+
+    // Tarif : source unique = config_tarifs de la praticienne
+    const tarifs = await getTarifs();
+    const ratePerMinute = tarifs.prixMinuteCents / 100;
+
+    // Vérifier que la cliente a le crédit minimum
     const { data: wallet } = await supabase
       .from('wallets')
       .select('id, balance')
       .eq('user_id', req.user.id)
       .single();
 
-    const minBalance = parseFloat(consultant.rate_per_minute) * 5;
-    if (!wallet || parseFloat(wallet.balance) < minBalance) {
+    const minBalanceCents = tarifs.creditMinimumMinutes * tarifs.prixMinuteCents;
+    const balanceCents = wallet ? Math.round(parseFloat(wallet.balance) * 100) : 0;
+    if (!wallet || balanceCents < minBalanceCents) {
       return res.status(400).json({
-        error: `Crédit insuffisant : un minimum de 5 minutes (${minBalance
+        error: `Crédit insuffisant : un minimum de ${tarifs.creditMinimumMinutes} minutes (${(minBalanceCents / 100)
           .toFixed(2)
           .replace('.', ',')} €) est requis pour lancer l'appel. Rechargez votre crédit pour continuer.`,
       });
@@ -61,8 +60,9 @@ router.post('/', authMiddleware, async (req, res) => {
       .from('sessions')
       .insert({
         client_id: req.user.id,
-        consultant_id: consultantId,
-        rate_per_minute: consultant.rate_per_minute,
+        consultant_id: consultant.id,
+        type: 'minute',
+        rate_per_minute: ratePerMinute,
         status: 'pending',
       })
       .select()

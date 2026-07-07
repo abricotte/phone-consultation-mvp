@@ -27,8 +27,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-16 p-6 bg-white rounded-lg shadow-sm">
-      <h1 className="text-2xl font-bold mb-6">Connexion</h1>
+    <div className="max-w-md mx-auto mt-16 p-8 bg-ivory border border-greige/60 rounded-2xl shadow-soft">
+      <h1 className="font-serif text-2xl font-semibold text-aubergine mb-6">Connexion</h1>
 
       {error && (
         <div className="bg-red-50 text-red-600 p-3 rounded mb-4">{error}</div>
@@ -62,7 +62,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
+          className="w-full bg-cta text-cta-text py-2 rounded-full font-medium hover:bg-cta-dark disabled:opacity-50"
         >
           {loading ? "Connexion..." : "Se connecter"}
         </button>
@@ -70,7 +70,7 @@ export default function LoginPage() {
 
       <p className="text-sm text-gray-600 mt-4 text-center">
         Pas encore de compte ?{" "}
-        <a href="/register" className="text-blue-600 hover:underline">
+        <a href="/register" className="text-cta hover:underline">
           S&apos;inscrire
         </a>
       </p>

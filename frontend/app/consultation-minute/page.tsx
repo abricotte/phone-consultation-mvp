@@ -1,11 +1,46 @@
 "use client";
 
+import { useState } from "react";
+import { api } from "@/lib/api";
 import { useElenaStatus } from "@/components/useElenaStatus";
 import RechargeSelector from "@/components/RechargeSelector";
 
 export default function ConsultationMinutePage() {
   const statut = useElenaStatus();
   const enLigne = statut === "disponible";
+
+  const [appelEnCours, setAppelEnCours] = useState(false);
+  const [messageAppel, setMessageAppel] = useState("");
+  const [erreurAppel, setErreurAppel] = useState("");
+
+  // Parcours d'appel UNIQUE de la cliente : session + appel Twilio
+  async function handleAppel() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
+    setAppelEnCours(true);
+    setMessageAppel("");
+    setErreurAppel("");
+    try {
+      const session = await api.createSession();
+      setMessageAppel("Session créée, lancement de l'appel…");
+      const call = await api.initiateCall(session.id);
+      setMessageAppel(
+        `📞 C'est parti ! Votre téléphone va sonner${
+          call.maxMinutes ? ` — jusqu'à ${call.maxMinutes} min avec votre crédit` : ""
+        }.`
+      );
+    } catch (err) {
+      setErreurAppel(
+        err instanceof Error ? err.message : "Erreur lors de l'appel"
+      );
+    } finally {
+      setAppelEnCours(false);
+    }
+  }
 
   return (
     <div>
@@ -180,12 +215,33 @@ export default function ConsultationMinutePage() {
           </li>
         </ul>
 
-        <a
-          href={enLigne ? "/consultants" : "/dashboard"}
-          className="mt-10 inline-block rounded-full bg-cta px-8 py-3.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark"
-        >
-          {enLigne ? "J'appelle Elena maintenant" : "Recharger mon crédit"}
-        </a>
+        {messageAppel && (
+          <p className="mx-auto mt-8 max-w-md rounded-lg bg-green-50 p-3 text-sm text-green-700">
+            {messageAppel}
+          </p>
+        )}
+        {erreurAppel && (
+          <p className="mx-auto mt-8 max-w-md rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            {erreurAppel}
+          </p>
+        )}
+
+        {enLigne ? (
+          <button
+            onClick={handleAppel}
+            disabled={appelEnCours}
+            className="mt-10 inline-block rounded-full bg-cta px-8 py-3.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
+          >
+            {appelEnCours ? "Connexion en cours…" : "J'appelle Elena maintenant"}
+          </button>
+        ) : (
+          <a
+            href="/dashboard"
+            className="mt-10 inline-block rounded-full bg-cta px-8 py-3.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark"
+          >
+            Recharger mon crédit
+          </a>
+        )}
       </section>
     </div>
   );

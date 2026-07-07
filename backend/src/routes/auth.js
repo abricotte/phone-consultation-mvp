@@ -28,7 +28,9 @@ router.post('/register', registerLimiter, async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const userRole = role === 'consultant' ? 'consultant' : 'client';
+    // L'inscription publique ne crée QUE des clientes. Les rôles
+    // consultant/admin sont attribués manuellement en base.
+    const userRole = 'client';
 
     // Créer l'utilisateur
     const { data: user, error: userError } = await supabase
@@ -52,20 +54,6 @@ router.post('/register', registerLimiter, async (req, res) => {
       .insert({ user_id: user.id });
 
     if (walletError) throw walletError;
-
-    // Si consultant, créer le profil consultant
-    if (userRole === 'consultant') {
-      const { error: consultantError } = await supabase
-        .from('consultants')
-        .insert({
-          user_id: user.id,
-          specialty: req.body.specialty || 'Général',
-          description: req.body.description || '',
-          rate_per_minute: req.body.ratePerMinute || 1.00,
-        });
-
-      if (consultantError) throw consultantError;
-    }
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
