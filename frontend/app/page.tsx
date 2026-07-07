@@ -48,6 +48,25 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== Formules ===== */}
+      <section id="formules" className="bg-warm">
+        <div className="mx-auto max-w-6xl px-5 py-20">
+          <div className="mb-14 text-center">
+            <p className="mb-3 text-xs font-medium uppercase tracking-widest text-gold-dark">
+              Elena en ligne en temps réel · Rendez-vous ou appel immédiat
+            </p>
+            <h2 className="font-serif text-4xl font-semibold text-aubergine">
+              Trois façons de consulter Elena
+            </h2>
+            <p className="mt-3 text-ink">
+              Un besoin urgent ou une vraie mise au point : choisissez selon
+              votre moment.
+            </p>
+          </div>
+          <Formules />
+        </div>
+      </section>
+
       {/* ===== Comment ça marche ===== */}
       <section className="mx-auto max-w-6xl px-5 py-20">
         <div className="mb-14 text-center">
@@ -87,25 +106,6 @@ export default function Home() {
               <p className="mt-2 text-sm text-ink">{s.d}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ===== Formules ===== */}
-      <section id="formules" className="bg-warm">
-        <div className="mx-auto max-w-6xl px-5 py-20">
-          <div className="mb-14 text-center">
-            <p className="mb-3 text-xs font-medium uppercase tracking-widest text-gold-dark">
-              Elena en ligne en temps réel · Rendez-vous ou appel immédiat
-            </p>
-            <h2 className="font-serif text-4xl font-semibold text-aubergine">
-              Trois façons de consulter Elena
-            </h2>
-            <p className="mt-3 text-ink">
-              Un besoin urgent ou une vraie mise au point : choisissez selon
-              votre moment.
-            </p>
-          </div>
-          <Formules />
         </div>
       </section>
 
