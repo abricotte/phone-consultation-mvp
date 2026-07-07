@@ -56,6 +56,11 @@ export const api = {
       body: JSON.stringify({ enLigne }),
     }),
   adminGetJour: () => request("/admin/jour"),
+  adminLancerConsultation: (telephone: string, forfaitCode: string) =>
+    request("/admin/consultation-minutee", {
+      method: "POST",
+      body: JSON.stringify({ telephone, forfaitCode }),
+    }),
 
   // Sessions
   createSession: (consultantId: string) =>

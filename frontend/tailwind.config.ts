@@ -11,20 +11,28 @@ const config: Config = {
         // Identité Elena Wolska (extraite de elena-wolska.com)
         coral: {
           light: "#e8857b",
-          DEFAULT: "#e46a5d", // couleur principale (boutons, accents)
+          DEFAULT: "#e46a5d", // accents décoratifs (puces, liens)
           dark: "#c26658",
         },
+        // Hiérarchie renforcée (maquette validée) — la couleur ne touche
+        // QUE : prix, CTA, badge, point de statut
+        cta: {
+          DEFAULT: "#C24818", // corail saturé #C94F1D assombri d'un cran → contraste AA 4,6:1 avec le texte crème
+          dark: "#A83D13", // hover
+          text: "#FFF6EF",
+        },
+        prix: "#B0430F", // corail profond (prix) — 5,4:1 sur crème
         gold: {
           light: "#d8c199",
           DEFAULT: "#c9a96e",
           dark: "#8a6f3e",
         },
-        aubergine: "#3d1c54", // accent profond
+        aubergine: "#3D2C3E", // titres
         cream: "#fcf9f1", // fond chaleureux principal
         ivory: "#fffaf8", // fond clair (cartes)
         blush: "#fff7f4", // rose très pâle
         greige: "#e0d5cc", // bordures douces
-        ink: "#4a4a4a", // texte courant
+        ink: "#5C4B42", // texte courant
       },
       fontFamily: {
         serif: ["var(--font-cormorant)", "Georgia", "serif"],

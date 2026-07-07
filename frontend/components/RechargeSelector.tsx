@@ -96,7 +96,7 @@ export default function RechargeSelector() {
               }}
               className={`rounded-2xl border p-4 text-center transition ${
                 actif
-                  ? "border-coral bg-ivory shadow-card"
+                  ? "border-cta bg-ivory shadow-card"
                   : "border-greige/70 bg-ivory/60 hover:border-coral/50"
               }`}
             >
@@ -134,7 +134,7 @@ export default function RechargeSelector() {
                 </option>
               ))}
             </select>
-            <span className="font-serif text-2xl font-semibold text-coral">
+            <span className="font-serif text-2xl font-semibold text-prix">
               {prix(minutes, config.prixMinuteCents)}
             </span>
           </div>
@@ -151,7 +151,7 @@ export default function RechargeSelector() {
         type="button"
         onClick={handleRecharge}
         disabled={loading}
-        className="mt-6 block w-full rounded-full bg-coral px-6 py-3.5 text-center font-medium text-white shadow-card transition hover:bg-coral-dark disabled:opacity-50"
+        className="mt-6 block w-full rounded-full bg-cta px-6 py-3.5 text-center font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
       >
         {loading
           ? "Redirection vers le paiement…"
