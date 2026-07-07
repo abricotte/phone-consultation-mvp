@@ -81,25 +81,23 @@ export default function ConsultationMinutePage() {
             Consultation Immédiate
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-ink">
-            Sans rendez-vous, au rythme de votre besoin :{" "}
-            <strong className="text-prix">2,90 € / minute</strong>. Vous
-            parlez le temps que vous voulez — et vous ne dépassez jamais votre
-            budget.
+            Sans rendez-vous. <strong className="text-prix">2,90 € la minute</strong>.
+            Vous parlez le temps que vous voulez.
           </p>
 
           {/* Ce que la formule vous apporte (contenu migré des cartes) */}
           <ul className="mx-auto mt-6 max-w-md space-y-2 text-left text-sm text-ink">
             <li className="flex gap-2.5">
               <span aria-hidden className="mt-0.5 text-aubergine/40">✦</span>
-              <span>Une réponse maintenant, au moment où vous en avez besoin</span>
+              <span>Une réponse tout de suite</span>
             </li>
             <li className="flex gap-2.5">
               <span aria-hidden className="mt-0.5 text-aubergine/40">✦</span>
-              <span>La liberté de parler 5 minutes ou 30 — c&apos;est vous qui décidez</span>
+              <span>Vous arrêtez quand vous voulez</span>
             </li>
             <li className="flex gap-2.5">
               <span aria-hidden className="mt-0.5 text-aubergine/40">✦</span>
-              <span>Le crédit non utilisé reste acquis pour la prochaine fois</span>
+              <span>Le crédit non utilisé est gardé pour la prochaine fois</span>
             </li>
           </ul>
 
@@ -114,8 +112,9 @@ export default function ConsultationMinutePage() {
           {statut === "hors_ligne" && (
             <div className="mx-auto mt-6 max-w-md rounded-2xl border border-greige/70 bg-ivory p-5">
               <p className="text-sm leading-relaxed text-ink">
-                Elena n&apos;est pas en ligne — vous pouvez recharger votre
-                crédit pour être prête à son retour, ou réserver un créneau.
+                Elena n&apos;est pas en ligne. Vous pouvez recharger dès
+                maintenant pour être prête à son retour, ou réserver un
+                créneau.
               </p>
               <a
                 href="https://elena-wolska.com/disponibilites"
@@ -139,17 +138,24 @@ export default function ConsultationMinutePage() {
             {
               n: "1",
               t: "Créez votre compte",
-              d: "En quelques secondes, avec votre numéro de téléphone.",
+              d: [
+                "En quelques instants, avec votre adresse email et votre numéro de téléphone. C'est ce numéro qu'Elena appellera pour votre consultation.",
+              ],
             },
             {
               n: "2",
               t: "Rechargez votre crédit",
-              d: "Par carte, en toute sécurité. Votre crédit n'expire jamais.",
+              d: [
+                "Paiement sécurisé par Stripe, la solution utilisée par les plus grands sites. Vos coordonnées bancaires sont traitées directement par Stripe — elles ne passent jamais par notre site et n'y sont jamais conservées.",
+                "Vous recevez un reçu par email après chaque paiement. Votre crédit n'expire jamais et reste disponible pour toutes vos prochaines consultations.",
+              ],
             },
             {
               n: "3",
               t: "Appelez quand Elena est en ligne",
-              d: "Un clic, et votre téléphone sonne. Un signal discret vous préviendra 2 minutes avant la fin.",
+              d: [
+                "Un clic, et votre téléphone sonne. Vous êtes mise en relation avec Elena en quelques secondes. Un signal discret vous prévient 2 minutes avant la fin, et vous ne dépassez jamais votre budget.",
+              ],
             },
           ].map((s) => (
             <div
@@ -162,7 +168,11 @@ export default function ConsultationMinutePage() {
               <h3 className="font-serif text-lg font-semibold text-aubergine">
                 {s.t}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink">{s.d}</p>
+              {s.d.map((paragraphe, i) => (
+                <p key={i} className="mt-2 text-sm leading-relaxed text-ink">
+                  {paragraphe}
+                </p>
+              ))}
             </div>
           ))}
         </div>
@@ -242,7 +252,7 @@ export default function ConsultationMinutePage() {
             href="/dashboard"
             className="mt-10 inline-block rounded-full bg-cta px-8 py-3.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark"
           >
-            Recharger mon crédit
+            Recharger mon crédit →
           </a>
         )}
         </div>

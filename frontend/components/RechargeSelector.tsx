@@ -71,11 +71,6 @@ export default function RechargeSelector() {
     }
   }
 
-  const durees: number[] = [];
-  for (let m = config.minMinutes; m <= config.maxMinutes; m += config.pasMinutes) {
-    durees.push(m);
-  }
-
   return (
     <div className="mx-auto max-w-xl">
       <p className="mb-5 text-center font-serif text-xl font-semibold text-aubergine">
@@ -123,17 +118,33 @@ export default function RechargeSelector() {
           </button>
         ) : (
           <div className="flex items-center justify-center gap-4">
-            <select
-              value={minutes}
-              onChange={(e) => setMinutes(Number(e.target.value))}
-              className="rounded-lg border border-greige bg-ivory px-3 py-2 text-aubergine"
-            >
-              {durees.map((m) => (
-                <option key={m} value={m}>
-                  {m} min
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-3 rounded-2xl border border-greige/70 bg-ivory px-3 py-2.5">
+              <button
+                type="button"
+                onClick={() =>
+                  setMinutes((m) => Math.max(config.minMinutes, m - config.pasMinutes))
+                }
+                disabled={minutes <= config.minMinutes}
+                aria-label="Réduire la durée"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-cta-outline text-lg font-medium leading-none text-prix transition hover:bg-cta hover:text-cta-text disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-prix"
+              >
+                −
+              </button>
+              <span className="w-16 text-center font-serif text-2xl font-semibold text-aubergine">
+                {minutes} min
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setMinutes((m) => Math.min(config.maxMinutes, m + config.pasMinutes))
+                }
+                disabled={minutes >= config.maxMinutes}
+                aria-label="Augmenter la durée"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-cta-outline text-lg font-medium leading-none text-prix transition hover:bg-cta hover:text-cta-text disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-prix"
+              >
+                +
+              </button>
+            </div>
             <span className="font-serif text-2xl font-semibold text-prix">
               {prix(minutes, config.prixMinuteCents)}
             </span>
@@ -160,8 +171,8 @@ export default function RechargeSelector() {
 
       <p className="mt-4 text-center text-xs leading-relaxed text-mention">
         Crédit minimum pour appeler : {config.creditMinimumMinutes} min (
-        {prix(config.creditMinimumMinutes, config.prixMinuteCents)}) · Toute
-        minute entamée est due · Votre crédit n&apos;expire jamais.
+        {prix(config.creditMinimumMinutes, config.prixMinuteCents)}) · Chaque
+        minute commencée est comptée · Votre crédit n&apos;expire jamais.
       </p>
     </div>
   );

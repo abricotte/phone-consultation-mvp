@@ -103,12 +103,12 @@ export default function Home() {
               {
                 n: "2",
                 t: "Réglez en toute sécurité",
-                d: "Paiement par carte sécurisé. Aucune surprise, aucun dépassement.",
+                d: "Paiement par carte, sécurisé par Stripe. Aucune surprise, aucun dépassement.",
               },
               {
                 n: "3",
-                t: "Elena vous appelle",
-                d: "Vous êtes rappelée sur votre téléphone. Un rappel discret vous prévient avant la fin.",
+                t: "Vous êtes mise en relation",
+                d: "L'appel se fait par téléphone. Un signal discret vous prévient avant la fin.",
               },
             ].map((s) => (
               <div
