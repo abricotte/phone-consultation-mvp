@@ -69,7 +69,7 @@ INSERT INTO praticiennes (
       "defaut_minutes": 20,
       "pas_minutes": 5,
       "min_minutes": 5,
-      "max_minutes": 60
+      "max_minutes": 90
     }
   }',
   '{

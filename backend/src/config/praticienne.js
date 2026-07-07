@@ -25,7 +25,7 @@ const DEFAUTS = {
       defaut_minutes: 20,
       pas_minutes: 5,
       min_minutes: 5,
-      max_minutes: 60,
+      max_minutes: 90,
     },
   },
 };
@@ -75,7 +75,7 @@ async function getTarifs() {
       defautMinutes: r.defaut_minutes ?? 20,
       pasMinutes: r.pas_minutes ?? 5,
       minMinutes: r.min_minutes ?? 5,
-      maxMinutes: r.max_minutes ?? 60,
+      maxMinutes: r.max_minutes ?? 90,
     },
   };
 }

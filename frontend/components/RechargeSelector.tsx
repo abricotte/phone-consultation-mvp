@@ -21,7 +21,7 @@ const CONFIG_INITIALE: Config = {
   defautMinutes: 20,
   pasMinutes: 5,
   minMinutes: 5,
-  maxMinutes: 60,
+  maxMinutes: 90,
 };
 
 // Prix formaté à la française : "58 €" ou "14,50 €"
