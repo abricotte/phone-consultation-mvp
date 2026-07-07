@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Cormorant_SC, Open_Sans } from "next/font/google";
+import { Cormorant, Open_Sans } from "next/font/google";
 import "./globals.css";
 
-// Cormorant SC (petites capitales) — police des titres du site prod
-const cormorant = Cormorant_SC({
+// Cormorant en casse normale — les petites capitales ne survivent
+// que sur les micro-étiquettes (eyebrows), en sans-serif.
+const cormorant = Cormorant({
   subsets: ["latin"],
   variable: "--font-cormorant",
   weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -33,7 +35,7 @@ export default function RootLayout({
         <header className="sticky top-0 z-50 border-b border-greige/60 bg-cream/85 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
             <a href="/" className="flex items-center gap-2.5">
-              <span aria-hidden className="text-2xl leading-none text-coral">
+              <span aria-hidden className="text-2xl leading-none text-aubergine/40">
                 ✦
               </span>
               <span className="font-serif text-2xl font-semibold tracking-wide text-aubergine">
@@ -41,18 +43,18 @@ export default function RootLayout({
               </span>
             </a>
             <nav className="flex items-center gap-6 text-sm">
-              <a href="/#formules" className="hidden text-mention transition hover:text-coral sm:inline">
+              <a href="/#formules" className="hidden text-mention transition hover:text-cta sm:inline">
                 Formules
               </a>
-              <a href="/consultation-minute" className="hidden text-mention transition hover:text-coral sm:inline">
+              <a href="/consultation-minute" className="hidden text-mention transition hover:text-cta sm:inline">
                 Appeler maintenant
               </a>
-              <a href="/dashboard" className="text-mention transition hover:text-coral">
+              <a href="/dashboard" className="text-mention transition hover:text-cta">
                 Mon espace
               </a>
               <a
                 href="/login"
-                className="rounded-full bg-coral px-5 py-2 font-medium text-white shadow-card transition hover:bg-coral-dark"
+                className="rounded-full bg-cta px-5 py-2 font-medium text-cta-text shadow-card transition hover:bg-cta-dark"
               >
                 Connexion
               </a>
@@ -73,7 +75,7 @@ export default function RootLayout({
               </p>
               <a
                 href="https://elena-wolska.com"
-                className="mt-4 inline-block text-sm text-white/50 transition-colors hover:text-coral-light"
+                className="mt-4 inline-block text-sm text-white/50 transition-colors hover:text-white"
               >
                 elena-wolska.com →
               </a>

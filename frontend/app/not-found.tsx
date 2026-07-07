@@ -1,7 +1,7 @@
 export default function NotFound() {
   return (
     <div className="mx-auto max-w-md px-5 py-24 text-center">
-      <span aria-hidden className="text-3xl text-coral">
+      <span aria-hidden className="text-3xl text-aubergine/40">
         ✦
       </span>
       <h1 className="mt-4 font-serif text-4xl font-semibold text-aubergine">

@@ -29,15 +29,14 @@ const config: Config = {
           DEFAULT: "#c9a96e",
           dark: "#8a6f3e",
         },
-        aubergine: "#3D2C3E", // titres (serif) — 12,3:1 sur crème
-        footer: "#2b3a52", // fond du footer — bleu nuit réel du site prod (distinct des titres)
+        aubergine: "#232B45", // titres (serif) — bleu nuit dense, 13,3:1 sur crème
+        footer: "#232B45", // fond du footer — unifié avec les titres
         cream: "#FDF9F3", // fond de page
         ivory: "#FFFFFF", // cartes
-        blush: "#FDF2F0", // corail très pâle
+        blush: "#FAF0EA", // blush rosé léger — alternance de sections
         greige: "#EAD9CC", // bordures
-        ink: "#5C4B42", // texte courant — 7,9:1 sur crème
-        mention: "#8A7568", // mentions/microcopie (labels, légendes)
-        "mention-light": "#A08D80", // mentions secondaires (états de chargement)
+        ink: "#4A3B33", // texte courant — 10,2:1 sur crème (lisibilité)
+        mention: "#8A7568", // mentions/microcopie — seuil minimum, jamais plus clair
         statut: {
           online: "#3B6D11", // texte + point "en ligne"
           offline: "#B4B2A9", // point "hors ligne" (label en `mention`)

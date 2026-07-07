@@ -14,10 +14,6 @@
 }
 
 @layer utilities {
-  /* Léger dégradé chaleureux pour les sections d'accroche */
-  .bg-warm {
-    background-image: linear-gradient(160deg, #fdf2f0 0%, #fdf9f3 55%, #f8efea 100%);
-  }
   /* Filet doré discret */
   .rule-gold {
     height: 1px;

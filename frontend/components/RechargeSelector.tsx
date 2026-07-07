@@ -97,7 +97,7 @@ export default function RechargeSelector() {
               className={`rounded-2xl border p-4 text-center transition ${
                 actif
                   ? "border-cta bg-ivory shadow-card"
-                  : "border-greige/70 bg-ivory/60 hover:border-coral/50"
+                  : "border-greige/70 bg-ivory/60 hover:border-cta/40"
               }`}
             >
               <span className="block font-serif text-2xl font-semibold text-aubergine">
@@ -117,7 +117,7 @@ export default function RechargeSelector() {
           <button
             type="button"
             onClick={() => setAutreDuree(true)}
-            className="text-sm font-medium text-coral hover:underline"
+            className="text-sm font-medium text-prix hover:underline"
           >
             Autre durée
           </button>

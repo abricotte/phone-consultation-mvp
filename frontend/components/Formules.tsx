@@ -5,7 +5,7 @@ import { useElenaStatus, type ElenaStatus } from "@/components/useElenaStatus";
 function LigneStatut({ statut }: { statut: ElenaStatus }) {
   if (statut === "chargement") {
     return (
-      <span className="inline-flex items-center gap-2 text-xs font-medium text-mention-light">
+      <span className="inline-flex items-center gap-2 text-xs font-medium text-mention">
         <span className="h-2 w-2 rounded-full bg-greige" />
         Vérification…
       </span>
@@ -57,7 +57,7 @@ export default function Formules() {
         <div className="mb-2">
           <LigneStatut statut={statut} />
         </div>
-        <h3 className="font-serif text-3xl font-semibold text-aubergine">
+        <h3 className="font-serif text-[22px] font-semibold text-aubergine">
           Immédiate
         </h3>
         <p className="mt-1 text-sm text-ink">
@@ -98,7 +98,7 @@ export default function Formules() {
       {/* ===== 2. Découverte ===== */}
       <div className="flex flex-col rounded-2xl border border-greige/70 bg-ivory/60 p-7 transition hover:shadow-soft">
         <div className="mb-2 h-4" aria-hidden />
-        <h3 className="font-serif text-3xl font-semibold text-aubergine">
+        <h3 className="font-serif text-[22px] font-semibold text-aubergine">
           Découverte
         </h3>
         <p className="mt-1 text-sm text-ink">20 minutes, sur rendez-vous</p>
@@ -126,7 +126,7 @@ export default function Formules() {
           Recommandée
         </span>
         <div className="mb-2 h-4" aria-hidden />
-        <h3 className="font-serif text-3xl font-semibold text-aubergine">
+        <h3 className="font-serif text-[22px] font-semibold text-aubergine">
           Complète
         </h3>
         <p className="mt-1 text-sm text-ink">45 minutes, sur rendez-vous</p>

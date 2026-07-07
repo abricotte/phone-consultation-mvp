@@ -115,7 +115,7 @@ export default function AdminPage() {
   }
 
   if (loading)
-    return <div className="mt-16 text-center text-mention-light">Chargement…</div>;
+    return <div className="mt-16 text-center text-mention">Chargement…</div>;
 
   // 404 générique, identique aux autres pages inexistantes du site
   if (accesRefuse || (error && !statut)) notFound();
@@ -188,7 +188,7 @@ export default function AdminPage() {
             : "Passer en ligne"}
         </button>
 
-        <p className="mt-4 text-xs text-mention-light">
+        <p className="mt-4 text-xs text-mention">
           En ligne : les clientes voient « Elena est en ligne » et peuvent
           lancer une Consultation Immédiate.
         </p>
