@@ -36,7 +36,7 @@ const config: Config = {
         blush: "#FAF0EA", // blush rosé léger — alternance de sections
         greige: "#EAD9CC", // bordures
         ink: "#4A3B33", // texte courant — 10,2:1 sur crème (lisibilité)
-        mention: "#8A7568", // mentions/microcopie — seuil minimum, jamais plus clair
+        mention: "#7c695e", // mentions/microcopie — AA 4,5:1+ sur crème/blush/blanc
         statut: {
           online: "#3B6D11", // texte + point "en ligne"
           offline: "#B4B2A9", // point "hors ligne" (label en `mention`)
