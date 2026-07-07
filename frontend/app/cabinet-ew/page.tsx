@@ -115,7 +115,7 @@ export default function AdminPage() {
   }
 
   if (loading)
-    return <div className="mt-16 text-center text-ink/60">Chargement…</div>;
+    return <div className="mt-16 text-center text-mention-light">Chargement…</div>;
 
   // 404 générique, identique aux autres pages inexistantes du site
   if (accesRefuse || (error && !statut)) notFound();
@@ -139,10 +139,10 @@ export default function AdminPage() {
       <div className="mt-8 rounded-2xl border border-greige/70 bg-ivory p-8 text-center shadow-soft">
         <div className="mb-4 flex justify-center">
           {disponible && (
-            <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-1.5 text-sm font-semibold text-green-700">
+            <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-1.5 text-sm font-semibold text-statut-online">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-60" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-statut-online opacity-60" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-statut-online" />
               </span>
               Vous êtes EN LIGNE
             </span>
@@ -155,21 +155,21 @@ export default function AdminPage() {
             </span>
           )}
           {statut?.statut === "hors_ligne" && (
-            <span className="inline-flex items-center gap-2 rounded-full bg-ink/5 px-4 py-1.5 text-sm font-medium text-ink/60">
-              <span className="h-2.5 w-2.5 rounded-full bg-ink/30" />
+            <span className="inline-flex items-center gap-2 rounded-full bg-ink/5 px-4 py-1.5 text-sm font-medium text-mention">
+              <span className="h-2.5 w-2.5 rounded-full bg-statut-offline" />
               Vous êtes hors ligne
             </span>
           )}
         </div>
 
         {disponible && statut?.enLigneDepuis && (
-          <p className="mb-4 text-sm text-ink/60">
+          <p className="mb-4 text-sm text-mention">
             En ligne depuis {heure(statut.enLigneDepuis)} · passage automatique
             hors ligne après {statut.autoOffHeures} h
           </p>
         )}
         {enConsultation && (
-          <p className="mb-4 text-sm text-ink/60">
+          <p className="mb-4 text-sm text-mention">
             Le statut reviendra automatiquement à la fin de l&apos;appel.
           </p>
         )}
@@ -188,7 +188,7 @@ export default function AdminPage() {
             : "Passer en ligne"}
         </button>
 
-        <p className="mt-4 text-xs text-ink/50">
+        <p className="mt-4 text-xs text-mention-light">
           En ligne : les clientes voient « Elena est en ligne » et peuvent
           lancer une Consultation Immédiate.
         </p>
@@ -199,7 +199,7 @@ export default function AdminPage() {
         <h2 className="font-serif text-2xl font-semibold text-aubergine">
           Lancer une consultation minutée
         </h2>
-        <p className="mt-1 text-sm text-ink/60">
+        <p className="mt-1 text-sm text-mention">
           Pour un rendez-vous déjà réglé (Calendly) : votre téléphone sonne
           d&apos;abord, puis la cliente est appelée. Coupure automatique à la
           durée choisie, signal 2 minutes avant la fin. Aucun débit de crédit.
@@ -237,7 +237,7 @@ export default function AdminPage() {
                   <span className="block font-serif text-xl font-semibold text-aubergine">
                     {f.minutes} min
                   </span>
-                  <span className="text-xs text-ink/60">{f.nom}</span>
+                  <span className="text-xs text-mention">{f.nom}</span>
                 </button>
               ))}
             </div>
@@ -290,7 +290,7 @@ export default function AdminPage() {
             <p className="font-serif text-3xl font-semibold text-prix">
               {carte.valeur}
             </p>
-            <p className="mt-1 text-xs text-ink/60">{carte.label}</p>
+            <p className="mt-1 text-xs text-mention">{carte.label}</p>
           </div>
         ))}
       </div>

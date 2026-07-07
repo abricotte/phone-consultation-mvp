@@ -49,16 +49,16 @@ export default function ConsultationMinutePage() {
         <div className="mx-auto max-w-3xl px-5 py-16 text-center">
           <div className="mb-5 flex justify-center">
             {statut === "chargement" && (
-              <span className="inline-flex items-center gap-2 rounded-full border border-greige/70 bg-ivory px-4 py-1.5 text-sm font-medium text-ink/50">
+              <span className="inline-flex items-center gap-2 rounded-full border border-greige/70 bg-ivory px-4 py-1.5 text-sm font-medium text-mention-light">
                 <span className="h-2.5 w-2.5 rounded-full bg-greige" />
                 Vérification de la disponibilité…
               </span>
             )}
             {statut === "disponible" && (
-              <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-1.5 text-sm font-semibold text-green-700">
+              <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-1.5 text-sm font-semibold text-statut-online">
                 <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-60" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-statut-online opacity-60" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-statut-online" />
                 </span>
                 Elena est en ligne
               </span>
@@ -70,8 +70,8 @@ export default function ConsultationMinutePage() {
               </span>
             )}
             {statut === "hors_ligne" && (
-              <span className="inline-flex items-center gap-2 rounded-full bg-ink/5 px-4 py-1.5 text-sm font-medium text-ink/60">
-                <span className="h-2.5 w-2.5 rounded-full bg-ink/30" />
+              <span className="inline-flex items-center gap-2 rounded-full bg-ink/5 px-4 py-1.5 text-sm font-medium text-mention">
+                <span className="h-2.5 w-2.5 rounded-full bg-statut-offline" />
                 Elena n&apos;est pas en ligne actuellement
               </span>
             )}
@@ -80,7 +80,7 @@ export default function ConsultationMinutePage() {
           <h1 className="font-serif text-5xl font-semibold text-aubergine">
             Consultation Immédiate
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-ink/80">
+          <p className="mx-auto mt-4 max-w-xl text-lg text-ink">
             Sans rendez-vous, au rythme de votre besoin :{" "}
             <strong className="text-prix">2,90 € / minute</strong>. Vous
             parlez le temps que vous voulez — et vous ne dépassez jamais votre
@@ -105,7 +105,7 @@ export default function ConsultationMinutePage() {
 
           {statut === "en_consultation" && (
             <div className="mx-auto mt-6 max-w-md rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
-              <p className="text-sm text-ink/80">
+              <p className="text-sm text-ink">
                 Elena est en pleine consultation. Rechargez votre crédit pour
                 être prête quand elle se libère.
               </p>
@@ -113,13 +113,13 @@ export default function ConsultationMinutePage() {
           )}
           {statut === "hors_ligne" && (
             <div className="mx-auto mt-6 max-w-md rounded-2xl border border-greige/70 bg-ivory p-5">
-              <p className="text-sm text-ink/80">
+              <p className="text-sm text-ink">
                 Elena n&apos;est pas en ligne — vous pouvez recharger votre
                 crédit pour être prête à son retour, ou réserver un créneau.
               </p>
               <a
                 href="https://elena-wolska.com/disponibilites"
-                className="mt-3 inline-block text-sm font-medium text-cta hover:underline"
+                className="mt-3 inline-block text-sm font-medium text-prix hover:underline"
               >
                 Voir les disponibilités →
               </a>
@@ -161,7 +161,7 @@ export default function ConsultationMinutePage() {
               <h3 className="font-serif text-lg font-semibold text-aubergine">
                 {s.t}
               </h3>
-              <p className="mt-2 text-sm text-ink/70">{s.d}</p>
+              <p className="mt-2 text-sm text-ink">{s.d}</p>
             </div>
           ))}
         </div>

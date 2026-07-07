@@ -5,7 +5,7 @@ import { useElenaStatus, type ElenaStatus } from "@/components/useElenaStatus";
 function LigneStatut({ statut }: { statut: ElenaStatus }) {
   if (statut === "chargement") {
     return (
-      <span className="inline-flex items-center gap-2 text-xs font-medium text-ink/50">
+      <span className="inline-flex items-center gap-2 text-xs font-medium text-mention-light">
         <span className="h-2 w-2 rounded-full bg-greige" />
         Vérification…
       </span>
@@ -13,10 +13,10 @@ function LigneStatut({ statut }: { statut: ElenaStatus }) {
   }
   if (statut === "disponible") {
     return (
-      <span className="inline-flex items-center gap-2 text-xs font-semibold text-green-700">
+      <span className="inline-flex items-center gap-2 text-xs font-semibold text-statut-online">
         <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-60" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-statut-online opacity-60" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-statut-online" />
         </span>
         En ligne
       </span>
@@ -31,8 +31,8 @@ function LigneStatut({ statut }: { statut: ElenaStatus }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-2 text-xs font-medium text-ink/55">
-      <span className="h-2 w-2 rounded-full bg-ink/30" />
+    <span className="inline-flex items-center gap-2 text-xs font-medium text-mention">
+      <span className="h-2 w-2 rounded-full bg-statut-offline" />
       Hors ligne
     </span>
   );
@@ -60,7 +60,7 @@ export default function Formules() {
         <h3 className="font-serif text-3xl font-semibold text-aubergine">
           Immédiate
         </h3>
-        <p className="mt-1 text-sm text-ink/70">
+        <p className="mt-1 text-sm text-ink">
           Sans rendez-vous, quand Elena est en ligne
         </p>
 
@@ -77,7 +77,7 @@ export default function Formules() {
           className={`mt-6 block rounded-full px-6 py-3 text-center font-medium transition ${
             enLigne
               ? "bg-cta text-cta-text shadow-card hover:bg-cta-dark"
-              : "border border-cta text-cta hover:bg-cta hover:text-cta-text"
+              : "border border-cta-outline text-prix hover:bg-cta hover:text-cta-text hover:border-cta"
           }`}
         >
           {enLigne ? "J'appelle Elena maintenant" : "Recharger mon crédit"}
@@ -85,12 +85,12 @@ export default function Formules() {
         {statut === "hors_ligne" && (
           <a
             href="https://elena-wolska.com/disponibilites"
-            className="mt-3 text-center text-sm font-medium text-cta hover:underline"
+            className="mt-3 text-center text-sm font-medium text-prix hover:underline"
           >
             Voir les disponibilités →
           </a>
         )}
-        <p className="mt-3 text-center text-xs text-ink/55">
+        <p className="mt-3 text-center text-xs text-mention">
           Minimum 5 min (14,50 €)
         </p>
       </div>
@@ -101,7 +101,7 @@ export default function Formules() {
         <h3 className="font-serif text-3xl font-semibold text-aubergine">
           Découverte
         </h3>
-        <p className="mt-1 text-sm text-ink/70">20 minutes, sur rendez-vous</p>
+        <p className="mt-1 text-sm text-ink">20 minutes, sur rendez-vous</p>
 
         <p className="mt-5 font-serif text-[30px] font-semibold leading-none text-prix">
           58&nbsp;€
@@ -114,14 +114,14 @@ export default function Formules() {
         {/* TODO Phase 3 : lien réservation (Calendly conservé) */}
         <a
           href="https://elena-wolska.com/disponibilites"
-          className="mt-6 block rounded-full border border-cta px-6 py-3 text-center font-medium text-cta transition hover:bg-cta hover:text-cta-text"
+          className="mt-6 block rounded-full border border-cta-outline px-6 py-3 text-center font-medium text-prix transition hover:border-cta hover:bg-cta hover:text-cta-text"
         >
           Je prends rendez-vous
         </a>
       </div>
 
       {/* ===== 3. Complète (Recommandée) ===== */}
-      <div className="relative flex flex-col rounded-2xl border-[1.5px] border-cta bg-blush p-7 shadow-card">
+      <div className="relative flex flex-col rounded-2xl border-[1.5px] border-recommended bg-blush p-7 shadow-card">
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-cta px-4 py-1 text-xs font-semibold uppercase tracking-wide text-cta-text">
           Recommandée
         </span>
@@ -129,7 +129,7 @@ export default function Formules() {
         <h3 className="font-serif text-3xl font-semibold text-aubergine">
           Complète
         </h3>
-        <p className="mt-1 text-sm text-ink/70">45 minutes, sur rendez-vous</p>
+        <p className="mt-1 text-sm text-ink">45 minutes, sur rendez-vous</p>
 
         <p className="mt-5 font-serif text-[30px] font-semibold leading-none text-prix">
           129&nbsp;€

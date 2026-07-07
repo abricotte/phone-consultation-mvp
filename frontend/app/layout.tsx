@@ -41,13 +41,13 @@ export default function RootLayout({
               </span>
             </a>
             <nav className="flex items-center gap-6 text-sm">
-              <a href="/#formules" className="hidden text-ink/70 transition hover:text-coral sm:inline">
+              <a href="/#formules" className="hidden text-mention transition hover:text-coral sm:inline">
                 Formules
               </a>
-              <a href="/consultation-minute" className="hidden text-ink/70 transition hover:text-coral sm:inline">
+              <a href="/consultation-minute" className="hidden text-mention transition hover:text-coral sm:inline">
                 Appeler maintenant
               </a>
-              <a href="/dashboard" className="text-ink/70 transition hover:text-coral">
+              <a href="/dashboard" className="text-mention transition hover:text-coral">
                 Mon espace
               </a>
               <a
@@ -63,7 +63,7 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
 
         {/* Footer aligné sur la structure et le ton d'elena-wolska.com */}
-        <footer className="mt-24 bg-aubergine text-white/80">
+        <footer className="mt-24 bg-footer text-white/80">
           <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:grid-cols-3">
             <div>
               <p className="font-serif text-xl text-white">Elena Wolska</p>

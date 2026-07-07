@@ -7,7 +7,7 @@ export default function NotFound() {
       <h1 className="mt-4 font-serif text-4xl font-semibold text-aubergine">
         Page introuvable
       </h1>
-      <p className="mt-3 text-ink/70">
+      <p className="mt-3 text-ink">
         Cette page n&apos;existe pas ou n&apos;existe plus.
       </p>
       <a

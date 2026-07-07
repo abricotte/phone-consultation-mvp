@@ -117,7 +117,7 @@ export default function RegisterPage() {
 
       <p className="text-sm text-gray-600 mt-4 text-center">
         Déjà un compte ?{" "}
-        <a href="/login" className="text-cta hover:underline">
+        <a href="/login" className="text-prix hover:underline">
           Se connecter
         </a>
       </p>

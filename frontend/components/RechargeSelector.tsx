@@ -103,7 +103,7 @@ export default function RechargeSelector() {
               <span className="block font-serif text-2xl font-semibold text-aubergine">
                 {m} min
               </span>
-              <span className="text-sm text-ink/60">
+              <span className="text-sm text-mention">
                 {prix(m, config.prixMinuteCents)}
               </span>
             </button>
@@ -158,7 +158,7 @@ export default function RechargeSelector() {
           : `Recharger ${minutes} min — ${prix(minutes, config.prixMinuteCents)}`}
       </button>
 
-      <p className="mt-4 text-center text-xs leading-relaxed text-ink/55">
+      <p className="mt-4 text-center text-xs leading-relaxed text-mention">
         Crédit minimum pour appeler : {config.creditMinimumMinutes} min (
         {prix(config.creditMinimumMinutes, config.prixMinuteCents)}) · Toute
         minute entamée est due · Votre crédit n&apos;expire jamais.

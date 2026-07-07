@@ -14,7 +14,7 @@ export default function Home() {
               Voyante sur l&apos;Amour
               <span className="block text-coral">&amp; Médium sans support, en flashs directs</span>
             </h1>
-            <p className="mt-6 max-w-md text-lg text-ink/75">
+            <p className="mt-6 max-w-md text-lg text-ink">
               Vous tournez en rond ? En une séance, je vous aide à remettre du
               sens. Simplement, sans fioritures.
             </p>
@@ -40,7 +40,7 @@ export default function Home() {
               <span aria-hidden className="font-serif text-7xl text-coral/60">
                 ✦
               </span>
-              <span className="absolute -bottom-3 rounded-full border border-greige/70 bg-ivory px-4 py-1.5 text-xs font-medium text-ink/60">
+              <span className="absolute -bottom-3 rounded-full border border-greige/70 bg-ivory px-4 py-1.5 text-xs font-medium text-mention">
                 Photo d&apos;Elena
               </span>
             </div>
@@ -54,7 +54,7 @@ export default function Home() {
           <h2 className="font-serif text-4xl font-semibold text-aubergine">
             Une consultation, en toute simplicité
           </h2>
-          <p className="mt-3 text-ink/70">Trois étapes, aucun imprévu.</p>
+          <p className="mt-3 text-ink">Trois étapes, aucun imprévu.</p>
         </div>
         <div className="grid gap-8 md:grid-cols-3">
           {[
@@ -84,7 +84,7 @@ export default function Home() {
               <h3 className="font-serif text-xl font-semibold text-aubergine">
                 {s.t}
               </h3>
-              <p className="mt-2 text-sm text-ink/70">{s.d}</p>
+              <p className="mt-2 text-sm text-ink">{s.d}</p>
             </div>
           ))}
         </div>
@@ -100,7 +100,7 @@ export default function Home() {
             <h2 className="font-serif text-4xl font-semibold text-aubergine">
               Trois façons de consulter Elena
             </h2>
-            <p className="mt-3 text-ink/70">
+            <p className="mt-3 text-ink">
               Un besoin urgent ou une vraie mise au point : choisissez selon
               votre moment.
             </p>
@@ -118,7 +118,7 @@ export default function Home() {
           « Rien ne meurt, tout se transforme. Le Phénix renaît, encore et
           toujours. »
         </blockquote>
-        <p className="mt-8 text-ink/75">
+        <p className="mt-8 text-ink">
           Médium sans support, en flashs directs, spécialiste des questions de
           cœur et de vie professionnelle. Une approche authentique, directe et
           bienveillante — plus de 20 000 consultations en 19 ans.
