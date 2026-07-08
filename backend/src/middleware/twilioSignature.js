@@ -3,15 +3,6 @@ const twilio = require('twilio');
 // Validation ACTIVE par défaut. Le flag n'existe que pour le debug local.
 const VALIDATE = process.env.TWILIO_VALIDATE_SIGNATURE !== 'false';
 
-// MOUCHARD DE DIAGNOSTIC (temporaire) : conserve en mémoire les derniers
-// échecs de signature, avec UNIQUEMENT des infos non sensibles (jamais le
-// token ni la signature). Lisible via GET /api/calls/_debug/signature.
-const derniersEchecs = [];
-function enregistrerEchec(info) {
-  derniersEchecs.unshift(info);
-  if (derniersEchecs.length > 10) derniersEchecs.pop();
-}
-
 // Pas de sécurité optionnelle en production : refus de démarrer.
 if (process.env.NODE_ENV === 'production' && !VALIDATE) {
   console.error(
@@ -53,20 +44,6 @@ function twilioSignature(req, res, next) {
     console.warn(
       `Signature Twilio INVALIDE : ${req.method} ${req.originalUrl} — URL reconstruite="${url}" — signature présente=${!!signature}`
     );
-    enregistrerEchec({
-      at: new Date().toISOString(),
-      method: req.method,
-      originalUrl: req.originalUrl,
-      urlReconstruite: url,
-      backendUrlBrut: process.env.BACKEND_URL || null,
-      signaturePresente: !!signature,
-      // 8 premiers caractères seulement (jamais la signature complète)
-      signatureApercu: signature ? String(signature).slice(0, 8) + '…' : null,
-      // en-têtes de proxy utiles pour comprendre ce que Railway transmet
-      xForwardedProto: req.headers['x-forwarded-proto'] || null,
-      xForwardedHost: req.headers['x-forwarded-host'] || null,
-      host: req.headers.host || null,
-    });
     return res.status(403).send('Signature Twilio invalide');
   }
 
@@ -74,4 +51,3 @@ function twilioSignature(req, res, next) {
 }
 
 module.exports = twilioSignature;
-module.exports.derniersEchecs = derniersEchecs;
