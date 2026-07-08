@@ -231,8 +231,15 @@ router.post('/consultation-minutee', async (req, res) => {
         statusCallbackMethod: 'POST',
       });
     } catch (twilioErr) {
-      await supabase.from('sessions').update({ status: 'cancelled' }).eq('id', session.id);
-      await libererConsultation();
+      // Libérer le verrou EN PREMIER (le plus critique : sinon le statut
+      // reste bloqué "en consultation") — chaque étape isolée pour qu'une
+      // erreur réseau sur l'une ne court-circuite pas l'autre.
+      await libererConsultation(); // ne lève jamais
+      try {
+        await supabase.from('sessions').update({ status: 'cancelled' }).eq('id', session.id);
+      } catch (cancelErr) {
+        console.error(`Annulation de session échouée après échec Twilio : ${cancelErr.message}`);
+      }
       throw twilioErr;
     }
 

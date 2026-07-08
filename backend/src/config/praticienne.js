@@ -85,7 +85,7 @@ function clearCache() {
   cacheAt = 0;
 }
 
-// Machine à états : hors_ligne | disponible | en_consultation | rdv_imminent
+// Machine à états : hors_ligne | disponible | en_consultation
 // Lecture du statut avec AUTO-OFF paresseux : si la praticienne est
 // "disponible" depuis plus de auto_off_heures, elle repasse hors ligne
 // en base au moment de la lecture (pas besoin de cron).
@@ -95,7 +95,7 @@ async function getStatutEnLigne() {
 
   const { data, error } = await supabase
     .from('praticiennes')
-    .select('id, statut, en_ligne_depuis, auto_off_heures, retour_prevu')
+    .select('id, statut, statut_precedent, en_ligne_depuis, auto_off_heures, retour_prevu, updated_at')
     .eq('slug', SLUG)
     .single();
 
@@ -117,6 +117,58 @@ async function getStatutEnLigne() {
       clearCache();
       console.log(`Auto-off : praticienne ${SLUG} repassée hors ligne (limite ${data.auto_off_heures}h)`);
       return { ...horsLigne, autoOff: true };
+    }
+  }
+
+  // GARDE-FOU verrou orphelin : si "en_consultation" alors qu'aucun appel
+  // n'existe réellement (échec de lancement dont la libération a été
+  // court-circuitée par une erreur réseau, crash du process, etc.), le
+  // verrou est libéré automatiquement à la lecture suivante du statut.
+  if (data.statut === 'en_consultation') {
+    const verrouAgeMs = Date.now() - new Date(data.updated_at).getTime();
+    // Cas 1 : la fin prévue est dépassée depuis plus de 3 min (la fin
+    // normale passe par finalizeSession — si elle n'est jamais venue,
+    // le verrou est périmé).
+    const finDepassee =
+      data.retour_prevu &&
+      Date.now() > new Date(data.retour_prevu).getTime() + 3 * 60 * 1000;
+
+    // Cas 2 : verrou posé depuis plus de 60 s mais AUCUNE session en
+    // cours (pending/active) → lancement échoué sans libération.
+    // Le délai de 60 s évite de tirer pendant la fenêtre de lancement
+    // légitime (verrou posé juste avant la création de la session).
+    let orphelin = false;
+    if (!finDepassee && verrouAgeMs > 60_000) {
+      const { data: sessionsEnCours } = await supabase
+        .from('sessions')
+        .select('id')
+        .eq('praticienne_id', data.id)
+        .in('status', ['pending', 'active'])
+        .limit(1);
+      orphelin = !sessionsEnCours || sessionsEnCours.length === 0;
+    }
+
+    if (finDepassee || orphelin) {
+      const retour = data.statut_precedent === 'disponible' ? 'disponible' : 'hors_ligne';
+      await supabase
+        .from('praticiennes')
+        .update({
+          statut: retour,
+          statut_en_ligne: retour === 'disponible',
+          retour_prevu: null,
+        })
+        .eq('id', data.id)
+        .eq('statut', 'en_consultation');
+      clearCache();
+      console.warn(
+        `Garde-fou : verrou en_consultation orphelin libéré (${finDepassee ? 'fin prévue dépassée' : 'aucune session en cours'}) → "${retour}"`
+      );
+      return {
+        statut: retour,
+        enLigne: retour === 'disponible',
+        enLigneDepuis: data.en_ligne_depuis,
+        retourPrevu: null,
+      };
     }
   }
 
@@ -156,30 +208,37 @@ async function verrouillerConsultation(dureeMaxSecondes) {
 // Libération : en_consultation → statut antérieur du toggle.
 // Conditionnel (WHERE statut = 'en_consultation') : sans effet si
 // l'état a déjà changé (idempotent, appelable depuis tout callback).
+// NE LÈVE JAMAIS d'exception : une erreur ici ne doit jamais
+// court-circuiter le reste d'un chemin d'échec appelant. En dernier
+// recours, le garde-fou de getStatutEnLigne rattrape un verrou orphelin.
 async function libererConsultation() {
-  if (!supabase) return;
+  try {
+    if (!supabase) return;
 
-  const { data } = await supabase
-    .from('praticiennes')
-    .select('id, statut, statut_precedent')
-    .eq('slug', SLUG)
-    .single();
+    const { data } = await supabase
+      .from('praticiennes')
+      .select('id, statut, statut_precedent')
+      .eq('slug', SLUG)
+      .single();
 
-  if (!data || data.statut !== 'en_consultation') return;
+    if (!data || data.statut !== 'en_consultation') return;
 
-  const retour = data.statut_precedent || 'disponible';
-  await supabase
-    .from('praticiennes')
-    .update({
-      statut: retour,
-      statut_en_ligne: retour === 'disponible', // legacy, synchronisé
-      retour_prevu: null,
-    })
-    .eq('id', data.id)
-    .eq('statut', 'en_consultation');
+    const retour = data.statut_precedent || 'disponible';
+    await supabase
+      .from('praticiennes')
+      .update({
+        statut: retour,
+        statut_en_ligne: retour === 'disponible', // legacy, synchronisé
+        retour_prevu: null,
+      })
+      .eq('id', data.id)
+      .eq('statut', 'en_consultation');
 
-  clearCache();
-  console.log(`Praticienne libérée : retour au statut "${retour}"`);
+    clearCache();
+    console.log(`Praticienne libérée : retour au statut "${retour}"`);
+  } catch (err) {
+    console.error(`Libération du verrou échouée (le garde-fou rattrapera) : ${err.message}`);
+  }
 }
 
 module.exports = {

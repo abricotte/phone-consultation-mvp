@@ -397,14 +397,15 @@ async function handleMiseEnRelationTimeout(sessionId, clientCallSid) {
 
     console.log(`Timeout mise en relation : session ${sessionId} — Elena n'a pas rejoint à temps`);
 
+    // Verrou d'abord (le plus critique), annulation ensuite.
+    // AUCUN débit n'a lieu ici : le wallet n'est jamais touché tant que
+    // finalizeSession() n'a pas vu started_at posé (cf. plus bas).
+    await libererConsultation(); // ne lève jamais
+
     await supabase
       .from('sessions')
       .update({ status: 'cancelled' })
       .eq('id', sessionId);
-
-    // AUCUN débit n'a lieu ici : le wallet n'est jamais touché tant que
-    // finalizeSession() n'a pas vu started_at posé (cf. plus bas).
-    await libererConsultation();
 
     if (!twilio) return;
 
@@ -571,11 +572,12 @@ router.post('/status', twilioSignature, async (req, res) => {
       .single();
 
     if (session && session.status !== 'completed') {
+      // Verrou d'abord (le plus critique), annulation ensuite
+      await libererConsultation(); // ne lève jamais
       await supabase
         .from('sessions')
         .update({ status: 'cancelled' })
         .eq('id', session.id);
-      await libererConsultation();
     }
   }
 });
