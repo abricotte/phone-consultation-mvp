@@ -218,7 +218,7 @@ router.post('/consultation-minutee', async (req, res) => {
 
     // 6. Appeler ELENA D'ABORD. La cliente sera composée automatiquement
     //    quand Elena aura rejoint la conférence (cf. conference-status).
-    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const backendUrl = (process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`).replace(/\/+$/, '');
     let elenaCall;
     try {
       elenaCall = await twilio.calls.create({

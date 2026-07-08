@@ -53,7 +53,10 @@ app.get('/api/health', (req, res) => {
       // site ("c'est ce numéro qui vous appellera"), aucun secret ici —
       // permet de diagnostiquer une variable Railway obsolète sans deviner.
       twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER || null,
-      backendUrl: !!process.env.BACKEND_URL,
+      // Valeur affichée (URL publique, non secrète) : permet de vérifier
+      // qu'elle correspond exactement à l'URL Railway, sans barre finale
+      // ni mauvais protocole — cause n°1 d'échec de signature Twilio.
+      backendUrl: process.env.BACKEND_URL || null,
       frontendUrl: !!process.env.FRONTEND_URL,
       nodeEnv: process.env.NODE_ENV || 'non défini',
     },

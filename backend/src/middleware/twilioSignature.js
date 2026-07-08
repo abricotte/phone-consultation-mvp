@@ -27,7 +27,11 @@ function twilioSignature(req, res, next) {
   }
 
   const signature = req.headers['x-twilio-signature'];
-  const url = `${process.env.BACKEND_URL}${req.originalUrl}`;
+  // BACKEND_URL normalisé (barre oblique finale retirée) pour que l'URL
+  // reconstruite corresponde EXACTEMENT à celle que Twilio a signée —
+  // une "/" en trop suffit à faire échouer la validation.
+  const base = (process.env.BACKEND_URL || '').replace(/\/+$/, '');
+  const url = `${base}${req.originalUrl}`;
   // POST : Twilio signe les paramètres du body (urlencoded).
   // GET : les paramètres sont dans l'URL, body vide.
   const params = req.method === 'POST' ? req.body || {} : {};
@@ -35,7 +39,11 @@ function twilioSignature(req, res, next) {
   const valide = twilio.validateRequest(authToken, signature, url, params);
 
   if (!valide) {
-    console.warn(`Signature Twilio INVALIDE : ${req.method} ${req.originalUrl}`);
+    // Log actionnable : URL reconstruite (non secrète) pour diagnostiquer
+    // un BACKEND_URL erroné (protocole, hôte, barre finale).
+    console.warn(
+      `Signature Twilio INVALIDE : ${req.method} ${req.originalUrl} — URL reconstruite="${url}" — signature présente=${!!signature}`
+    );
     return res.status(403).send('Signature Twilio invalide');
   }
 

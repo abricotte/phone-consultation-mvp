@@ -35,9 +35,12 @@ function normalizePhone(phone) {
   return cleaned;
 }
 
-// URL publique du backend (pour les callbacks Twilio)
+// URL publique du backend (pour les callbacks Twilio).
+// Barre oblique finale retirée : l'URL fournie à Twilio doit être propre
+// pour que la signature reconstruite côté validation corresponde.
 function getBackendUrl() {
-  return process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+  const base = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+  return base.replace(/\/+$/, '');
 }
 
 // Nom déterministe de la conférence à partir de l'ID de session
