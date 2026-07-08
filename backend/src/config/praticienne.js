@@ -133,19 +133,29 @@ async function getStatutEnLigne() {
       data.retour_prevu &&
       Date.now() > new Date(data.retour_prevu).getTime() + 3 * 60 * 1000;
 
-    // Cas 2 : verrou posé depuis plus de 60 s mais AUCUNE session en
-    // cours (pending/active) → lancement échoué sans libération.
-    // Le délai de 60 s évite de tirer pendant la fenêtre de lancement
-    // légitime (verrou posé juste avant la création de la session).
+    // Cas 2 : verrou posé depuis plus de 90 s mais AUCUNE session
+    // réellement VIVANTE. Une session ne "protège" le verrou que si :
+    //   - elle est connectée pour de vrai (started_at posé), OU
+    //   - elle vient d'être lancée (créée il y a moins de 90 s).
+    // Une session restée "active" sans started_at et vieille = morte
+    // (l'appel a échoué au stade TwiML, ex. signature rejetée, et les
+    // callbacks de nettoyage n'ont jamais pu aboutir). Ce cas couvre
+    // aussi bien le flux minutée (sans timeout) que l'immédiat.
     let orphelin = false;
-    if (!finDepassee && verrouAgeMs > 60_000) {
-      const { data: sessionsEnCours } = await supabase
+    if (!finDepassee && verrouAgeMs > 90_000) {
+      const { data: sessions } = await supabase
         .from('sessions')
-        .select('id')
+        .select('id, started_at, created_at')
         .eq('praticienne_id', data.id)
-        .in('status', ['pending', 'active'])
-        .limit(1);
-      orphelin = !sessionsEnCours || sessionsEnCours.length === 0;
+        .in('status', ['pending', 'active']);
+
+      const maintenant = Date.now();
+      const uneVivante = (sessions || []).some(
+        (s) =>
+          s.started_at ||
+          maintenant - new Date(s.created_at).getTime() < 90_000
+      );
+      orphelin = !uneVivante;
     }
 
     if (finDepassee || orphelin) {
@@ -159,9 +169,19 @@ async function getStatutEnLigne() {
         })
         .eq('id', data.id)
         .eq('statut', 'en_consultation');
+
+      // Clôturer aussi les sessions mortes (active/pending sans started_at)
+      // pour ne pas laisser de traînée qui re-protégerait un futur verrou.
+      await supabase
+        .from('sessions')
+        .update({ status: 'cancelled' })
+        .eq('praticienne_id', data.id)
+        .in('status', ['pending', 'active'])
+        .is('started_at', null);
+
       clearCache();
       console.warn(
-        `Garde-fou : verrou en_consultation orphelin libéré (${finDepassee ? 'fin prévue dépassée' : 'aucune session en cours'}) → "${retour}"`
+        `Garde-fou : verrou en_consultation orphelin libéré (${finDepassee ? 'fin prévue dépassée' : 'aucune session vivante'}) → "${retour}"`
       );
       return {
         statut: retour,
