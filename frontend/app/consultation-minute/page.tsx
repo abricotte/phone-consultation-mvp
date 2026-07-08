@@ -101,12 +101,37 @@ export default function ConsultationMinutePage() {
             </li>
           </ul>
 
+          {/* ===== Action principale (au décroché du hero, pas en bas de page) ===== */}
+          {statut === "disponible" && (
+            <div className="mt-8">
+              <button
+                onClick={handleAppel}
+                disabled={appelEnCours}
+                className="rounded-full bg-cta px-8 py-4 text-lg font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
+              >
+                {appelEnCours
+                  ? "Connexion en cours…"
+                  : "J'appelle Elena maintenant"}
+              </button>
+              <p className="mt-3 text-xs text-mention">
+                Crédit minimum 5 min (14,50 €) — vous ne dépassez jamais votre
+                budget.
+              </p>
+            </div>
+          )}
+
           {statut === "en_consultation" && (
             <div className="mx-auto mt-6 max-w-md rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
               <p className="text-sm leading-relaxed text-ink">
                 Elena est en pleine consultation. Rechargez votre crédit pour
                 être prête quand elle se libère.
               </p>
+              <a
+                href="#recharge"
+                className="mt-3 inline-block text-sm font-medium text-prix hover:underline"
+              >
+                Recharger mon crédit ↓
+              </a>
             </div>
           )}
           {statut === "hors_ligne" && (
@@ -116,13 +141,33 @@ export default function ConsultationMinutePage() {
                 maintenant pour être prête à son retour, ou réserver un
                 créneau.
               </p>
-              <a
-                href="https://elena-wolska.com/disponibilites"
-                className="mt-3 inline-block text-sm font-medium text-prix hover:underline"
-              >
-                Voir les disponibilités →
-              </a>
+              <div className="mt-3 flex flex-wrap justify-center gap-4">
+                <a
+                  href="#recharge"
+                  className="text-sm font-medium text-prix hover:underline"
+                >
+                  Recharger mon crédit ↓
+                </a>
+                <a
+                  href="https://elena-wolska.com/disponibilites"
+                  className="text-sm font-medium text-prix hover:underline"
+                >
+                  Voir les disponibilités →
+                </a>
+              </div>
             </div>
+          )}
+
+          {/* Retour d'état de l'appel — juste sous le bouton, là où on clique */}
+          {messageAppel && (
+            <p className="mx-auto mt-6 max-w-md rounded-lg bg-green-50 p-3 text-sm text-green-700">
+              {messageAppel}
+            </p>
+          )}
+          {erreurAppel && (
+            <p className="mx-auto mt-6 max-w-md rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {erreurAppel}
+            </p>
           )}
         </div>
       </section>
@@ -180,7 +225,7 @@ export default function ConsultationMinutePage() {
       </section>
 
       {/* ===== Recharge ===== */}
-      <section className="bg-cream">
+      <section id="recharge" className="bg-cream">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <h2 className="mb-10 text-center font-serif text-3xl font-semibold text-aubergine">
             Rechargez votre crédit
@@ -228,18 +273,8 @@ export default function ConsultationMinutePage() {
           </li>
         </ul>
 
-        {messageAppel && (
-          <p className="mx-auto mt-8 max-w-md rounded-lg bg-green-50 p-3 text-sm text-green-700">
-            {messageAppel}
-          </p>
-        )}
-        {erreurAppel && (
-          <p className="mx-auto mt-8 max-w-md rounded-lg bg-red-50 p-3 text-sm text-red-600">
-            {erreurAppel}
-          </p>
-        )}
-
-        {enLigne ? (
+        {/* Rappel de l'action quand Elena est en ligne (fin de page) */}
+        {enLigne && (
           <button
             onClick={handleAppel}
             disabled={appelEnCours}
@@ -247,13 +282,6 @@ export default function ConsultationMinutePage() {
           >
             {appelEnCours ? "Connexion en cours…" : "J'appelle Elena maintenant"}
           </button>
-        ) : (
-          <a
-            href="/dashboard"
-            className="mt-10 inline-block rounded-full bg-cta px-8 py-3.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark"
-          >
-            Recharger mon crédit →
-          </a>
         )}
         </div>
       </section>

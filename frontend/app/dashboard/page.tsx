@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import RechargeSelector from "@/components/RechargeSelector";
+import AppelElenaCard from "@/components/AppelElenaCard";
 
 interface User {
   id: string;
@@ -101,6 +102,11 @@ export default function DashboardPage() {
           {error}
         </div>
       )}
+
+      {/* Appel immédiat — action principale, en haut de l'espace cliente */}
+      <div className="mb-6">
+        <AppelElenaCard />
+      </div>
 
       {/* Portefeuille */}
       <div className="bg-ivory rounded-2xl shadow-soft p-6 mb-6 border border-greige/60">
