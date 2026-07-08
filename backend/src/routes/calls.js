@@ -584,12 +584,33 @@ router.post('/status', twilioSignature, async (req, res) => {
 // Twilio (ex. une cliente qui l'a enregistré et le rappelle). Ce numéro ne
 // sert qu'à ÉMETTRE des appels sortants déclenchés par la plateforme — un
 // appel entrant reçoit donc un message poli plutôt qu'une erreur Twilio.
-router.post('/twiml/inbound', twilioSignature, (req, res) => {
+// Volontairement SANS ambiguïté : ne laisse jamais croire à une mise en
+// relation en cours (pas de "patientez", pas de menu, raccrochage direct
+// après le message). Extensible via praticiennes.messages_vocaux.inbound
+// (URL audio) — voix d'Elena plus tard, sans changement de code.
+router.post('/twiml/inbound', twilioSignature, async (req, res) => {
   const response = new VoiceResponse();
-  response.say(
-    { language: 'fr-FR' },
-    "Bonjour, vous êtes bien sur la ligne d'Elena Wolska. Ce numéro ne peut pas être appelé directement. Pour réserver une consultation, rendez-vous sur elena-wolska.com."
-  );
+
+  try {
+    const p = await getPraticienne();
+    const audioUrl = p.messages_vocaux?.inbound;
+
+    if (audioUrl) {
+      response.play({}, audioUrl);
+    } else {
+      response.say(
+        { language: 'fr-FR' },
+        "Bonjour, vous êtes bien sur la ligne d'Elena Wolska. Pour réserver ou lancer une consultation, rendez-vous sur elena-wolska.com. Merci et à très bientôt."
+      );
+    }
+  } catch (err) {
+    console.error('Erreur message inbound:', err);
+    response.say(
+      { language: 'fr-FR' },
+      "Bonjour, vous êtes bien sur la ligne d'Elena Wolska. Pour réserver ou lancer une consultation, rendez-vous sur elena-wolska.com. Merci et à très bientôt."
+    );
+  }
+
   response.hangup();
   res.type('text/xml');
   res.send(response.toString());
