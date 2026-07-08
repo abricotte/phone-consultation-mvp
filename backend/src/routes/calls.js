@@ -580,4 +580,19 @@ router.post('/status', twilioSignature, async (req, res) => {
   }
 });
 
+// POST /api/calls/twiml/inbound - Quelqu'un compose directement le numéro
+// Twilio (ex. une cliente qui l'a enregistré et le rappelle). Ce numéro ne
+// sert qu'à ÉMETTRE des appels sortants déclenchés par la plateforme — un
+// appel entrant reçoit donc un message poli plutôt qu'une erreur Twilio.
+router.post('/twiml/inbound', twilioSignature, (req, res) => {
+  const response = new VoiceResponse();
+  response.say(
+    { language: 'fr-FR' },
+    "Bonjour, vous êtes bien sur la ligne d'Elena Wolska. Ce numéro ne peut pas être appelé directement. Pour réserver une consultation, rendez-vous sur elena-wolska.com."
+  );
+  response.hangup();
+  res.type('text/xml');
+  res.send(response.toString());
+});
+
 module.exports = router;
