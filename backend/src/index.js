@@ -49,6 +49,10 @@ app.get('/api/health', (req, res) => {
       supabase: !!process.env.SUPABASE_URL,
       stripe: !!process.env.STRIPE_SECRET_KEY,
       twilio: !!process.env.TWILIO_ACCOUNT_SID,
+      // Valeur affichée volontairement : ce numéro est déjà public sur le
+      // site ("c'est ce numéro qui vous appellera"), aucun secret ici —
+      // permet de diagnostiquer une variable Railway obsolète sans deviner.
+      twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER || null,
       backendUrl: !!process.env.BACKEND_URL,
       frontendUrl: !!process.env.FRONTEND_URL,
       nodeEnv: process.env.NODE_ENV || 'non défini',
