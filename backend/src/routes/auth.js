@@ -7,6 +7,15 @@ const { loginLimiter, registerLimiter } = require('../middleware/rateLimits');
 
 const router = express.Router();
 
+// Règle de mot de passe — VÉRIFIÉE CÔTÉ SERVEUR (source de vérité).
+const MDP_MIN = 8;
+function motDePasseInvalide(pwd) {
+  if (typeof pwd !== 'string' || pwd.length < MDP_MIN) {
+    return `Le mot de passe doit contenir au moins ${MDP_MIN} caractères.`;
+  }
+  return null;
+}
+
 // POST /api/auth/register - Inscription
 router.post('/register', registerLimiter, async (req, res) => {
   try {
@@ -14,6 +23,11 @@ router.post('/register', registerLimiter, async (req, res) => {
 
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ error: 'Champs obligatoires manquants' });
+    }
+
+    const erreurMdp = motDePasseInvalide(password);
+    if (erreurMdp) {
+      return res.status(400).json({ error: erreurMdp });
     }
 
     // Vérifier si l'email existe déjà
@@ -147,6 +161,59 @@ router.get('/me', authMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error('Erreur profil:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/auth/change-password - Changer son mot de passe (connectée)
+router.post('/change-password', authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        error: 'Mot de passe actuel et nouveau mot de passe requis.',
+      });
+    }
+
+    const erreurMdp = motDePasseInvalide(newPassword);
+    if (erreurMdp) {
+      return res.status(400).json({ error: erreurMdp });
+    }
+
+    if (newPassword === currentPassword) {
+      return res.status(400).json({
+        error: 'Le nouveau mot de passe doit être différent de l\'actuel.',
+      });
+    }
+
+    // Récupérer le hash actuel pour vérifier le mot de passe fourni
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, password_hash')
+      .eq('id', req.user.id)
+      .single();
+
+    if (error || !user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    const valide = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!valide) {
+      return res.status(401).json({ error: 'Mot de passe actuel incorrect.' });
+    }
+
+    const nouveauHash = await bcrypt.hash(newPassword, 10);
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ password_hash: nouveauHash })
+      .eq('id', user.id);
+
+    if (updateError) throw updateError;
+
+    res.json({ message: 'Mot de passe modifié avec succès.' });
+  } catch (err) {
+    console.error('Erreur changement mot de passe:', err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });

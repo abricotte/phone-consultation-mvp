@@ -83,12 +83,17 @@ export default function DashboardPage() {
         <h1 className="font-serif text-2xl font-semibold text-aubergine">
           Bonjour {user?.firstName} {user?.lastName}
         </h1>
-        <button
-          onClick={handleLogout}
-          className="text-sm text-gray-600 hover:text-red-600"
-        >
-          Déconnexion
-        </button>
+        <div className="flex items-center gap-4 text-sm">
+          <a href="/compte" className="text-mention hover:text-cta">
+            Mon compte
+          </a>
+          <button
+            onClick={handleLogout}
+            className="text-mention hover:text-red-600"
+          >
+            Déconnexion
+          </button>
+        </div>
       </div>
 
       {paymentStatus && (

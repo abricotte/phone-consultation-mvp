@@ -29,6 +29,11 @@ export const api = {
   login: (body: { email: string; password: string }) =>
     request("/auth/login", { method: "POST", body: JSON.stringify(body) }),
   getMe: () => request("/auth/me"),
+  changePassword: (body: { currentPassword: string; newPassword: string }) =>
+    request("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 
   // Consultants
   getConsultants: (params?: string) =>
