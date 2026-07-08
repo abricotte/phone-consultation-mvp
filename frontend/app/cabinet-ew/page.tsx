@@ -11,6 +11,12 @@ interface Forfait {
   prix: number;
 }
 
+interface AppelEnCours {
+  prenom: string;
+  soldeMinutes: number;
+  connecte: boolean;
+}
+
 interface Statut {
   statut: "hors_ligne" | "disponible" | "en_consultation";
   enLigne: boolean;
@@ -18,6 +24,7 @@ interface Statut {
   retourPrevu: string | null;
   autoOffHeures: number;
   forfaits: Forfait[];
+  appelEnCours: AppelEnCours | null;
 }
 
 interface Jour {
@@ -78,7 +85,9 @@ export default function AdminPage() {
       .catch(() => setAccesRefuse(true))
       .finally(() => setLoading(false));
 
-    const id = setInterval(() => recharger().catch(() => {}), 30_000);
+    // Polling rapproché (10 s) : un appel entrant doit apparaître avant
+    // même de décrocher (le téléphone sonne ~20-30 s).
+    const id = setInterval(() => recharger().catch(() => {}), 10_000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -161,6 +170,24 @@ export default function AdminPage() {
             </span>
           )}
         </div>
+
+        {/* Identité de la cliente (appel immédiat) — visible uniquement ici,
+            pour toi, jamais exposé ailleurs */}
+        {statut?.appelEnCours && (
+          <div className="mx-auto mb-4 max-w-sm rounded-xl border border-amber-200 bg-amber-50/70 px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+              {statut.appelEnCours.connecte
+                ? "📞 En ligne avec"
+                : "📞 Appel entrant"}
+            </p>
+            <p className="mt-1 font-serif text-2xl font-semibold text-aubergine">
+              {statut.appelEnCours.prenom}
+            </p>
+            <p className="mt-1 text-sm text-mention">
+              Solde : {statut.appelEnCours.soldeMinutes} min de crédit
+            </p>
+          </div>
+        )}
 
         {disponible && statut?.enLigneDepuis && (
           <p className="mb-4 text-sm text-mention">

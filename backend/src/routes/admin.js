@@ -62,12 +62,57 @@ async function purgerTelephones() {
   }
 }
 
-// GET /api/admin/statut - Statut actuel + forfaits disponibles
+// Identité de la cliente d'un appel immédiat en cours (RÉSERVÉ à la
+// praticienne — cette route est sous adminOnly). Renvoie uniquement le
+// prénom et le solde en minutes ; jamais le nom, l'email ni le numéro.
+// null s'il n'y a pas d'appel immédiat en cours.
+async function appelImmediatEnCours(praticienneId, tarifs) {
+  const { data: sess } = await supabase
+    .from('sessions')
+    .select('id, client_id, started_at')
+    .eq('praticienne_id', praticienneId)
+    .eq('status', 'active')
+    .eq('type', 'minute')
+    .not('client_id', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!sess || !sess.client_id) return null;
+
+  const [{ data: user }, { data: wallet }] = await Promise.all([
+    supabase.from('users').select('first_name').eq('id', sess.client_id).maybeSingle(),
+    supabase
+      .from('wallets')
+      .select('balance')
+      .eq('user_id', sess.client_id)
+      .eq('praticienne_id', praticienneId)
+      .maybeSingle(),
+  ]);
+
+  const soldeCents = wallet ? Math.round(parseFloat(wallet.balance) * 100) : 0;
+  const soldeMinutes = Math.floor(soldeCents / tarifs.prixMinuteCents);
+
+  return {
+    prenom: user?.first_name || 'Cliente',
+    soldeMinutes,
+    connecte: !!sess.started_at, // false = ça sonne, true = en ligne
+  };
+}
+
+// GET /api/admin/statut - Statut actuel + forfaits + appel immédiat en cours
 router.get('/statut', async (req, res) => {
   try {
     const statut = await getStatutEnLigne();
     const p = await getPraticienne();
     const tarifs = await getTarifs();
+
+    // Info cliente seulement si une consultation est en cours
+    const appelEnCours =
+      statut.statut === 'en_consultation'
+        ? await appelImmediatEnCours(p.id, tarifs)
+        : null;
+
     res.json({
       statut: statut.statut,
       enLigne: statut.enLigne,
@@ -75,6 +120,7 @@ router.get('/statut', async (req, res) => {
       retourPrevu: statut.retourPrevu,
       autoOffHeures: p.auto_off_heures || 4,
       forfaits: tarifs.forfaits,
+      appelEnCours,
     });
   } catch (err) {
     console.error('Erreur statut admin:', err);
