@@ -48,6 +48,19 @@ function conferenceName(sessionId) {
   return `consult-${sessionId}`;
 }
 
+// GET /api/calls/_debug/signature - MOUCHARD TEMPORAIRE de diagnostic.
+// Renvoie les derniers échecs de signature Twilio (infos non sensibles
+// uniquement : URL reconstruite, présence en-tête, en-têtes proxy).
+// À retirer une fois le diagnostic terminé.
+router.get('/_debug/signature', (req, res) => {
+  res.json({
+    note: 'Derniers échecs de validation de signature Twilio (diagnostic temporaire)',
+    validationActive: process.env.TWILIO_VALIDATE_SIGNATURE !== 'false',
+    backendUrl: process.env.BACKEND_URL || null,
+    echecs: twilioSignature.derniersEchecs || [],
+  });
+});
+
 // POST /api/calls/initiate - Lancer la mise en relation client ↔ consultant
 router.post('/initiate', authMiddleware, async (req, res) => {
   try {
