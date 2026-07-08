@@ -225,6 +225,7 @@ router.post('/consultation-minutee', async (req, res) => {
         to: elenaPhone,
         from: process.env.TWILIO_PHONE_NUMBER,
         url: `${backendUrl}/api/calls/twiml/join?sessionId=${session.id}&role=consultant`,
+        method: 'GET', // /twiml/join est une route GET (défaut Twilio = POST)
         timeLimit: maxSeconds + 300, // marge : attente de la cliente incluse
         statusCallback: `${backendUrl}/api/calls/status`,
         statusCallbackEvent: ['failed', 'busy', 'no-answer', 'canceled', 'completed'],

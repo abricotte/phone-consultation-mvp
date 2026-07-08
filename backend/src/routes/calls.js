@@ -151,6 +151,7 @@ router.post('/initiate', authMiddleware, async (req, res) => {
         to: clientPhone,
         from: process.env.TWILIO_PHONE_NUMBER,
         url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=client`,
+        method: 'GET', // /twiml/join est une route GET (défaut Twilio = POST)
         timeLimit: maxSeconds,
         statusCallback: `${backendUrl}/api/calls/status`,
         statusCallbackEvent: ['failed', 'busy', 'no-answer', 'canceled', 'completed'],
@@ -162,6 +163,7 @@ router.post('/initiate', authMiddleware, async (req, res) => {
         to: consultantPhone,
         from: process.env.TWILIO_PHONE_NUMBER,
         url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=consultant`,
+        method: 'GET', // idem
         timeLimit: maxSeconds,
       });
     } catch (twilioErr) {
@@ -325,6 +327,7 @@ router.post('/conference-status', twilioSignature, async (req, res) => {
           to: session.telephone_cliente,
           from: process.env.TWILIO_PHONE_NUMBER,
           url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=client`,
+          method: 'GET', // /twiml/join est une route GET (défaut Twilio = POST)
           timeLimit: session.forfait_minutes * 60 + 60, // filet de sécurité
           statusCallback: `${backendUrl}/api/calls/status`,
           statusCallbackEvent: ['failed', 'busy', 'no-answer', 'canceled', 'completed'],
