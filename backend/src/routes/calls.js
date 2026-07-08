@@ -531,48 +531,55 @@ async function finalizeSession(sessionId) {
       ? parseFloat(session.montant_paye || 0)
       : durationMinutes * parseFloat(session.rate_per_minute);
 
-  await supabase
-    .from('sessions')
-    .update({
-      status: 'completed',
-      ended_at: endedAt.toISOString(),
-      duration_seconds: durationSeconds,
-      total_cost: totalCost,
-    })
-    .eq('id', sessionId);
+  // La facturation ne doit JAMAIS empêcher la libération du verrou : si une
+  // erreur survient ici, le finally garantit quand même le retour à
+  // "disponible" (sinon la praticienne resterait bloquée en consultation).
+  try {
+    await supabase
+      .from('sessions')
+      .update({
+        status: 'completed',
+        ended_at: endedAt.toISOString(),
+        duration_seconds: durationSeconds,
+        total_cost: totalCost,
+      })
+      .eq('id', sessionId);
 
-  // Débit du wallet : uniquement pour la consultation à la minute
-  if (session.type !== 'forfait_manuel' && session.client_id) {
-    const { data: wallet } = await supabase
-      .from('wallets')
-      .select('id, balance')
-      .eq('user_id', session.client_id)
-      .single();
-
-    if (wallet) {
-      const newBalance = Math.max(0, parseFloat(wallet.balance) - totalCost);
-
-      await supabase
+    // Débit du wallet : uniquement pour la consultation à la minute
+    if (session.type !== 'forfait_manuel' && session.client_id) {
+      const { data: wallet } = await supabase
         .from('wallets')
-        .update({ balance: newBalance })
-        .eq('id', wallet.id);
+        .select('id, balance')
+        .eq('user_id', session.client_id)
+        .single();
 
-      await supabase
-        .from('transactions')
-        .insert({
-          wallet_id: wallet.id,
-          type: 'debit',
-          amount: totalCost,
-          description: `Consultation téléphonique - ${durationMinutes} min`,
-          session_id: sessionId,
-        });
+      if (wallet) {
+        const newBalance = Math.max(0, parseFloat(wallet.balance) - totalCost);
+
+        await supabase
+          .from('wallets')
+          .update({ balance: newBalance })
+          .eq('id', wallet.id);
+
+        await supabase
+          .from('transactions')
+          .insert({
+            wallet_id: wallet.id,
+            type: 'debit',
+            amount: totalCost,
+            description: `Consultation téléphonique - ${durationMinutes} min`,
+            session_id: sessionId,
+          });
+      }
     }
+
+    console.log(`Appel terminé : session ${sessionId} (${session.type}), ${durationMinutes} min, ${totalCost}€`);
+  } catch (err) {
+    console.error(`finalizeSession : erreur de clôture/facturation (verrou libéré quand même) : ${err.message}`);
+  } finally {
+    // Retour au statut antérieur du toggle (en_consultation → disponible/hors_ligne)
+    await libererConsultation();
   }
-
-  // Retour au statut antérieur du toggle (en_consultation → disponible/hors_ligne)
-  await libererConsultation();
-
-  console.log(`Appel terminé : session ${sessionId} (${session.type}), ${durationMinutes} min, ${totalCost}€`);
 }
 
 // POST /api/calls/status - Callback statut des appels individuels (Twilio)
@@ -582,22 +589,34 @@ router.post('/status', twilioSignature, async (req, res) => {
   const { CallSid, CallStatus } = req.body;
   console.log(`Statut appel ${CallSid}: ${CallStatus}`);
 
-  // Si l'appel échoue/n'aboutit pas, annuler la session et libérer Elena
-  if (['failed', 'busy', 'no-answer', 'canceled'].includes(CallStatus)) {
-    const { data: session } = await supabase
-      .from('sessions')
-      .select('id, status')
-      .or(`twilio_call_sid.eq.${CallSid},cliente_call_sid.eq.${CallSid}`)
-      .single();
+  const echec = ['failed', 'busy', 'no-answer', 'canceled'].includes(CallStatus);
+  const fini = CallStatus === 'completed';
+  if (!echec && !fini) return;
 
-    if (session && session.status !== 'completed') {
-      // Verrou d'abord (le plus critique), annulation ensuite
+  const { data: session } = await supabase
+    .from('sessions')
+    .select('id, status')
+    .or(`twilio_call_sid.eq.${CallSid},cliente_call_sid.eq.${CallSid}`)
+    .single();
+
+  if (!session) return;
+
+  if (echec) {
+    // Appel qui n'aboutit pas : annuler la session et libérer Elena
+    if (session.status !== 'completed') {
       await libererConsultation(); // ne lève jamais
       await supabase
         .from('sessions')
         .update({ status: 'cancelled' })
         .eq('id', session.id);
     }
+  } else if (fini) {
+    // Fin NORMALE d'un appel (raccrochage) : chemin de nettoyage de SECOURS,
+    // indépendant du callback de fin de conférence (qui peut ne pas aboutir).
+    // finalizeSession est idempotent (garde sur le statut) et libère le
+    // verrou dans tous les cas. Le callback par appel individuel est
+    // beaucoup plus fiable que le statusCallback de conférence.
+    await finalizeSession(session.id);
   }
 });
 
