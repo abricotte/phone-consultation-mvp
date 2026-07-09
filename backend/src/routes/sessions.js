@@ -5,6 +5,17 @@ const { getPraticienne, getTarifs, getStatutEnLigne } = require('../config/prati
 
 const router = express.Router();
 
+// Libellé lisible de la formule pour l'historique de la cliente.
+// minute → « Consultation Immédiate » ; forfaits → nom du forfait.
+function nomFormule(s) {
+  if (s.type === 'forfait' || s.type === 'forfait_manuel') {
+    if (s.forfait_code === 'decouverte') return 'Consultation Découverte';
+    if (s.forfait_code === 'complete') return 'Consultation Complète';
+    return s.forfait_minutes ? `Forfait ${s.forfait_minutes} min` : 'Forfait';
+  }
+  return 'Consultation Immédiate';
+}
+
 // POST /api/sessions - Démarrer une session de Consultation Immédiate.
 // Mono-praticienne : le consultant est résolu automatiquement, le tarif
 // vient de config_tarifs (jamais de la fiche consultant).
@@ -185,7 +196,7 @@ router.get('/history', authMiddleware, async (req, res) => {
 
     const { data: sessions, error } = await supabase
       .from('sessions')
-      .select('id, status, started_at, ended_at, duration_seconds, rate_per_minute, total_cost, created_at')
+      .select('id, status, type, forfait_code, forfait_minutes, montant_paye, started_at, ended_at, duration_seconds, rate_per_minute, total_cost, created_at')
       .eq(column, filterValue)
       .order('created_at', { ascending: false })
       .limit(50);
@@ -195,11 +206,18 @@ router.get('/history', authMiddleware, async (req, res) => {
     res.json(sessions.map((s) => ({
       id: s.id,
       status: s.status,
+      type: s.type,
+      formule: nomFormule(s),
+      forfaitMinutes: s.forfait_minutes,
       startedAt: s.started_at,
       endedAt: s.ended_at,
       durationSeconds: s.duration_seconds,
       ratePerMinute: s.rate_per_minute,
-      totalCost: s.total_cost,
+      // Montant facturé : forfait = montant payé, minute = coût calculé
+      montant:
+        s.type === 'forfait' || s.type === 'forfait_manuel'
+          ? (s.montant_paye != null ? parseFloat(s.montant_paye) : null)
+          : (s.total_cost != null ? parseFloat(s.total_cost) : null),
       createdAt: s.created_at,
     })));
   } catch (err) {

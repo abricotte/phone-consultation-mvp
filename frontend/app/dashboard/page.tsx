@@ -84,6 +84,9 @@ export default function DashboardPage() {
           Bonjour {user?.firstName} {user?.lastName}
         </h1>
         <div className="flex items-center gap-4 text-sm">
+          <a href="/consultations" className="text-mention hover:text-cta">
+            Mes consultations
+          </a>
           <a href="/compte" className="text-mention hover:text-cta">
             Mon compte
           </a>
