@@ -80,14 +80,25 @@ async function appelImmediatEnCours(praticienneId, tarifs) {
 
   if (!sess || !sess.client_id) return null;
 
-  const [{ data: user }, { data: wallet }] = await Promise.all([
-    supabase.from('users').select('first_name').eq('id', sess.client_id).maybeSingle(),
+  const [{ data: user }, { data: wallet }, { data: proches }] = await Promise.all([
+    supabase
+      .from('users')
+      .select('first_name, date_naissance')
+      .eq('id', sess.client_id)
+      .maybeSingle(),
     supabase
       .from('wallets')
       .select('balance')
       .eq('user_id', sess.client_id)
       .eq('praticienne_id', praticienneId)
       .maybeSingle(),
+    // "Personnes qui comptent" saisies par la cliente : aide Elena à
+    // préparer sa lecture. Usage strictement privé de consultation.
+    supabase
+      .from('proches')
+      .select('prenom, date_naissance, lien')
+      .eq('client_id', sess.client_id)
+      .order('created_at', { ascending: true }),
   ]);
 
   const soldeCents = wallet ? Math.round(parseFloat(wallet.balance) * 100) : 0;
@@ -95,8 +106,14 @@ async function appelImmediatEnCours(praticienneId, tarifs) {
 
   return {
     prenom: user?.first_name || 'Cliente',
+    dateNaissance: user?.date_naissance || null,
     soldeMinutes,
     connecte: !!sess.started_at, // false = ça sonne, true = en ligne
+    proches: (proches || []).map((p) => ({
+      prenom: p.prenom,
+      dateNaissance: p.date_naissance,
+      lien: p.lien,
+    })),
   };
 }
 

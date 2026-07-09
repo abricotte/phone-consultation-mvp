@@ -3,6 +3,18 @@
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
+import { signeAstrologique, formatDateNaissance } from "@/lib/astro";
+
+// Libellés des liens (miroir du backend / de la page profil)
+const LIEN_LABELS: Record<string, string> = {
+  compagnon: "Compagnon / compagne",
+  ex: "Ex",
+  mere: "Mère",
+  pere: "Père",
+  enfant: "Enfant",
+  ami: "Ami(e)",
+  autre: "Autre",
+};
 
 interface Forfait {
   code: string;
@@ -11,10 +23,18 @@ interface Forfait {
   prix: number;
 }
 
+interface ProcheCabinet {
+  prenom: string;
+  dateNaissance: string | null;
+  lien: string;
+}
+
 interface AppelEnCours {
   prenom: string;
+  dateNaissance: string | null;
   soldeMinutes: number;
   connecte: boolean;
+  proches: ProcheCabinet[];
 }
 
 interface Statut {
@@ -183,9 +203,47 @@ export default function AdminPage() {
             <p className="mt-1 font-serif text-2xl font-semibold text-aubergine">
               {statut.appelEnCours.prenom}
             </p>
+            {(() => {
+              const s = signeAstrologique(statut.appelEnCours.dateNaissance);
+              if (!s) return null;
+              return (
+                <p className="mt-0.5 text-sm text-mention">
+                  {s.emoji} {s.nom}
+                  {statut.appelEnCours.dateNaissance &&
+                    ` · né(e) le ${formatDateNaissance(
+                      statut.appelEnCours.dateNaissance
+                    )}`}
+                </p>
+              );
+            })()}
             <p className="mt-1 text-sm text-mention">
               Solde : {statut.appelEnCours.soldeMinutes} min de crédit
             </p>
+
+            {(statut.appelEnCours.proches?.length ?? 0) > 0 && (
+              <div className="mt-3 border-t border-amber-200 pt-3 text-left">
+                <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+                  Les personnes qui comptent
+                </p>
+                <ul className="mt-1.5 space-y-1">
+                  {statut.appelEnCours.proches.map((p, i) => {
+                    const s = signeAstrologique(p.dateNaissance);
+                    return (
+                      <li key={i} className="text-sm text-aubergine">
+                        <span className="font-medium">{p.prenom}</span>
+                        <span className="text-mention">
+                          {" "}
+                          · {LIEN_LABELS[p.lien] || "Autre"}
+                          {p.dateNaissance &&
+                            ` · ${formatDateNaissance(p.dateNaissance)}`}
+                          {s && ` · ${s.emoji} ${s.nom}`}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 

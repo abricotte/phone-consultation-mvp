@@ -11,6 +11,7 @@ const webhookRoutes = require('./routes/webhook');
 const callRoutes = require('./routes/calls');
 const configRoutes = require('./routes/config');
 const adminRoutes = require('./routes/admin');
+const profilRoutes = require('./routes/profil');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,6 +39,7 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/calls', callRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/profil', profilRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({

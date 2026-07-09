@@ -40,6 +40,18 @@ export const api = {
       body: JSON.stringify({ phone }),
     }),
 
+  // Profil cliente (date de naissance + "personnes qui comptent")
+  getProfil: () => request("/profil"),
+  updateProfil: (body: { dateNaissance: string | null }) =>
+    request("/profil", { method: "PATCH", body: JSON.stringify(body) }),
+  addProche: (body: {
+    prenom: string;
+    dateNaissance: string | null;
+    lien: string;
+  }) => request("/profil/proches", { method: "POST", body: JSON.stringify(body) }),
+  deleteProche: (id: string) =>
+    request(`/profil/proches/${id}`, { method: "DELETE" }),
+
   // Consultants
   getConsultants: (params?: string) =>
     request(`/consultants${params ? `?${params}` : ""}`),
