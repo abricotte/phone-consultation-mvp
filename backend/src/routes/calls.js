@@ -48,6 +48,18 @@ function conferenceName(sessionId) {
   return `consult-${sessionId}`;
 }
 
+// Consultation Immédiate : on garde en mémoire le SID de l'appel d'Elena
+// pour pouvoir le raccrocher si le téléphone de la cliente tombe sur
+// répondeur (AMD). Backend mono-instance — cohérent avec les setTimeout
+// déjà utilisés ici (handleMiseEnRelationTimeout, playWarning…).
+const consultantCallSids = new Map();
+
+// AnsweredBy renvoyé par la détection de répondeur Twilio (AMD).
+// 'human' / 'unknown' → on connecte. 'machine_*' / 'fax' → répondeur.
+function estRepondeur(answeredBy) {
+  return typeof answeredBy === 'string' && /^(machine|fax)/i.test(answeredBy);
+}
+
 
 // POST /api/calls/initiate - Lancer la mise en relation client ↔ consultant
 router.post('/initiate', authMiddleware, async (req, res) => {
@@ -141,19 +153,26 @@ router.post('/initiate', authMiddleware, async (req, res) => {
         url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=client`,
         method: 'GET', // /twiml/join est une route GET (défaut Twilio = POST)
         timeLimit: maxSeconds,
+        // Détection de répondeur : Twilio ajoute AnsweredBy à la requête
+        // /twiml/join. Si un répondeur/fax décroche, on raccroche sans
+        // facturer (cf. /twiml/join). 'Enable' répond dès human vs machine.
+        machineDetection: 'Enable',
+        machineDetectionTimeout: 15,
         statusCallback: `${backendUrl}/api/calls/status`,
         statusCallbackEvent: ['failed', 'busy', 'no-answer', 'canceled', 'completed'],
         statusCallbackMethod: 'POST',
       });
 
       // Appel du consultant → rejoint la même conférence
-      await twilio.calls.create({
+      const consultantCall = await twilio.calls.create({
         to: consultantPhone,
         from: process.env.TWILIO_PHONE_NUMBER,
         url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=consultant`,
         method: 'GET', // idem
         timeLimit: maxSeconds,
       });
+      // Mémorisé pour raccrocher la jambe d'Elena si la cliente tombe sur répondeur
+      consultantCallSids.set(sessionId, consultantCall.sid);
     } catch (twilioErr) {
       // Échec du lancement → libérer immédiatement la praticienne
       await libererConsultation();
@@ -194,6 +213,21 @@ router.post('/initiate', authMiddleware, async (req, res) => {
 router.get('/twiml/join', twilioSignature, (req, res) => {
   const { sessionId, role } = req.query;
   const backendUrl = getBackendUrl();
+
+  // RÉPONDEUR DÉTECTÉ (jambe cliente) : ne PAS rejoindre la conférence, ne
+  // PAS facturer. On raccroche cette jambe et on annule la mise en relation
+  // (verrou libéré, session annulée, appel d'Elena raccroché). Le
+  // débit n'a lieu que si started_at est posé, ce qui n'arrivera jamais ici.
+  if (role === 'client' && estRepondeur(req.query.AnsweredBy)) {
+    console.log(`Répondeur détecté (session ${sessionId}, AnsweredBy=${req.query.AnsweredBy}) — aucune facturation`);
+    annulerPourRepondeur(sessionId).catch((err) =>
+      console.error('Erreur annulation répondeur:', err)
+    );
+    const rep = new VoiceResponse();
+    rep.hangup();
+    res.type('text/xml');
+    return res.send(rep.toString());
+  }
 
   const response = new VoiceResponse();
   response.say(
@@ -414,6 +448,8 @@ async function handleMiseEnRelationTimeout(sessionId, clientCallSid) {
       .update({ status: 'cancelled' })
       .eq('id', sessionId);
 
+    consultantCallSids.delete(sessionId);
+
     if (!twilio) return;
 
     const backendUrl = getBackendUrl();
@@ -425,6 +461,45 @@ async function handleMiseEnRelationTimeout(sessionId, clientCallSid) {
       );
   } catch (err) {
     console.error('Erreur timeout mise en relation:', err);
+  }
+}
+
+// Consultation Immédiate : le téléphone de la cliente est tombé sur
+// répondeur. On annule proprement SANS aucun débit (started_at jamais posé)
+// et on raccroche la jambe d'Elena pour ne pas la laisser en attente.
+// Idempotent : sans effet si la session a déjà démarré/été traitée.
+async function annulerPourRepondeur(sessionId) {
+  try {
+    const { data: session } = await supabase
+      .from('sessions')
+      .select('id, status, started_at')
+      .eq('id', sessionId)
+      .single();
+
+    // Déjà connectés ou déjà clôturés → ne rien faire
+    if (!session || session.started_at || session.status !== 'active') return;
+
+    await libererConsultation(); // ne lève jamais
+
+    await supabase
+      .from('sessions')
+      .update({ status: 'cancelled' })
+      .eq('id', sessionId);
+
+    // Raccrocher la jambe d'Elena (en sonnerie → 'canceled', en ligne → 'completed')
+    const consultantSid = consultantCallSids.get(sessionId);
+    if (consultantSid && twilio) {
+      await twilio
+        .calls(consultantSid)
+        .update({ status: 'completed' })
+        .catch(() =>
+          twilio.calls(consultantSid).update({ status: 'canceled' }).catch(() => {})
+        );
+    }
+  } catch (err) {
+    console.error('Erreur annulerPourRepondeur:', err);
+  } finally {
+    consultantCallSids.delete(sessionId);
   }
 }
 
@@ -567,6 +642,7 @@ async function finalizeSession(sessionId) {
   } finally {
     // Retour au statut antérieur du toggle (en_consultation → disponible/hors_ligne)
     await libererConsultation();
+    consultantCallSids.delete(sessionId);
   }
 }
 
