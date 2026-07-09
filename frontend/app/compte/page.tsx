@@ -7,6 +7,7 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
+  phone: string | null;
 }
 
 export default function ComptePage() {
@@ -20,6 +21,12 @@ export default function ComptePage() {
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
 
+  // Téléphone
+  const [phone, setPhone] = useState("");
+  const [phoneEnCours, setPhoneEnCours] = useState(false);
+  const [phoneMessage, setPhoneMessage] = useState("");
+  const [phoneErreur, setPhoneErreur] = useState("");
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -28,13 +35,35 @@ export default function ComptePage() {
     }
     api
       .getMe()
-      .then((u: User) => setUser(u))
+      .then((u: User) => {
+        setUser(u);
+        setPhone(u.phone || "");
+      })
       .catch(() => {
         localStorage.removeItem("token");
         window.location.href = "/login";
       })
       .finally(() => setChargement(false));
   }, []);
+
+  async function handlePhoneSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setPhoneMessage("");
+    setPhoneErreur("");
+    setPhoneEnCours(true);
+    try {
+      const res = await api.changePhone(phone);
+      setPhone(res.phone);
+      setUser((u) => (u ? { ...u, phone: res.phone } : u));
+      setPhoneMessage("Votre numéro de téléphone a bien été mis à jour.");
+    } catch (err) {
+      setPhoneErreur(
+        err instanceof Error ? err.message : "Une erreur est survenue"
+      );
+    } finally {
+      setPhoneEnCours(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -97,9 +126,46 @@ export default function ComptePage() {
             <dd className="text-ink">{user?.email}</dd>
           </div>
         </dl>
+
+        {/* Numéro de téléphone (éditable) — c'est le numéro appelé lors des consultations */}
+        <form onSubmit={handlePhoneSubmit} className="mt-5 border-t border-greige/50 pt-5">
+          <label className="mb-1 block text-sm font-medium text-aubergine">
+            Numéro de téléphone
+          </label>
+          <p className="mb-2 text-xs text-mention">
+            C&apos;est le numéro qu&apos;Elena compose lors de vos consultations.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="06 12 34 56 78"
+              autoComplete="tel"
+              className="w-full rounded-lg border border-greige bg-white px-3 py-2.5 text-ink"
+            />
+            <button
+              type="submit"
+              disabled={phoneEnCours || phone.trim() === (user?.phone || "")}
+              className="whitespace-nowrap rounded-full bg-cta px-5 py-2.5 font-medium text-cta-text hover:bg-cta-dark disabled:opacity-50"
+            >
+              {phoneEnCours ? "Enregistrement…" : "Enregistrer"}
+            </button>
+          </div>
+          {phoneMessage && (
+            <p className="mt-2 rounded-lg bg-green-50 p-2 text-sm text-green-700">
+              {phoneMessage}
+            </p>
+          )}
+          {phoneErreur && (
+            <p className="mt-2 rounded-lg bg-red-50 p-2 text-sm text-red-600">
+              {phoneErreur}
+            </p>
+          )}
+        </form>
+
         <p className="mt-4 text-xs text-mention">
-          Pour modifier votre email ou votre numéro de téléphone, écrivez-nous
-          à{" "}
+          Pour modifier votre email, écrivez-nous à{" "}
           <a
             href="mailto:contact@elena-wolska.com"
             className="text-prix hover:underline"

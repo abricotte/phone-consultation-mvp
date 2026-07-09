@@ -16,6 +16,18 @@ function motDePasseInvalide(pwd) {
   return null;
 }
 
+// Normalisation du numéro de téléphone au format E.164 (le numéro sert à
+// ÉMETTRE l'appel de consultation, il doit donc être composable).
+const PHONE_E164 = /^\+[1-9]\d{7,14}$/;
+function normalizePhone(phone) {
+  if (typeof phone !== 'string') return null;
+  let c = phone.replace(/[\s\-.()]/g, '');
+  if (c.startsWith('00')) c = '+' + c.slice(2); // préfixe international 00 → +
+  if (/^0\d{9}$/.test(c)) c = '+33' + c.slice(1); // format français 0X…
+  if (/^33\d{9}$/.test(c)) c = '+' + c; // 33… sans le +
+  return c;
+}
+
 // POST /api/auth/register - Inscription
 router.post('/register', registerLimiter, async (req, res) => {
   try {
@@ -214,6 +226,32 @@ router.post('/change-password', authMiddleware, async (req, res) => {
     res.json({ message: 'Mot de passe modifié avec succès.' });
   } catch (err) {
     console.error('Erreur changement mot de passe:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PATCH /api/auth/phone - Modifier son numéro de téléphone (connectée)
+router.patch('/phone', authMiddleware, async (req, res) => {
+  try {
+    const normalized = normalizePhone(req.body.phone);
+
+    if (!normalized || !PHONE_E164.test(normalized)) {
+      return res.status(400).json({
+        error:
+          'Numéro invalide. Indiquez un numéro français (ex. 06 12 34 56 78) ou international (ex. +33 6 12 34 56 78).',
+      });
+    }
+
+    const { error } = await supabase
+      .from('users')
+      .update({ phone: normalized })
+      .eq('id', req.user.id);
+
+    if (error) throw error;
+
+    res.json({ phone: normalized, message: 'Numéro de téléphone mis à jour.' });
+  } catch (err) {
+    console.error('Erreur modification téléphone:', err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });

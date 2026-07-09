@@ -34,6 +34,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  changePhone: (phone: string) =>
+    request("/auth/phone", {
+      method: "PATCH",
+      body: JSON.stringify({ phone }),
+    }),
 
   // Consultants
   getConsultants: (params?: string) =>
