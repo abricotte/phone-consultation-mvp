@@ -25,6 +25,13 @@ function libelleLien(value: string): string {
   return LIENS.find((l) => l.value === value)?.label || "Autre";
 }
 
+// Teintes douces pour les avatars des proches (cycle par index)
+const TEINTES = [
+  "bg-coral/15 text-coral-dark",
+  "bg-gold/20 text-gold-dark",
+  "bg-aubergine/10 text-aubergine",
+];
+
 export default function ProfilPage() {
   const [prenom, setPrenom] = useState<string | null>(null);
   const [dateNaissance, setDateNaissance] = useState<string>("");
@@ -32,11 +39,12 @@ export default function ProfilPage() {
   const [proches, setProches] = useState<Proche[]>([]);
   const [chargement, setChargement] = useState(true);
 
+  const [editionDate, setEditionDate] = useState(false);
   const [dateEnCours, setDateEnCours] = useState(false);
-  const [dateMessage, setDateMessage] = useState("");
   const [dateErreur, setDateErreur] = useState("");
 
   // Formulaire d'ajout de proche
+  const [ajoutOuvert, setAjoutOuvert] = useState(false);
   const [pPrenom, setPPrenom] = useState("");
   const [pDate, setPDate] = useState("");
   const [pLien, setPLien] = useState("compagnon");
@@ -74,7 +82,6 @@ export default function ProfilPage() {
 
   async function handleDateSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setDateMessage("");
     setDateErreur("");
     setDateEnCours(true);
     try {
@@ -82,7 +89,7 @@ export default function ProfilPage() {
         dateNaissance: dateNaissance || null,
       });
       setDateEnregistree(res.dateNaissance);
-      setDateMessage("Votre date de naissance a bien été enregistrée.");
+      setEditionDate(false);
     } catch (err) {
       setDateErreur(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
@@ -108,6 +115,7 @@ export default function ProfilPage() {
       setPPrenom("");
       setPDate("");
       setPLien("compagnon");
+      setAjoutOuvert(false);
     } catch (err) {
       setPErreur(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
@@ -116,7 +124,6 @@ export default function ProfilPage() {
   }
 
   async function handleDeleteProche(id: string) {
-    // Optimiste : on retire tout de suite, on remet en cas d'échec
     const sauvegarde = proches;
     setProches((prev) => prev.filter((p) => p.id !== id));
     try {
@@ -127,6 +134,7 @@ export default function ProfilPage() {
   }
 
   const signe = signeAstrologique(dateEnregistree);
+  const montrerInput = editionDate || !dateEnregistree;
 
   if (chargement)
     return <div className="mt-16 text-center text-mention">Chargement…</div>;
@@ -135,196 +143,308 @@ export default function ProfilPage() {
     <div className="mx-auto max-w-2xl px-5 py-10">
       <a
         href="/dashboard"
-        className="text-sm font-medium text-prix hover:underline"
+        className="text-sm font-medium text-prix transition-colors hover:text-cta"
       >
         ← Retour à mon espace
       </a>
 
-      <h1 className="mt-4 font-serif text-3xl font-semibold text-aubergine">
-        Mon profil
-      </h1>
-
-      {/* Bandeau confidentialité (RGPD) */}
-      <div className="mt-4 rounded-2xl border border-cta-outline/40 bg-cta/5 p-4">
-        <p className="text-sm text-aubergine">
-          🔒 Ces informations restent{" "}
-          <strong className="font-semibold">strictement privées</strong> —
-          visibles uniquement par vous et par Elena, pour préparer vos
-          consultations.
+      <header className="mt-4">
+        <h1 className="font-serif text-4xl font-semibold text-aubergine">
+          Mon profil
+        </h1>
+        <p className="mt-1 text-mention">
+          Votre carnet intime, pour des lectures plus justes.
         </p>
-        <p className="mt-1 text-xs text-mention">
-          Tout est facultatif : rien de tout cela n&apos;est requis pour
-          consulter.
+      </header>
+
+      {/* Confidentialité — note fine et rassurante */}
+      <div className="mt-5 flex items-start gap-2.5 rounded-2xl bg-blush px-4 py-3">
+        <span aria-hidden className="mt-0.5 text-base">
+          🔒
+        </span>
+        <p className="text-sm text-ink">
+          Tout est <strong className="font-semibold text-aubergine">facultatif</strong>{" "}
+          et reste <strong className="font-semibold text-aubergine">strictement privé</strong>{" "}
+          — visible uniquement par vous et par Elena.
         </p>
       </div>
 
-      {/* Vous */}
-      <div className="mt-6 rounded-2xl border border-greige/60 bg-ivory p-6 shadow-soft">
-        <h2 className="font-serif text-xl font-semibold text-aubergine">
-          {prenom ? `Vous, ${prenom}` : "Vous"}
-        </h2>
+      {/* Votre ciel — médaillon signe astro */}
+      <section className="relative mt-6 overflow-hidden rounded-3xl border border-greige/60 bg-gradient-to-br from-blush via-cream to-cream p-7 shadow-soft">
+        {/* étoiles décoratives */}
+        <span aria-hidden className="pointer-events-none absolute right-8 top-6 text-lg text-gold/50">✦</span>
+        <span aria-hidden className="pointer-events-none absolute right-16 top-16 text-xs text-coral/40">✦</span>
+        <span aria-hidden className="pointer-events-none absolute right-28 top-8 text-[0.6rem] text-gold/40">✦</span>
 
-        <form onSubmit={handleDateSubmit} className="mt-4">
-          <label className="mb-1 block text-sm font-medium text-aubergine">
-            Date de naissance
-          </label>
-          <p className="mb-2 text-xs text-mention">
-            Pour votre lecture et votre cadeau d&apos;anniversaire 🎁
-          </p>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              type="date"
-              value={dateNaissance}
-              onChange={(e) => setDateNaissance(e.target.value)}
-              max={new Date().toISOString().slice(0, 10)}
-              className="w-full rounded-lg border border-greige bg-white px-3 py-2.5 text-ink"
-            />
-            <button
-              type="submit"
-              disabled={dateEnCours || dateNaissance === (dateEnregistree || "")}
-              className="whitespace-nowrap rounded-full bg-cta px-5 py-2.5 font-medium text-cta-text hover:bg-cta-dark disabled:opacity-50"
-            >
-              {dateEnCours ? "Enregistrement…" : "Enregistrer"}
-            </button>
+        <div className="flex items-center gap-5">
+          {/* Médaillon */}
+          <div
+            className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-4xl ring-1 ${
+              signe
+                ? "bg-gradient-to-br from-gold-light to-gold text-aubergine ring-gold-dark/30"
+                : "bg-greige/40 text-mention ring-greige"
+            }`}
+            style={
+              signe
+                ? { boxShadow: "inset 0 2px 8px rgba(255,255,255,0.55)" }
+                : undefined
+            }
+          >
+            {signe ? signe.emoji : "✦"}
           </div>
 
-          {signe && (
-            <p className="mt-3 text-sm text-ink">
-              <span className="mr-1 text-lg">{signe.emoji}</span>
-              Signe astrologique :{" "}
-              <span className="font-semibold text-aubergine">{signe.nom}</span>
-              {dateEnregistree && (
-                <span className="text-mention">
-                  {" "}
-                  · né(e) le {formatDateNaissance(dateEnregistree)}
-                </span>
-              )}
-            </p>
-          )}
+          <div className="min-w-0">
+            {signe ? (
+              <>
+                <p className="text-xs font-medium uppercase tracking-[0.15em] text-mention">
+                  Votre signe
+                </p>
+                <p className="font-serif text-3xl font-semibold text-aubergine">
+                  {signe.nom}
+                </p>
+                {dateEnregistree && (
+                  <p className="mt-0.5 text-sm text-mention">
+                    née le {formatDateNaissance(dateEnregistree)}
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="font-serif text-2xl font-semibold text-aubergine">
+                  {prenom ? `Bonjour ${prenom}` : "Votre ciel"}
+                </p>
+                <p className="mt-0.5 text-sm text-mention">
+                  Ajoutez votre date de naissance pour révéler votre signe.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
 
-          {dateMessage && (
-            <p className="mt-3 rounded-lg bg-green-50 p-2 text-sm text-green-700">
-              {dateMessage}
-            </p>
+        {/* Date de naissance — affichage / édition */}
+        <div className="mt-5 border-t border-greige/50 pt-5">
+          <p className="text-xs text-mention">
+            Pour votre lecture et votre cadeau d&apos;anniversaire 🎁
+          </p>
+
+          {montrerInput ? (
+            <form onSubmit={handleDateSubmit} className="mt-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  type="date"
+                  value={dateNaissance}
+                  onChange={(e) => setDateNaissance(e.target.value)}
+                  max={new Date().toISOString().slice(0, 10)}
+                  className="w-full rounded-xl border border-greige bg-ivory px-3 py-2.5 text-ink focus:border-cta-outline focus:outline-none"
+                />
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={dateEnCours || dateNaissance === (dateEnregistree || "")}
+                    className="whitespace-nowrap rounded-full bg-cta px-5 py-2.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
+                  >
+                    {dateEnCours ? "…" : "Enregistrer"}
+                  </button>
+                  {dateEnregistree && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDateNaissance(dateEnregistree || "");
+                        setEditionDate(false);
+                        setDateErreur("");
+                      }}
+                      className="whitespace-nowrap rounded-full px-4 py-2.5 text-sm text-mention hover:text-aubergine"
+                    >
+                      Annuler
+                    </button>
+                  )}
+                </div>
+              </div>
+              {dateErreur && (
+                <p className="mt-2 rounded-lg bg-red-50 p-2 text-sm text-red-600">
+                  {dateErreur}
+                </p>
+              )}
+            </form>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEditionDate(true)}
+              className="mt-1 text-sm font-medium text-prix transition-colors hover:text-cta"
+            >
+              Modifier ma date de naissance
+            </button>
           )}
-          {dateErreur && (
-            <p className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">
-              {dateErreur}
-            </p>
-          )}
-        </form>
-      </div>
+        </div>
+      </section>
 
       {/* Les personnes qui comptent */}
-      <div className="mt-6 rounded-2xl border border-greige/60 bg-ivory p-6 shadow-soft">
-        <h2 className="font-serif text-xl font-semibold text-aubergine">
+      <section className="mt-6 rounded-3xl border border-greige/60 bg-ivory p-7 shadow-soft">
+        <h2 className="font-serif text-2xl font-semibold text-aubergine">
           Les personnes qui comptent
         </h2>
         <p className="mt-1 text-sm text-mention">
-          Ajoutez les proches sur lesquels vous consultez souvent — Elena les
-          aura sous les yeux pendant votre appel.
+          Les proches sur lesquels vous consultez souvent — Elena les aura sous
+          les yeux pendant votre appel.
         </p>
 
         {/* Liste */}
-        {proches.length > 0 && (
-          <ul className="mt-4 space-y-2">
-            {proches.map((p) => {
+        {proches.length > 0 ? (
+          <ul className="mt-5 space-y-2.5">
+            {proches.map((p, i) => {
               const s = signeAstrologique(p.dateNaissance);
               return (
                 <li
                   key={p.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-greige/50 bg-white px-4 py-3"
+                  className="group flex items-center gap-3 rounded-2xl border border-greige/50 bg-cream px-4 py-3"
                 >
-                  <div>
-                    <p className="font-medium text-ink">
-                      {p.prenom}{" "}
-                      <span className="text-sm font-normal text-mention">
-                        · {libelleLien(p.lien)}
+                  <div
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-serif text-lg font-semibold ${
+                      TEINTES[i % TEINTES.length]
+                    }`}
+                  >
+                    {p.prenom.charAt(0).toUpperCase()}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate font-medium text-ink">
+                        {p.prenom}
                       </span>
-                    </p>
+                      <span className="shrink-0 rounded-full bg-blush px-2.5 py-0.5 text-xs text-mention">
+                        {libelleLien(p.lien)}
+                      </span>
+                    </div>
                     {p.dateNaissance && (
-                      <p className="text-xs text-mention">
+                      <p className="mt-0.5 text-xs text-mention">
                         {formatDateNaissance(p.dateNaissance)}
                         {s && ` · ${s.emoji} ${s.nom}`}
                       </p>
                     )}
                   </div>
+
                   <button
                     onClick={() => handleDeleteProche(p.id)}
                     aria-label={`Supprimer ${p.prenom}`}
-                    className="shrink-0 rounded-full px-3 py-1 text-sm text-mention hover:bg-red-50 hover:text-red-600"
+                    className="shrink-0 rounded-full p-2 text-mention/60 transition hover:bg-red-50 hover:text-red-600"
                   >
-                    Supprimer
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      aria-hidden
+                    >
+                      <path
+                        d="M4 4l8 8M12 4l-8 8"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                      />
+                    </svg>
                   </button>
                 </li>
               );
             })}
           </ul>
+        ) : (
+          !ajoutOuvert && (
+            <div className="mt-5 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-8 text-center">
+              <p className="text-3xl">✦</p>
+              <p className="mt-2 text-sm text-mention">
+                Aucun proche pour l&apos;instant.
+              </p>
+            </div>
+          )
         )}
 
-        {/* Formulaire d'ajout */}
-        <form
-          onSubmit={handleAddProche}
-          className="mt-4 rounded-xl border border-dashed border-greige bg-white/60 p-4"
-        >
-          <p className="mb-3 text-sm font-medium text-aubergine">
-            Ajouter une personne
-          </p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs text-mention">Prénom</label>
-              <input
-                type="text"
-                value={pPrenom}
-                onChange={(e) => setPPrenom(e.target.value)}
-                placeholder="Prénom"
-                className="w-full rounded-lg border border-greige bg-white px-3 py-2 text-ink"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-mention">Lien</label>
-              <select
-                value={pLien}
-                onChange={(e) => setPLien(e.target.value)}
-                className="w-full rounded-lg border border-greige bg-white px-3 py-2 text-ink"
-              >
-                {LIENS.map((l) => (
-                  <option key={l.value} value={l.value}>
-                    {l.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-mention">
-                Date de naissance (facultatif)
-              </label>
-              <input
-                type="date"
-                value={pDate}
-                onChange={(e) => setPDate(e.target.value)}
-                max={new Date().toISOString().slice(0, 10)}
-                className="w-full rounded-lg border border-greige bg-white px-3 py-2 text-ink"
-              />
-            </div>
-          </div>
-
-          {pErreur && (
-            <p className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">
-              {pErreur}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={pEnCours}
-            className="mt-3 rounded-full bg-cta px-5 py-2.5 font-medium text-cta-text hover:bg-cta-dark disabled:opacity-50"
+        {/* Ajout : bouton -> formulaire déplié */}
+        {ajoutOuvert ? (
+          <form
+            onSubmit={handleAddProche}
+            className="mt-4 rounded-2xl border border-cta-outline/40 bg-blush/50 p-5"
           >
-            {pEnCours ? "Ajout…" : "Ajouter"}
-          </button>
-        </form>
+            <p className="mb-3 font-serif text-lg font-semibold text-aubergine">
+              Ajouter une personne
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs text-mention">Prénom</label>
+                <input
+                  type="text"
+                  value={pPrenom}
+                  onChange={(e) => setPPrenom(e.target.value)}
+                  placeholder="Son prénom"
+                  autoFocus
+                  className="w-full rounded-xl border border-greige bg-ivory px-3 py-2 text-ink focus:border-cta-outline focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-mention">Lien</label>
+                <select
+                  value={pLien}
+                  onChange={(e) => setPLien(e.target.value)}
+                  className="w-full rounded-xl border border-greige bg-ivory px-3 py-2 text-ink focus:border-cta-outline focus:outline-none"
+                >
+                  {LIENS.map((l) => (
+                    <option key={l.value} value={l.value}>
+                      {l.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-mention">
+                  Date de naissance (facultatif)
+                </label>
+                <input
+                  type="date"
+                  value={pDate}
+                  onChange={(e) => setPDate(e.target.value)}
+                  max={new Date().toISOString().slice(0, 10)}
+                  className="w-full rounded-xl border border-greige bg-ivory px-3 py-2 text-ink focus:border-cta-outline focus:outline-none"
+                />
+              </div>
+            </div>
 
-        <p className="mt-4 text-xs text-mention">
+            {pErreur && (
+              <p className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">
+                {pErreur}
+              </p>
+            )}
+
+            <div className="mt-4 flex items-center gap-2">
+              <button
+                type="submit"
+                disabled={pEnCours}
+                className="rounded-full bg-cta px-5 py-2.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
+              >
+                {pEnCours ? "Ajout…" : "Ajouter"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAjoutOuvert(false);
+                  setPErreur("");
+                }}
+                className="rounded-full px-4 py-2.5 text-sm text-mention hover:text-aubergine"
+              >
+                Annuler
+              </button>
+            </div>
+          </form>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setAjoutOuvert(true)}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-cta-outline bg-ivory px-5 py-3 font-medium text-prix transition hover:bg-cta hover:text-cta-text"
+          >
+            <span className="text-lg leading-none">＋</span>
+            Ajouter une personne
+          </button>
+        )}
+
+        <p className="mt-5 text-xs text-mention">
           Les informations concernant des tiers sont conservées pour le seul
           usage privé de vos consultations. Voir notre{" "}
           <a
@@ -335,7 +455,7 @@ export default function ProfilPage() {
           </a>
           .
         </p>
-      </div>
+      </section>
     </div>
   );
 }
