@@ -6,6 +6,30 @@ interface Signe {
   emoji: string;
 }
 
+// Les 12 signes dans l'ordre du zodiaque — sert aux sélecteurs
+// d'ascendant (slugs alignés sur le CHECK de la migration 003).
+export const SIGNES_LISTE: { code: string; nom: string; emoji: string }[] = [
+  { code: "belier", nom: "Bélier", emoji: "♈" },
+  { code: "taureau", nom: "Taureau", emoji: "♉" },
+  { code: "gemeaux", nom: "Gémeaux", emoji: "♊" },
+  { code: "cancer", nom: "Cancer", emoji: "♋" },
+  { code: "lion", nom: "Lion", emoji: "♌" },
+  { code: "vierge", nom: "Vierge", emoji: "♍" },
+  { code: "balance", nom: "Balance", emoji: "♎" },
+  { code: "scorpion", nom: "Scorpion", emoji: "♏" },
+  { code: "sagittaire", nom: "Sagittaire", emoji: "♐" },
+  { code: "capricorne", nom: "Capricorne", emoji: "♑" },
+  { code: "verseau", nom: "Verseau", emoji: "♒" },
+  { code: "poissons", nom: "Poissons", emoji: "♓" },
+];
+
+// Résout un slug d'ascendant ('vierge') vers { nom, emoji }, ou null.
+export function signeParCode(code: string | null | undefined): Signe | null {
+  if (!code) return null;
+  const s = SIGNES_LISTE.find((x) => x.code === code);
+  return s ? { nom: s.nom, emoji: s.emoji } : null;
+}
+
 // Bornes de fin de chaque signe (mois 1-12, jour inclus).
 const SIGNES: { finMois: number; finJour: number; signe: Signe }[] = [
   { finMois: 1, finJour: 19, signe: { nom: "Capricorne", emoji: "♑" } },

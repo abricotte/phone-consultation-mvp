@@ -83,7 +83,7 @@ async function appelImmediatEnCours(praticienneId, tarifs) {
   const [{ data: user }, { data: wallet }, { data: proches }] = await Promise.all([
     supabase
       .from('users')
-      .select('first_name, date_naissance')
+      .select('first_name, date_naissance, ascendant')
       .eq('id', sess.client_id)
       .maybeSingle(),
     supabase
@@ -96,7 +96,7 @@ async function appelImmediatEnCours(praticienneId, tarifs) {
     // préparer sa lecture. Usage strictement privé de consultation.
     supabase
       .from('proches')
-      .select('prenom, date_naissance, lien')
+      .select('prenom, date_naissance, ascendant, lien')
       .eq('client_id', sess.client_id)
       .order('created_at', { ascending: true }),
   ]);
@@ -107,11 +107,13 @@ async function appelImmediatEnCours(praticienneId, tarifs) {
   return {
     prenom: user?.first_name || 'Cliente',
     dateNaissance: user?.date_naissance || null,
+    ascendant: user?.ascendant || null,
     soldeMinutes,
     connecte: !!sess.started_at, // false = ça sonne, true = en ligne
     proches: (proches || []).map((p) => ({
       prenom: p.prenom,
       dateNaissance: p.date_naissance,
+      ascendant: p.ascendant || null,
       lien: p.lien,
     })),
   };

@@ -8,6 +8,24 @@ const router = express.Router();
 // CHECK de la migration 002 et au <select> du frontend).
 const LIENS = ['compagnon', 'ex', 'mere', 'pere', 'enfant', 'ami', 'autre'];
 
+// Ascendants autorisés (CHECK de la migration 003). Saisi par la cliente
+// si elle le connaît — jamais calculé (il faudrait l'heure et le lieu).
+const ASCENDANTS = [
+  'belier', 'taureau', 'gemeaux', 'cancer', 'lion', 'vierge',
+  'balance', 'scorpion', 'sagittaire', 'capricorne', 'verseau', 'poissons',
+];
+
+// Valide un ascendant FACULTATIF. Retourne { value } ou { error }.
+function validerAscendant(input) {
+  if (input === null || input === undefined || input === '') {
+    return { value: null };
+  }
+  if (typeof input !== 'string' || !ASCENDANTS.includes(input)) {
+    return { error: 'Ascendant invalide.' };
+  }
+  return { value: input };
+}
+
 // Valide une date de naissance FACULTATIVE au format 'YYYY-MM-DD'.
 // Retourne { value } (string ou null) si OK, ou { error } sinon.
 function validerDateNaissance(input) {
@@ -37,6 +55,7 @@ function serialiserProche(p) {
     id: p.id,
     prenom: p.prenom,
     dateNaissance: p.date_naissance,
+    ascendant: p.ascendant || null,
     lien: p.lien,
   };
 }
@@ -48,12 +67,12 @@ router.get('/', authMiddleware, async (req, res) => {
       await Promise.all([
         supabase
           .from('users')
-          .select('first_name, date_naissance')
+          .select('first_name, date_naissance, ascendant')
           .eq('id', req.user.id)
           .single(),
         supabase
           .from('proches')
-          .select('id, prenom, date_naissance, lien')
+          .select('id, prenom, date_naissance, ascendant, lien')
           .eq('client_id', req.user.id)
           .order('created_at', { ascending: true }),
       ]);
@@ -64,6 +83,7 @@ router.get('/', authMiddleware, async (req, res) => {
     res.json({
       prenom: user?.first_name || null,
       dateNaissance: user?.date_naissance || null,
+      ascendant: user?.ascendant || null,
       proches: (proches || []).map(serialiserProche),
     });
   } catch (err) {
@@ -72,22 +92,44 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// PATCH /api/profil - Mettre à jour la date de naissance (facultative)
+// PATCH /api/profil - Mise à jour PARTIELLE : seuls les champs présents
+// dans le body sont modifiés (dateNaissance et/ou ascendant, facultatifs).
 router.patch('/', authMiddleware, async (req, res) => {
   try {
-    const { value, error: dateError } = validerDateNaissance(req.body.dateNaissance);
-    if (dateError) {
-      return res.status(400).json({ error: dateError });
+    const maj = {};
+
+    if (Object.prototype.hasOwnProperty.call(req.body, 'dateNaissance')) {
+      const { value, error: dateError } = validerDateNaissance(req.body.dateNaissance);
+      if (dateError) {
+        return res.status(400).json({ error: dateError });
+      }
+      maj.date_naissance = value;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(req.body, 'ascendant')) {
+      const { value, error: ascError } = validerAscendant(req.body.ascendant);
+      if (ascError) {
+        return res.status(400).json({ error: ascError });
+      }
+      maj.ascendant = value;
+    }
+
+    if (Object.keys(maj).length === 0) {
+      return res.status(400).json({ error: 'Aucun champ à mettre à jour.' });
     }
 
     const { error } = await supabase
       .from('users')
-      .update({ date_naissance: value })
+      .update(maj)
       .eq('id', req.user.id);
 
     if (error) throw error;
 
-    res.json({ dateNaissance: value, message: 'Profil mis à jour.' });
+    res.json({
+      dateNaissance: 'date_naissance' in maj ? maj.date_naissance : undefined,
+      ascendant: 'ascendant' in maj ? maj.ascendant : undefined,
+      message: 'Profil mis à jour.',
+    });
   } catch (err) {
     console.error('Erreur mise à jour profil:', err);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -115,15 +157,21 @@ router.post('/proches', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: dateError });
     }
 
+    const { value: ascendant, error: ascError } = validerAscendant(req.body.ascendant);
+    if (ascError) {
+      return res.status(400).json({ error: ascError });
+    }
+
     const { data: proche, error } = await supabase
       .from('proches')
       .insert({
         client_id: req.user.id,
         prenom,
         date_naissance: value,
+        ascendant,
         lien,
       })
-      .select('id, prenom, date_naissance, lien')
+      .select('id, prenom, date_naissance, ascendant, lien')
       .single();
 
     if (error) throw error;

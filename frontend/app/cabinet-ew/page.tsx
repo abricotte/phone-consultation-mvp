@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
-import { signeAstrologique, formatDateNaissance } from "@/lib/astro";
+import {
+  signeAstrologique,
+  formatDateNaissance,
+  signeParCode,
+} from "@/lib/astro";
 
 // Libellés des liens (miroir du backend / de la page profil)
 const LIEN_LABELS: Record<string, string> = {
@@ -26,12 +30,14 @@ interface Forfait {
 interface ProcheCabinet {
   prenom: string;
   dateNaissance: string | null;
+  ascendant: string | null;
   lien: string;
 }
 
 interface AppelEnCours {
   prenom: string;
   dateNaissance: string | null;
+  ascendant: string | null;
   soldeMinutes: number;
   connecte: boolean;
   proches: ProcheCabinet[];
@@ -205,14 +211,21 @@ export default function AdminPage() {
             </p>
             {(() => {
               const s = signeAstrologique(statut.appelEnCours.dateNaissance);
-              if (!s) return null;
+              const asc = signeParCode(statut.appelEnCours.ascendant);
+              if (!s && !asc) return null;
               return (
                 <p className="mt-0.5 text-sm text-mention">
-                  {s.emoji} {s.nom}
-                  {statut.appelEnCours.dateNaissance &&
-                    ` · né(e) le ${formatDateNaissance(
-                      statut.appelEnCours.dateNaissance
-                    )}`}
+                  {[
+                    s ? `${s.emoji} ${s.nom}` : null,
+                    asc ? `asc. ${asc.nom}` : null,
+                    statut.appelEnCours.dateNaissance
+                      ? `né(e) le ${formatDateNaissance(
+                          statut.appelEnCours.dateNaissance
+                        )}`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               );
             })()}
@@ -237,6 +250,8 @@ export default function AdminPage() {
                           {p.dateNaissance &&
                             ` · ${formatDateNaissance(p.dateNaissance)}`}
                           {s && ` · ${s.emoji} ${s.nom}`}
+                          {signeParCode(p.ascendant) &&
+                            ` · asc. ${signeParCode(p.ascendant)!.nom}`}
                         </span>
                       </li>
                     );

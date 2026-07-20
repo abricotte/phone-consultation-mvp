@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { signeAstrologique, formatDateNaissance } from "@/lib/astro";
+import {
+  signeAstrologique,
+  formatDateNaissance,
+  signeParCode,
+  SIGNES_LISTE,
+} from "@/lib/astro";
 
 interface Proche {
   id: string;
   prenom: string;
   dateNaissance: string | null;
+  ascendant: string | null;
   lien: string;
 }
 
@@ -43,10 +49,16 @@ export default function ProfilPage() {
   const [dateEnCours, setDateEnCours] = useState(false);
   const [dateErreur, setDateErreur] = useState("");
 
+  // Ascendant de la cliente (saisi si elle le connaît — non calculable
+  // sans l'heure et le lieu de naissance)
+  const [ascendant, setAscendant] = useState<string>("");
+  const [ascEnCours, setAscEnCours] = useState(false);
+
   // Formulaire d'ajout de proche
   const [ajoutOuvert, setAjoutOuvert] = useState(false);
   const [pPrenom, setPPrenom] = useState("");
   const [pDate, setPDate] = useState("");
+  const [pAscendant, setPAscendant] = useState("");
   const [pLien, setPLien] = useState("compagnon");
   const [pEnCours, setPEnCours] = useState(false);
   const [pErreur, setPErreur] = useState("");
@@ -63,11 +75,13 @@ export default function ProfilPage() {
         (data: {
           prenom: string | null;
           dateNaissance: string | null;
+          ascendant: string | null;
           proches: Proche[];
         }) => {
           setPrenom(data.prenom);
           setDateNaissance(data.dateNaissance || "");
           setDateEnregistree(data.dateNaissance);
+          setAscendant(data.ascendant || "");
           setProches(data.proches || []);
         }
       )
@@ -97,6 +111,19 @@ export default function ProfilPage() {
     }
   }
 
+  async function handleAscendantChange(code: string) {
+    const precedent = ascendant;
+    setAscendant(code); // optimiste
+    setAscEnCours(true);
+    try {
+      await api.updateProfil({ ascendant: code || null });
+    } catch {
+      setAscendant(precedent);
+    } finally {
+      setAscEnCours(false);
+    }
+  }
+
   async function handleAddProche(e: React.FormEvent) {
     e.preventDefault();
     setPErreur("");
@@ -109,11 +136,13 @@ export default function ProfilPage() {
       const proche = await api.addProche({
         prenom: pPrenom.trim(),
         dateNaissance: pDate || null,
+        ascendant: pAscendant || null,
         lien: pLien,
       });
       setProches((prev) => [...prev, proche]);
       setPPrenom("");
       setPDate("");
+      setPAscendant("");
       setPLien("compagnon");
       setAjoutOuvert(false);
     } catch (err) {
@@ -134,6 +163,7 @@ export default function ProfilPage() {
   }
 
   const signe = signeAstrologique(dateEnregistree);
+  const ascSigne = signeParCode(ascendant);
   const montrerInput = editionDate || !dateEnregistree;
 
   if (chargement)
@@ -152,9 +182,6 @@ export default function ProfilPage() {
         <h1 className="font-serif text-4xl font-semibold text-aubergine">
           Mon profil
         </h1>
-        <p className="mt-1 text-mention">
-          Votre carnet intime, pour des lectures plus justes.
-        </p>
       </header>
 
       {/* Confidentialité — note fine et rassurante */}
@@ -163,8 +190,7 @@ export default function ProfilPage() {
           🔒
         </span>
         <p className="text-sm text-ink">
-          Tout est <strong className="font-semibold text-aubergine">facultatif</strong>{" "}
-          et reste <strong className="font-semibold text-aubergine">strictement privé</strong>{" "}
+          <strong className="font-semibold text-aubergine">Strictement privé</strong>{" "}
           — visible uniquement par vous et par Elena.
         </p>
       </div>
@@ -201,6 +227,11 @@ export default function ProfilPage() {
                 </p>
                 <p className="font-serif text-3xl font-semibold text-aubergine">
                   {signe.nom}
+                  {ascSigne && (
+                    <span className="ml-2 font-sans text-base font-normal text-mention">
+                      ascendant {ascSigne.nom} {ascSigne.emoji}
+                    </span>
+                  )}
                 </p>
                 {dateEnregistree && (
                   <p className="mt-0.5 text-sm text-mention">
@@ -276,6 +307,31 @@ export default function ProfilPage() {
             </button>
           )}
         </div>
+
+        {/* Ascendant — saisi si connu (non calculable sans heure + lieu) */}
+        <div className="mt-4 flex flex-col gap-2 border-t border-greige/50 pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-aubergine">Votre ascendant</p>
+            <p className="text-xs text-mention">
+              Si vous le connaissez — il se calcule avec l&apos;heure et le lieu
+              de naissance.
+            </p>
+          </div>
+          <select
+            value={ascendant}
+            onChange={(e) => handleAscendantChange(e.target.value)}
+            disabled={ascEnCours}
+            aria-label="Votre ascendant"
+            className="rounded-xl border border-greige bg-ivory px-3 py-2 text-ink focus:border-cta-outline focus:outline-none disabled:opacity-60"
+          >
+            <option value="">Je ne sais pas</option>
+            {SIGNES_LISTE.map((s) => (
+              <option key={s.code} value={s.code}>
+                {s.emoji} {s.nom}
+              </option>
+            ))}
+          </select>
+        </div>
       </section>
 
       {/* Les personnes qui comptent */}
@@ -315,10 +371,17 @@ export default function ProfilPage() {
                         {libelleLien(p.lien)}
                       </span>
                     </div>
-                    {p.dateNaissance && (
+                    {(p.dateNaissance || p.ascendant) && (
                       <p className="mt-0.5 text-xs text-mention">
-                        {formatDateNaissance(p.dateNaissance)}
-                        {s && ` · ${s.emoji} ${s.nom}`}
+                        {[
+                          p.dateNaissance ? formatDateNaissance(p.dateNaissance) : null,
+                          s ? `${s.emoji} ${s.nom}` : null,
+                          signeParCode(p.ascendant)
+                            ? `asc. ${signeParCode(p.ascendant)!.nom}`
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </p>
                     )}
                   </div>
@@ -404,6 +467,23 @@ export default function ProfilPage() {
                   max={new Date().toISOString().slice(0, 10)}
                   className="w-full rounded-xl border border-greige bg-ivory px-3 py-2 text-ink focus:border-cta-outline focus:outline-none"
                 />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-mention">
+                  Ascendant (si connu)
+                </label>
+                <select
+                  value={pAscendant}
+                  onChange={(e) => setPAscendant(e.target.value)}
+                  className="w-full rounded-xl border border-greige bg-ivory px-3 py-2 text-ink focus:border-cta-outline focus:outline-none"
+                >
+                  <option value="">Je ne sais pas</option>
+                  {SIGNES_LISTE.map((s) => (
+                    <option key={s.code} value={s.code}>
+                      {s.emoji} {s.nom}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
