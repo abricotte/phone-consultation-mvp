@@ -8,6 +8,7 @@ import {
   signeParCode,
   SIGNES_LISTE,
 } from "@/lib/astro";
+import EspaceNav from "@/components/EspaceNav";
 
 interface Proche {
   id: string;
@@ -171,14 +172,9 @@ export default function ProfilPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-10">
-      <a
-        href="/dashboard"
-        className="text-sm font-medium text-prix transition-colors hover:text-cta"
-      >
-        ← Retour à mon espace
-      </a>
+      <EspaceNav />
 
-      <header className="mt-4">
+      <header className="mt-8">
         <h1 className="font-serif text-4xl font-semibold text-aubergine">
           Mon profil
         </h1>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import EspaceNav from "@/components/EspaceNav";
 
 interface User {
   email: string;
@@ -98,14 +99,9 @@ export default function ComptePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-10">
-      <a
-        href="/dashboard"
-        className="text-sm font-medium text-prix hover:underline"
-      >
-        ← Retour à mon espace
-      </a>
+      <EspaceNav />
 
-      <h1 className="mt-4 font-serif text-3xl font-semibold text-aubergine">
+      <h1 className="mt-8 font-serif text-3xl font-semibold text-aubergine">
         Mon compte
       </h1>
 

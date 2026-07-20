@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import RechargeSelector from "@/components/RechargeSelector";
 import AppelElenaCard from "@/components/AppelElenaCard";
+import EspaceNav from "@/components/EspaceNav";
 
 interface User {
   id: string;
@@ -25,14 +26,40 @@ interface Transaction {
   createdAt: string;
 }
 
+// Pensée du jour — une par jour, en douceur (rotation déterministe)
+const PENSEES = [
+  "Rien ne meurt, tout se transforme.",
+  "Ce qui est écrit trouve toujours son chemin.",
+  "Écoutez votre intuition : elle parle avant les mots.",
+  "Chaque rencontre laisse une empreinte dans votre ciel.",
+  "La patience est une forme de confiance en l'avenir.",
+  "Les réponses viennent à celles qui savent attendre.",
+  "Votre lumière ne demande qu'à être vue.",
+];
+
+function jourDeLAnnee(d: Date): number {
+  const debut = new Date(d.getFullYear(), 0, 0);
+  return Math.floor((d.getTime() - debut.getTime()) / 86400000);
+}
+
+// "58,00 €" à la française
+function euros(n: number): string {
+  return `${n.toFixed(2).replace(".", ",")} €`;
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [prixMinuteCents, setPrixMinuteCents] = useState(290);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [paymentStatus, setPaymentStatus] = useState("");
+
+  // Calculés après montage (pas de décalage d'hydratation)
+  const [dateDuJour, setDateDuJour] = useState("");
+  const [pensee, setPensee] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -40,6 +67,16 @@ export default function DashboardPage() {
       window.location.href = "/login";
       return;
     }
+
+    const maintenant = new Date();
+    setDateDuJour(
+      maintenant.toLocaleDateString("fr-FR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      })
+    );
+    setPensee(PENSEES[jourDeLAnnee(maintenant) % PENSEES.length]);
 
     // Vérifier le retour de Stripe
     const params = new URLSearchParams(window.location.search);
@@ -50,6 +87,15 @@ export default function DashboardPage() {
       setPaymentStatus("Paiement annulé.");
       window.history.replaceState({}, "", "/dashboard");
     }
+
+    api
+      .getRechargeConfig()
+      .then((c: { prixMinuteCents: number }) => {
+        if (c?.prixMinuteCents) setPrixMinuteCents(c.prixMinuteCents);
+      })
+      .catch(() => {
+        /* le prix par défaut reste affiché */
+      });
 
     Promise.all([api.getMe(), api.getWallet(), api.getTransactions()])
       .then(([userData, walletData, txData]) => {
@@ -67,106 +113,136 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/";
-  }
+  const balance = wallet?.balance ?? 0;
+  const minutesRestantes = Math.floor((balance * 100) / prixMinuteCents);
 
-  if (loading) return <div className="text-center mt-16">Chargement...</div>;
+  if (loading)
+    return <div className="mt-16 text-center text-mention">Chargement…</div>;
   if (error && !user)
-    return <div className="text-center mt-16 text-red-600">{error}</div>;
+    return <div className="mt-16 text-center text-red-600">{error}</div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-5 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="font-serif text-2xl font-semibold text-aubergine">
-          Bonjour {user?.firstName} {user?.lastName}
+    <div className="mx-auto max-w-4xl px-5 py-8">
+      <EspaceNav />
+
+      {/* Salutation */}
+      <header className="relative mt-8 mb-6">
+        <span aria-hidden className="pointer-events-none absolute right-2 top-0 text-lg text-gold/50">✦</span>
+        <span aria-hidden className="pointer-events-none absolute right-14 top-8 text-[0.6rem] text-coral/40">✦</span>
+
+        {dateDuJour && (
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-mention">
+            {dateDuJour}
+          </p>
+        )}
+        <h1 className="mt-1 font-serif text-4xl font-semibold text-aubergine">
+          Bonjour {user?.firstName}
         </h1>
-        <div className="flex items-center gap-4 text-sm">
-          <a href="/profil" className="text-mention hover:text-cta">
-            Mon profil
-          </a>
-          <a href="/consultations" className="text-mention hover:text-cta">
-            Mes consultations
-          </a>
-          <a href="/compte" className="text-mention hover:text-cta">
-            Mon compte
-          </a>
-          <button
-            onClick={handleLogout}
-            className="text-mention hover:text-red-600"
-          >
-            Déconnexion
-          </button>
-        </div>
-      </div>
+        {pensee && (
+          <p className="mt-1.5 font-serif text-lg italic text-mention">
+            « {pensee} »
+          </p>
+        )}
+      </header>
 
       {paymentStatus && (
-        <div className={`p-4 rounded-lg mb-6 ${paymentStatus.includes("succès") ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
+        <div className={`mb-6 rounded-2xl p-4 ${paymentStatus.includes("succès") ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
           {paymentStatus}
         </div>
       )}
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
+        <div className="mb-6 rounded-2xl bg-red-50 p-4 text-red-600">
           {error}
         </div>
       )}
 
-      {/* Appel immédiat — action principale, en haut de l'espace cliente */}
+      {/* Appel immédiat — action principale */}
       <div className="mb-6">
         <AppelElenaCard />
       </div>
 
-      {/* Portefeuille */}
-      <div className="bg-ivory rounded-2xl shadow-soft p-6 mb-6 border border-greige/60">
-        <h2 className="text-lg font-semibold mb-4">Mon portefeuille</h2>
-        <p className="font-serif text-3xl font-semibold text-prix mb-4">
-          {wallet?.balance?.toFixed(2) ?? "0.00"}€
+      {/* Crédit — carte céleste, affiché en minutes */}
+      <section className="relative mb-6 overflow-hidden rounded-3xl border border-greige/60 bg-gradient-to-br from-blush via-cream to-cream p-7 shadow-soft">
+        <span aria-hidden className="pointer-events-none absolute right-8 top-6 text-lg text-gold/50">✦</span>
+        <span aria-hidden className="pointer-events-none absolute right-20 top-14 text-xs text-coral/40">✦</span>
+        <span aria-hidden className="pointer-events-none absolute right-32 top-7 text-[0.6rem] text-gold/40">✦</span>
+
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-mention">
+          Votre crédit
         </p>
-        <RechargeSelector />
-      </div>
+        <div className="mt-1 flex items-baseline gap-3">
+          <p className="font-serif text-5xl font-semibold text-aubergine">
+            {minutesRestantes}
+            <span className="ml-1.5 text-2xl font-normal text-mention">min</span>
+          </p>
+          <p className="text-sm text-mention">avec Elena · {euros(balance)}</p>
+        </div>
+
+        <div className="mt-6 border-t border-greige/50 pt-6">
+          <RechargeSelector />
+        </div>
+      </section>
 
       {/* Historique des transactions */}
-      <div className="bg-ivory rounded-2xl shadow-soft p-6 border border-greige/60">
-        <h2 className="text-lg font-semibold mb-4">
-          Historique des transactions
+      <section className="rounded-3xl border border-greige/60 bg-ivory p-7 shadow-soft">
+        <h2 className="font-serif text-2xl font-semibold text-aubergine">
+          Recharges &amp; débits
         </h2>
         {transactions.length === 0 ? (
-          <p className="text-gray-600">Aucune transaction pour le moment.</p>
-        ) : (
-          <div className="space-y-3">
-            {transactions.map((tx) => (
-              <div
-                key={tx.id}
-                className="flex items-center justify-between py-2 border-b last:border-0"
-              >
-                <div>
-                  <p className="font-medium">{tx.description}</p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(tx.createdAt).toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-                <span
-                  className={`font-bold ${
-                    tx.type === "credit" ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {tx.type === "credit" ? "+" : "-"}
-                  {tx.amount.toFixed(2)}€
-                </span>
-              </div>
-            ))}
+          <div className="mt-5 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-8 text-center">
+            <p className="text-3xl">✦</p>
+            <p className="mt-2 text-sm text-mention">
+              Aucune transaction pour le moment.
+            </p>
           </div>
+        ) : (
+          <ul className="mt-4">
+            {transactions.map((tx) => {
+              const credit = tx.type === "credit";
+              return (
+                <li
+                  key={tx.id}
+                  className="flex items-center gap-3.5 border-b border-greige/40 py-3.5 last:border-0"
+                >
+                  <span
+                    aria-hidden
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-medium ${
+                      credit
+                        ? "bg-green-50 text-statut-online"
+                        : "bg-blush text-prix"
+                    }`}
+                  >
+                    {credit ? "＋" : "☾"}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-ink">
+                      {tx.description}
+                    </p>
+                    <p className="text-xs text-mention">
+                      {new Date(tx.createdAt).toLocaleDateString("fr-FR", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 font-serif text-lg font-semibold ${
+                      credit ? "text-statut-online" : "text-aubergine"
+                    }`}
+                  >
+                    {credit ? "+" : "−"}
+                    {euros(tx.amount)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         )}
-      </div>
+      </section>
     </div>
   );
 }
