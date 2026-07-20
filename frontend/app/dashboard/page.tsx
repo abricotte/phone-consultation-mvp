@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import RechargeSelector from "@/components/RechargeSelector";
-import AppelElenaCard from "@/components/AppelElenaCard";
+import HeroConsultation from "@/components/HeroConsultation";
 import EspaceNav from "@/components/EspaceNav";
 
 interface User {
@@ -52,6 +52,7 @@ export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [prixMinuteCents, setPrixMinuteCents] = useState(290);
+  const [minimumMinutes, setMinimumMinutes] = useState(5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -90,11 +91,12 @@ export default function DashboardPage() {
 
     api
       .getRechargeConfig()
-      .then((c: { prixMinuteCents: number }) => {
+      .then((c: { prixMinuteCents: number; creditMinimumMinutes: number }) => {
         if (c?.prixMinuteCents) setPrixMinuteCents(c.prixMinuteCents);
+        if (c?.creditMinimumMinutes) setMinimumMinutes(c.creditMinimumMinutes);
       })
       .catch(() => {
-        /* le prix par défaut reste affiché */
+        /* les valeurs par défaut restent affichées */
       });
 
     Promise.all([api.getMe(), api.getWallet(), api.getTransactions()])
@@ -157,29 +159,26 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Appel immédiat — action principale */}
+      {/* LE geste direct : appeler / recharger en 1 clic */}
       <div className="mb-6">
-        <AppelElenaCard />
+        <HeroConsultation
+          soldeMinutes={minutesRestantes}
+          minimumMinutes={minimumMinutes}
+          prixMinuteCents={prixMinuteCents}
+        />
       </div>
 
-      {/* Crédit — carte céleste, affiché en minutes */}
-      <section className="relative mb-6 overflow-hidden rounded-3xl border border-greige/60 bg-gradient-to-br from-blush via-cream to-cream p-7 shadow-soft">
-        <span aria-hidden className="pointer-events-none absolute right-8 top-6 text-lg text-gold/50">✦</span>
-        <span aria-hidden className="pointer-events-none absolute right-20 top-14 text-xs text-coral/40">✦</span>
-        <span aria-hidden className="pointer-events-none absolute right-32 top-7 text-[0.6rem] text-gold/40">✦</span>
-
-        <p className="text-xs font-medium uppercase tracking-[0.18em] text-mention">
-          Votre crédit
-        </p>
-        <div className="mt-1 flex items-baseline gap-3">
-          <p className="font-serif text-5xl font-semibold text-aubergine">
-            {minutesRestantes}
-            <span className="ml-1.5 text-2xl font-normal text-mention">min</span>
+      {/* Recharge — toutes les durées (le détail, sous le geste express) */}
+      <section className="mb-6 rounded-3xl border border-greige/60 bg-ivory p-7 shadow-soft">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-serif text-2xl font-semibold text-aubergine">
+            Recharger — autre durée
+          </h2>
+          <p className="text-sm text-mention">
+            Crédit : {euros(balance)}
           </p>
-          <p className="text-sm text-mention">avec Elena · {euros(balance)}</p>
         </div>
-
-        <div className="mt-6 border-t border-greige/50 pt-6">
+        <div className="mt-5">
           <RechargeSelector />
         </div>
       </section>
