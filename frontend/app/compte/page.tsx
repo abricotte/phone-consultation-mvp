@@ -98,7 +98,7 @@ export default function ComptePage() {
     return <div className="mt-16 text-center text-mention">Chargement…</div>;
 
   return (
-    <div className="mx-auto max-w-2xl px-5 py-10">
+    <div className="mx-auto max-w-2xl px-5 py-10 font-jakarta">
       <EspaceNav />
 
       <h1 className="mt-8 font-serif text-3xl font-semibold text-aubergine">

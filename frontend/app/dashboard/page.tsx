@@ -140,24 +140,24 @@ export default function DashboardPage() {
     return <div className="mt-16 text-center text-red-600">{error}</div>;
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-8">
+    <div className="mx-auto max-w-4xl px-5 py-8 font-jakarta">
       <EspaceNav />
 
       {/* Salutation */}
-      <header className="relative mt-8 mb-6">
+      <header className="relative mt-10 mb-8">
         <span aria-hidden className="pointer-events-none absolute right-2 top-0 text-lg text-gold/50">✦</span>
         <span aria-hidden className="pointer-events-none absolute right-14 top-8 text-[0.6rem] text-coral/40">✦</span>
 
         {dateDuJour && (
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-mention">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
             {dateDuJour}
           </p>
         )}
-        <h1 className="mt-1 font-serif text-4xl font-semibold text-aubergine">
+        <h1 className="mt-1.5 font-serif text-4xl font-semibold text-aubergine sm:text-5xl">
           Bonjour {user?.firstName}
         </h1>
         {pensee && (
-          <p className="mt-1.5 font-serif text-lg italic text-mention">
+          <p className="mt-2 font-serif text-lg italic text-mention/90">
             « {pensee} »
           </p>
         )}
@@ -189,7 +189,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Historique des transactions */}
-      <section className="rounded-3xl border border-greige/60 bg-ivory p-7 shadow-soft">
+      <section className="rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft sm:p-8">
         <h2 className="font-serif text-2xl font-semibold text-aubergine">
           Recharges &amp; débits
         </h2>
@@ -234,7 +234,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <span
-                    className={`shrink-0 font-serif text-lg font-semibold ${
+                    className={`shrink-0 text-base font-bold tabular-nums tracking-tight ${
                       credit ? "text-statut-online" : "text-aubergine"
                     }`}
                   >

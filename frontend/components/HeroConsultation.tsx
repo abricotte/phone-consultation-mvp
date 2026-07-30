@@ -103,7 +103,7 @@ export default function HeroConsultation({
   }
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-greige/60 bg-gradient-to-br from-blush via-cream to-cream p-6 shadow-soft sm:p-7">
+    <section className="relative overflow-hidden rounded-3xl border border-greige/40 bg-ivory p-6 shadow-soft sm:p-8">
       <span aria-hidden className="pointer-events-none absolute right-8 top-5 text-lg text-gold/50">✦</span>
       <span aria-hidden className="pointer-events-none absolute right-20 top-12 text-xs text-coral/40">✦</span>
       <span aria-hidden className="pointer-events-none absolute right-32 top-6 text-[0.6rem] text-gold/40">✦</span>
@@ -140,24 +140,24 @@ export default function HeroConsultation({
           )}
         </div>
 
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-ivory px-3 py-1 text-sm text-aubergine ring-1 ring-greige/60">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-blush px-3.5 py-1.5 text-sm text-aubergine">
           <span aria-hidden className="text-gold">☾</span>
           <span className="font-semibold">{soldeMinutes} min</span>
           <span className="text-mention">de crédit</span>
         </span>
       </div>
 
-      <h2 className="mt-3 font-serif text-2xl font-semibold text-aubergine sm:text-3xl">
+      <h2 className="mt-4 font-serif text-3xl font-semibold text-aubergine sm:text-4xl">
         Consultation Immédiate
       </h2>
 
       {/* Action principale — selon statut et crédit */}
-      <div className="mt-4">
+      <div className="mt-5">
         {enLigne && creditSuffisant && (
           <button
             onClick={handleAppel}
             disabled={appelEnCours}
-            className="w-full rounded-full bg-cta px-6 py-4 text-lg font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
+            className="w-full rounded-2xl bg-cta px-6 py-4 text-lg font-semibold text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
           >
             {appelEnCours ? "Connexion…" : "📞 J'appelle Elena maintenant"}
           </button>
@@ -185,7 +185,7 @@ export default function HeroConsultation({
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <a
               href="https://elena-wolska.com/disponibilites"
-              className="whitespace-nowrap rounded-full border border-cta-outline px-6 py-3 text-center font-medium text-prix transition hover:bg-cta hover:text-cta-text"
+              className="whitespace-nowrap rounded-2xl border border-cta-outline px-6 py-3 text-center font-medium text-prix transition hover:bg-cta hover:text-cta-text"
             >
               Voir les disponibilités →
             </a>
@@ -197,11 +197,11 @@ export default function HeroConsultation({
       </div>
 
       {/* Recharge express — tout centralisé : 1 clic = paiement */}
-      <div className="mt-5 border-t border-greige/50 pt-4">
-        <p className="text-xs font-medium uppercase tracking-[0.15em] text-mention">
+      <div className="mt-6 border-t border-greige/40 pt-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
           Recharge express
         </p>
-        <div className="mt-2 grid grid-cols-3 gap-2">
+        <div className="mt-3 grid grid-cols-3 gap-2.5">
           {suggestionsMinutes.map((m) => {
             const chargement = rechargeEnCours === m;
             const primaire = !creditSuffisant;
@@ -210,16 +210,16 @@ export default function HeroConsultation({
                 key={m}
                 onClick={() => handleRechargeExpress(m)}
                 disabled={rechargeEnCours !== null}
-                className={`rounded-2xl px-3 py-3 text-center transition disabled:opacity-50 ${
+                className={`rounded-2xl px-3 py-3.5 text-center transition disabled:opacity-50 ${
                   primaire
                     ? "bg-cta text-cta-text shadow-card hover:bg-cta-dark"
-                    : "border border-greige/70 bg-ivory text-aubergine hover:border-cta/40"
+                    : "border border-greige/60 bg-cream/60 text-aubergine hover:border-cta/50 hover:bg-ivory"
                 }`}
               >
-                <span className="block font-serif text-xl font-semibold">
+                <span className="block text-lg font-bold tracking-tight">
                   {chargement ? "…" : `+${m} min`}
                 </span>
-                <span className={`text-xs ${primaire ? "text-cta-text/90" : "text-mention"}`}>
+                <span className={`text-xs font-medium ${primaire ? "text-cta-text/90" : "text-mention"}`}>
                   {prixDe(m, prixMinuteCents)}
                 </span>
               </button>
@@ -255,7 +255,7 @@ export default function HeroConsultation({
                 type="button"
                 onClick={() => handleRechargeExpress(autreMinutes)}
                 disabled={rechargeEnCours !== null}
-                className="whitespace-nowrap rounded-full bg-cta px-5 py-2.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
+                className="whitespace-nowrap rounded-2xl bg-cta px-5 py-2.5 font-semibold text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
               >
                 {rechargeEnCours === autreMinutes
                   ? "…"

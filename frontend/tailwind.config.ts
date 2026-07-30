@@ -45,6 +45,9 @@ const config: Config = {
       fontFamily: {
         serif: ["var(--font-cormorant)", "Georgia", "serif"],
         sans: ["var(--font-opensans)", "system-ui", "sans-serif"],
+        // Sans moderne de l'espace cliente (classe `font-jakarta` posée
+        // sur le conteneur de chaque page de l'espace)
+        jakarta: ["var(--font-jakarta)", "system-ui", "sans-serif"],
       },
       boxShadow: {
         soft: "0 14px 40px -18px rgba(61, 44, 62, 0.20)",

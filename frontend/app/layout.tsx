@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant, Open_Sans } from "next/font/google";
+import { Cormorant, Open_Sans, Plus_Jakarta_Sans } from "next/font/google";
 import SiteHeader from "@/components/SiteHeader";
 import "./globals.css";
 
@@ -19,6 +19,15 @@ const openSans = Open_Sans({
   display: "swap",
 });
 
+// Sans moderne de l'espace cliente (chiffres élégants, ton produit) —
+// appliquée via la classe `font-jakarta` sur les pages de l'espace.
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Elena Wolska — Voyante sur l'Amour & Médium sans Support, en Flashs Directs",
   description:
@@ -31,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${cormorant.variable} ${openSans.variable}`}>
+    <html lang="fr" className={`${cormorant.variable} ${openSans.variable} ${jakarta.variable}`}>
       <body className="flex min-h-screen flex-col bg-cream">
         <SiteHeader />
 
