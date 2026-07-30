@@ -6,3 +6,9 @@ build/
 .next/
 .DS_Store
 *.log
+
+# Claude Code : permissions locales personnelles (non partagées)
+.claude/settings.local.json
+
+# Page d'aperçu visuel temporaire (données factices — jamais déployée)
+frontend/app/apercu-tmp/
