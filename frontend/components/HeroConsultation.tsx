@@ -11,11 +11,14 @@ interface Props {
   soldeMinutes: number;
   minimumMinutes: number;
   prixMinuteCents: number;
+  // Durées rapides + bornes de la durée personnalisée
+  suggestionsMinutes?: number[];
+  minMinutes?: number;
+  maxMinutes?: number;
+  pasMinutes?: number;
   // Aperçu/tests uniquement : force le statut au lieu du polling réel
   statutDemo?: ElenaStatus;
 }
-
-const RECHARGES_EXPRESS = [10, 20, 30];
 
 function prixDe(minutes: number, cents: number): string {
   const t = minutes * cents;
@@ -28,6 +31,10 @@ export default function HeroConsultation({
   soldeMinutes,
   minimumMinutes,
   prixMinuteCents,
+  suggestionsMinutes = [10, 20, 30],
+  minMinutes = 5,
+  maxMinutes = 90,
+  pasMinutes = 5,
   statutDemo,
 }: Props) {
   const statutReel = useElenaStatus();
@@ -38,8 +45,18 @@ export default function HeroConsultation({
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
 
+  // Durée personnalisée (repliée par défaut)
+  const [autreOuvert, setAutreOuvert] = useState(false);
+  const [autreMinutes, setAutreMinutes] = useState(maxMinutes >= 45 ? 45 : maxMinutes);
+
   const enLigne = statut === "disponible";
   const creditSuffisant = soldeMinutes >= minimumMinutes;
+
+  // Liste des durées possibles pour "Autre durée"
+  const dureesPossibles: number[] = [];
+  for (let m = minMinutes; m <= maxMinutes; m += pasMinutes) {
+    dureesPossibles.push(m);
+  }
 
   async function handleAppel() {
     const token = localStorage.getItem("token");
@@ -179,13 +196,13 @@ export default function HeroConsultation({
         )}
       </div>
 
-      {/* Recharge express — 1 clic = paiement */}
+      {/* Recharge express — tout centralisé : 1 clic = paiement */}
       <div className="mt-5 border-t border-greige/50 pt-4">
         <p className="text-xs font-medium uppercase tracking-[0.15em] text-mention">
           Recharge express
         </p>
         <div className="mt-2 grid grid-cols-3 gap-2">
-          {RECHARGES_EXPRESS.map((m) => {
+          {suggestionsMinutes.map((m) => {
             const chargement = rechargeEnCours === m;
             const primaire = !creditSuffisant;
             return (
@@ -209,8 +226,49 @@ export default function HeroConsultation({
             );
           })}
         </div>
-        <p className="mt-2 text-xs text-mention">
-          Un clic, et vous passez directement au paiement sécurisé.
+
+        {/* Autre durée — replié, dans le même bloc */}
+        <div className="mt-3 text-center">
+          {!autreOuvert ? (
+            <button
+              type="button"
+              onClick={() => setAutreOuvert(true)}
+              className="text-sm font-medium text-prix transition-colors hover:text-cta"
+            >
+              Autre durée
+            </button>
+          ) : (
+            <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-center">
+              <select
+                value={autreMinutes}
+                onChange={(e) => setAutreMinutes(Number(e.target.value))}
+                aria-label="Choisir une durée"
+                className="rounded-xl border border-greige bg-ivory px-3 py-2.5 text-aubergine focus:border-cta-outline focus:outline-none"
+              >
+                {dureesPossibles.map((m) => (
+                  <option key={m} value={m}>
+                    {m} min — {prixDe(m, prixMinuteCents)}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => handleRechargeExpress(autreMinutes)}
+                disabled={rechargeEnCours !== null}
+                className="whitespace-nowrap rounded-full bg-cta px-5 py-2.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
+              >
+                {rechargeEnCours === autreMinutes
+                  ? "…"
+                  : `Recharger ${autreMinutes} min — ${prixDe(autreMinutes, prixMinuteCents)}`}
+              </button>
+            </div>
+          )}
+        </div>
+
+        <p className="mt-3 text-center text-xs leading-relaxed text-mention">
+          Un clic et vous passez au paiement sécurisé · minimum pour appeler :{" "}
+          {minimumMinutes} min ({prixDe(minimumMinutes, prixMinuteCents)}) · votre
+          crédit n&apos;expire jamais.
         </p>
       </div>
 

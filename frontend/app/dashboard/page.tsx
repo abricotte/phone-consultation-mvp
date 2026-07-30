@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import RechargeSelector from "@/components/RechargeSelector";
 import HeroConsultation from "@/components/HeroConsultation";
 import EspaceNav from "@/components/EspaceNav";
 
@@ -53,6 +52,10 @@ export default function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [prixMinuteCents, setPrixMinuteCents] = useState(290);
   const [minimumMinutes, setMinimumMinutes] = useState(5);
+  const [suggestionsMinutes, setSuggestionsMinutes] = useState<number[]>([10, 20, 30]);
+  const [minMinutes, setMinMinutes] = useState(5);
+  const [maxMinutes, setMaxMinutes] = useState(90);
+  const [pasMinutes, setPasMinutes] = useState(5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -91,10 +94,23 @@ export default function DashboardPage() {
 
     api
       .getRechargeConfig()
-      .then((c: { prixMinuteCents: number; creditMinimumMinutes: number }) => {
-        if (c?.prixMinuteCents) setPrixMinuteCents(c.prixMinuteCents);
-        if (c?.creditMinimumMinutes) setMinimumMinutes(c.creditMinimumMinutes);
-      })
+      .then(
+        (c: {
+          prixMinuteCents: number;
+          creditMinimumMinutes: number;
+          suggestionsMinutes: number[];
+          minMinutes: number;
+          maxMinutes: number;
+          pasMinutes: number;
+        }) => {
+          if (c?.prixMinuteCents) setPrixMinuteCents(c.prixMinuteCents);
+          if (c?.creditMinimumMinutes) setMinimumMinutes(c.creditMinimumMinutes);
+          if (c?.suggestionsMinutes?.length) setSuggestionsMinutes(c.suggestionsMinutes);
+          if (c?.minMinutes) setMinMinutes(c.minMinutes);
+          if (c?.maxMinutes) setMaxMinutes(c.maxMinutes);
+          if (c?.pasMinutes) setPasMinutes(c.pasMinutes);
+        }
+      )
       .catch(() => {
         /* les valeurs par défaut restent affichées */
       });
@@ -159,29 +175,18 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* LE geste direct : appeler / recharger en 1 clic */}
+      {/* LE geste direct : appeler / recharger (tout centralisé ici) */}
       <div className="mb-6">
         <HeroConsultation
           soldeMinutes={minutesRestantes}
           minimumMinutes={minimumMinutes}
           prixMinuteCents={prixMinuteCents}
+          suggestionsMinutes={suggestionsMinutes}
+          minMinutes={minMinutes}
+          maxMinutes={maxMinutes}
+          pasMinutes={pasMinutes}
         />
       </div>
-
-      {/* Recharge — toutes les durées (le détail, sous le geste express) */}
-      <section className="mb-6 rounded-3xl border border-greige/60 bg-ivory p-7 shadow-soft">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 className="font-serif text-2xl font-semibold text-aubergine">
-            Recharger — autre durée
-          </h2>
-          <p className="text-sm text-mention">
-            Crédit : {euros(balance)}
-          </p>
-        </div>
-        <div className="mt-5">
-          <RechargeSelector />
-        </div>
-      </section>
 
       {/* Historique des transactions */}
       <section className="rounded-3xl border border-greige/60 bg-ivory p-7 shadow-soft">
