@@ -238,24 +238,31 @@ export default function HeroConsultation({
               Autre durée
             </button>
           ) : (
-            <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-center">
-              <select
-                value={autreMinutes}
-                onChange={(e) => setAutreMinutes(Number(e.target.value))}
-                aria-label="Choisir une durée"
-                className="rounded-xl border border-greige bg-ivory px-3 py-2.5 text-aubergine focus:border-cta-outline focus:outline-none"
-              >
-                {dureesPossibles.map((m) => (
-                  <option key={m} value={m}>
-                    {m} min — {prixDe(m, prixMinuteCents)}
-                  </option>
-                ))}
-              </select>
+            <div className="space-y-3">
+              {/* La liste ne montre QUE les durées : le prix exact apparaît
+                  une seule fois, après sélection (et sur le bouton). */}
+              <div className="flex items-center justify-center gap-4">
+                <select
+                  value={autreMinutes}
+                  onChange={(e) => setAutreMinutes(Number(e.target.value))}
+                  aria-label="Choisir une durée"
+                  className="rounded-2xl border border-greige bg-cream/60 px-4 py-2.5 text-aubergine transition focus:border-cta-outline focus:outline-none"
+                >
+                  {dureesPossibles.map((m) => (
+                    <option key={m} value={m}>
+                      {m} min
+                    </option>
+                  ))}
+                </select>
+                <span className="font-serif text-2xl font-semibold text-prix">
+                  {prixDe(autreMinutes, prixMinuteCents)}
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => handleRechargeExpress(autreMinutes)}
                 disabled={rechargeEnCours !== null}
-                className="whitespace-nowrap rounded-2xl bg-cta px-5 py-2.5 font-semibold text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
+                className="w-full whitespace-nowrap rounded-2xl bg-cta px-5 py-3 font-semibold text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
               >
                 {rechargeEnCours === autreMinutes
                   ? "…"
