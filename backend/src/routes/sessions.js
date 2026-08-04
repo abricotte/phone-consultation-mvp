@@ -110,11 +110,13 @@ router.patch('/:id/end', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Cette session n\'est pas active' });
     }
 
-    // Calculer la durée et le coût
+    // Calculer la durée et le coût.
+    // Franchise de connexion : moins de 60 s = aucune facturation
+    // (même règle que finalizeSession dans calls.js).
     const startedAt = new Date(session.started_at);
     const endedAt = new Date();
     const durationSeconds = Math.ceil((endedAt - startedAt) / 1000);
-    const durationMinutes = Math.ceil(durationSeconds / 60);
+    const durationMinutes = durationSeconds < 60 ? 0 : Math.ceil(durationSeconds / 60);
     const totalCost = durationMinutes * parseFloat(session.rate_per_minute);
 
     // Mettre à jour la session
@@ -132,14 +134,14 @@ router.patch('/:id/end', authMiddleware, async (req, res) => {
 
     if (updateError) throw updateError;
 
-    // Débiter le client
+    // Débiter le client (rien à débiter sous la franchise de 60 s)
     const { data: wallet } = await supabase
       .from('wallets')
       .select('id, balance')
       .eq('user_id', session.client_id)
       .single();
 
-    if (wallet) {
+    if (wallet && totalCost > 0) {
       const newBalance = Math.max(0, parseFloat(wallet.balance) - totalCost);
 
       await supabase

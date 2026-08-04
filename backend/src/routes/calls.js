@@ -585,7 +585,16 @@ async function finalizeSession(sessionId) {
   const startedAt = new Date(session.started_at);
   const endedAt = new Date();
   const durationSeconds = Math.max(0, Math.ceil((endedAt - startedAt) / 1000));
-  const durationMinutes = Math.ceil(durationSeconds / 60);
+
+  // FRANCHISE DE CONNEXION (consultation à la minute) : un appel qui
+  // saute en dessous de 60 s n'est PAS facturé — coupure réseau, faux
+  // départ, raccrochage immédiat. Automatique et sans litige, là où les
+  // plateformes classiques renvoient vers le service client. Au-delà,
+  // chaque minute entamée est due (règle affichée à la cliente).
+  const FRANCHISE_SECONDES = 60;
+  const sousFranchise =
+    session.type !== 'forfait_manuel' && durationSeconds < FRANCHISE_SECONDES;
+  const durationMinutes = sousFranchise ? 0 : Math.ceil(durationSeconds / 60);
 
   // Forfait manuel : montant déjà encaissé via Calendly → pas de débit,
   // total_cost = montant du forfait (pour la vue du jour)
@@ -593,6 +602,12 @@ async function finalizeSession(sessionId) {
     session.type === 'forfait_manuel'
       ? parseFloat(session.montant_paye || 0)
       : durationMinutes * parseFloat(session.rate_per_minute);
+
+  if (sousFranchise) {
+    console.log(
+      `Session ${sessionId} : ${durationSeconds}s < ${FRANCHISE_SECONDES}s de franchise — aucune facturation`
+    );
+  }
 
   // La facturation ne doit JAMAIS empêcher la libération du verrou : si une
   // erreur survient ici, le finally garantit quand même le retour à
@@ -608,8 +623,10 @@ async function finalizeSession(sessionId) {
       })
       .eq('id', sessionId);
 
-    // Débit du wallet : uniquement pour la consultation à la minute
-    if (session.type !== 'forfait_manuel' && session.client_id) {
+    // Débit du wallet : uniquement pour la consultation à la minute,
+    // et seulement s'il y a quelque chose à débiter (franchise = 0 €,
+    // pas de ligne de transaction parasite dans l'historique)
+    if (session.type !== 'forfait_manuel' && session.client_id && totalCost > 0) {
       const { data: wallet } = await supabase
         .from('wallets')
         .select('id, balance')

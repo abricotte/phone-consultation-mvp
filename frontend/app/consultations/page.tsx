@@ -121,9 +121,16 @@ export default function ConsultationsPage() {
                 </p>
               </div>
               <div className="text-right">
-                <span className="font-serif text-xl font-semibold text-prix">
-                  {c.montant != null ? `${c.montant.toFixed(2)}€` : "—"}
-                </span>
+                {c.montant === 0 ? (
+                  // Franchise de connexion : appel coupé sous 60 s → 0 €
+                  <span className="rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700">
+                    Non facturée
+                  </span>
+                ) : (
+                  <span className="font-serif text-xl font-semibold text-prix">
+                    {c.montant != null ? `${c.montant.toFixed(2)}€` : "—"}
+                  </span>
+                )}
               </div>
             </div>
           ))}
