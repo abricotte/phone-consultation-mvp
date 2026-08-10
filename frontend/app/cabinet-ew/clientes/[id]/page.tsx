@@ -5,6 +5,9 @@ import { notFound, useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
+import FilChronologique, {
+  type EvenementFil,
+} from "@/components/FilChronologique";
 import {
   signeAstrologique,
   formatDateNaissance,
@@ -36,10 +39,28 @@ interface RechargeFiche {
 interface Note {
   id: string;
   contenu: string;
+  type?: "note" | "augure";
   aSuivre: boolean;
   echeance: string | null;
+  /** Échéance en toutes lettres : « vers octobre » */
+  echeanceTexte?: string | null;
+  /** Augures : attente | confirme | pas_encore */
+  statut?: string | null;
   closeLe: string | null;
   createdAt: string;
+}
+
+interface DateMarquante {
+  id: string;
+  libelle: string;
+  date: string;
+  recurrenceAnnuelle: boolean;
+}
+
+interface Rythme {
+  intervalleMoyenJours: number | null;
+  silenceJours: number | null;
+  inhabituel: boolean;
 }
 
 interface Fiche {
@@ -57,6 +78,9 @@ interface Fiche {
   consultations: ConsultationFiche[];
   recharges: RechargeFiche[];
   notes: Note[];
+  augures: Note[];
+  datesMarquantes: DateMarquante[];
+  rythme: Rythme;
 }
 
 const LIEN_LABELS: Record<string, string> = {
@@ -109,6 +133,81 @@ export default function FicheClientePage() {
   const [echeance, setEcheance] = useState("");
   const [enregistre, setEnregistre] = useState(false);
   const [noteErreur, setNoteErreur] = useState("");
+
+  // Augures — ce que j'ai annoncé
+  const [augures, setAugures] = useState<Note[]>([]);
+  const [augureTexte, setAugureTexte] = useState("");
+  const [augureQuand, setAugureQuand] = useState("");
+  const [augureDate, setAugureDate] = useState("");
+  const [augureEnCours, setAugureEnCours] = useState(false);
+
+  // Dates qui pèsent
+  const [dates, setDates] = useState<DateMarquante[]>([]);
+  const [dateLibelle, setDateLibelle] = useState("");
+  const [dateValeur, setDateValeur] = useState("");
+  const [dateRecurrente, setDateRecurrente] = useState(true);
+  const [dateEnCours, setDateEnCours] = useState(false);
+
+  async function ajouterAugure(e: React.FormEvent) {
+    e.preventDefault();
+    if (!augureTexte.trim()) return;
+    setAugureEnCours(true);
+    try {
+      const a = await api.adminAddAugure(params.id, {
+        contenu: augureTexte.trim(),
+        echeanceTexte: augureQuand.trim() || null,
+        echeance: augureDate || null,
+      });
+      setAugures((p) => [a, ...p]);
+      setAugureTexte("");
+      setAugureQuand("");
+      setAugureDate("");
+    } catch {
+      /* silencieux : le formulaire reste rempli */
+    } finally {
+      setAugureEnCours(false);
+    }
+  }
+
+  async function majStatutAugure(a: Note, statut: string) {
+    const avant = augures;
+    setAugures((p) => p.map((x) => (x.id === a.id ? { ...x, statut } : x)));
+    try {
+      await api.adminMajAugure(a.id, statut);
+    } catch {
+      setAugures(avant);
+    }
+  }
+
+  async function ajouterDate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!dateLibelle.trim() || !dateValeur) return;
+    setDateEnCours(true);
+    try {
+      const d = await api.adminAddDate(params.id, {
+        libelle: dateLibelle.trim(),
+        date: dateValeur,
+        recurrenceAnnuelle: dateRecurrente,
+      });
+      setDates((p) => [...p, d].sort((x, y) => (x.date < y.date ? -1 : 1)));
+      setDateLibelle("");
+      setDateValeur("");
+    } catch {
+      /* silencieux */
+    } finally {
+      setDateEnCours(false);
+    }
+  }
+
+  async function supprimerDate(id: string) {
+    const avant = dates;
+    setDates((p) => p.filter((d) => d.id !== id));
+    try {
+      await api.adminDeleteDate(id);
+    } catch {
+      setDates(avant);
+    }
+  }
 
   async function handleAjoutNote(e: React.FormEvent) {
     e.preventDefault();
@@ -171,6 +270,8 @@ export default function FicheClientePage() {
       .then((data: Fiche) => {
         setFiche(data);
         setNotes(data.notes || []);
+        setAugures(data.augures || []);
+        setDates(data.datesMarquantes || []);
       })
       .catch(() => setAccesRefuse(true))
       .finally(() => setLoading(false));
@@ -199,6 +300,38 @@ export default function FicheClientePage() {
   const dureeMoyenne = tenues.length ? Math.round(minutesTotales / tenues.length) : 0;
   // Sa première consultation (les plus récentes arrivent en premier)
   const premiere = tenues.length ? tenues[tenues.length - 1].date : null;
+
+  // Fil unifié : tout ce qui s'est passé, mêlé par date
+  const fil: EvenementFil[] = [
+    ...fiche.consultations.map((c) => ({
+      type: "consultation" as const,
+      date: c.date,
+      titre: c.formule,
+      detail: formatDuree(c.dureeSecondes),
+      montant: c.montant,
+      nonFacturee: c.issue === "non_facturee",
+    })),
+    ...notes.map((n) => ({
+      type: "note" as const,
+      date: n.createdAt,
+      titre: n.contenu,
+    })),
+    ...augures.map((a) => ({
+      type: "augure" as const,
+      date: a.createdAt,
+      titre: a.contenu,
+      detail:
+        a.echeanceTexte ||
+        (a.echeance ? `échéance ${formatDate(a.echeance)}` : null),
+      statut: a.statut,
+    })),
+    ...fiche.recharges.map((r) => ({
+      type: "recharge" as const,
+      date: r.date,
+      titre: r.description,
+      montant: r.montant,
+    })),
+  ];
 
   return (
     <CabinetShell>
@@ -350,6 +483,39 @@ export default function FicheClientePage() {
               </p>
             </div>
           </div>
+
+          {/* SIGNAL DE SILENCE — information de lecture, jamais une
+              relance : dans ce métier, un silence s'interprète. */}
+          {fiche.rythme?.silenceJours !== null && (
+            <p
+              className={`mt-5 rounded-xl px-4 py-2.5 text-sm ${
+                fiche.rythme.inhabituel
+                  ? "bg-amber-50 text-amber-800"
+                  : "bg-cream text-mention"
+              }`}
+            >
+              {fiche.rythme.intervalleMoyenJours !== null ? (
+                <>
+                  Elle appelait tous les{" "}
+                  <strong className="font-semibold">
+                    {fiche.rythme.intervalleMoyenJours} jours
+                  </strong>{" "}
+                  en moyenne · silence depuis{" "}
+                  <strong className="font-semibold">
+                    {fiche.rythme.silenceJours} jours
+                  </strong>
+                  {fiche.rythme.inhabituel && " — inhabituel pour elle"}
+                </>
+              ) : (
+                <>
+                  Dernier appel il y a{" "}
+                  <strong className="font-semibold">
+                    {fiche.rythme.silenceJours} jours
+                  </strong>
+                </>
+              )}
+            </p>
+          )}
         </section>
       )}
 
@@ -484,6 +650,176 @@ export default function FicheClientePage() {
         )}
       </section>
 
+      {/* ===== LES AUGURES ===== */}
+      <section className="mt-5 rounded-3xl border border-gold/40 bg-gradient-to-br from-gold/[0.07] to-ivory p-7 shadow-soft">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
+            Ce que je lui ai annoncé
+          </h2>
+          <p className="text-xs text-mention">🔒 Pour ma mémoire seule</p>
+        </div>
+
+        <form onSubmit={ajouterAugure} className="mt-4">
+          <textarea
+            value={augureTexte}
+            onChange={(e) => setAugureTexte(e.target.value)}
+            rows={2}
+            placeholder="Un changement professionnel, une nouvelle d'un homme parti…"
+            className="w-full rounded-2xl border border-greige bg-ivory px-4 py-3 text-ink focus:border-cta-outline focus:outline-none"
+          />
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <input
+              type="text"
+              value={augureQuand}
+              onChange={(e) => setAugureQuand(e.target.value)}
+              placeholder="vers octobre, avant la fin de l'année…"
+              className="min-w-56 flex-1 rounded-xl border border-greige bg-ivory px-3 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
+            />
+            <input
+              type="date"
+              value={augureDate}
+              onChange={(e) => setAugureDate(e.target.value)}
+              aria-label="Échéance précise (facultatif)"
+              className="rounded-xl border border-greige bg-ivory px-3 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={augureEnCours || !augureTexte.trim()}
+              className="ml-auto rounded-full bg-cta px-5 py-2 font-medium text-cta-text transition hover:bg-cta-dark disabled:opacity-40"
+            >
+              {augureEnCours ? "…" : "Poser l'augure"}
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-mention">
+            L&apos;échéance peut rester floue — c&apos;est souvent plus juste
+            qu&apos;une date. Les augures dont l&apos;heure vient remontent dans
+            « À reprendre ».
+          </p>
+        </form>
+
+        {augures.length > 0 && (
+          <ul className="mt-5 space-y-2.5 border-t border-gold/30 pt-4">
+            {augures.map((a) => (
+              <li
+                key={a.id}
+                className={`rounded-2xl border px-4 py-3 ${
+                  a.statut === "attente"
+                    ? "border-gold/50 bg-gold/5"
+                    : "border-greige/50 bg-ivory"
+                }`}
+              >
+                <p
+                  className={`text-sm ${
+                    a.statut === "attente" ? "text-ink" : "text-mention"
+                  }`}
+                >
+                  {a.contenu}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-mention">
+                    {a.echeanceTexte ||
+                      (a.echeance ? formatDate(a.echeance) : "sans échéance")}
+                  </span>
+                  <span className="text-mention">·</span>
+                  {(
+                    [
+                      ["attente", "en attente"],
+                      ["confirme", "✓ advenu"],
+                      ["pas_encore", "pas encore"],
+                    ] as const
+                  ).map(([code, label]) => (
+                    <button
+                      key={code}
+                      onClick={() => majStatutAugure(a, code)}
+                      className={`rounded-full px-2.5 py-0.5 font-medium transition ${
+                        a.statut === code
+                          ? code === "confirme"
+                            ? "bg-green-50 text-statut-online"
+                            : code === "pas_encore"
+                            ? "bg-greige/50 text-mention"
+                            : "bg-gold/20 text-gold-dark"
+                          : "text-mention hover:bg-blush"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* ===== DATES QUI PÈSENT ===== */}
+      <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
+            Dates qui pèsent
+          </h2>
+          <p className="text-xs text-mention">
+            Ce qu&apos;elle m&apos;a confié et qu&apos;il serait dur d&apos;oublier
+          </p>
+        </div>
+
+        {dates.length > 0 && (
+          <ul className="mt-4 space-y-2">
+            {dates.map((d) => (
+              <li
+                key={d.id}
+                className="group flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-greige/50 bg-cream px-4 py-2.5"
+              >
+                <span className="font-medium text-ink">{d.libelle}</span>
+                <span className="text-xs text-mention">
+                  {formatDate(d.date)}
+                  {d.recurrenceAnnuelle && " · chaque année"}
+                </span>
+                <button
+                  onClick={() => supprimerDate(d.id)}
+                  aria-label={`Supprimer ${d.libelle}`}
+                  className="ml-auto rounded-full px-2 py-1 text-xs text-mention opacity-0 transition group-hover:opacity-100 hover:bg-red-50 hover:text-red-600"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form onSubmit={ajouterDate} className="mt-4 flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            value={dateLibelle}
+            onChange={(e) => setDateLibelle(e.target.value)}
+            placeholder="Séparation, deuil, procès…"
+            className="min-w-48 flex-1 rounded-xl border border-greige bg-ivory px-3 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
+          />
+          <input
+            type="date"
+            value={dateValeur}
+            onChange={(e) => setDateValeur(e.target.value)}
+            aria-label="Date"
+            className="rounded-xl border border-greige bg-ivory px-3 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
+          />
+          <label className="flex items-center gap-1.5 text-xs text-mention">
+            <input
+              type="checkbox"
+              checked={dateRecurrente}
+              onChange={(e) => setDateRecurrente(e.target.checked)}
+              className="h-4 w-4 rounded border-greige accent-cta"
+            />
+            chaque année
+          </label>
+          <button
+            type="submit"
+            disabled={dateEnCours || !dateLibelle.trim() || !dateValeur}
+            className="rounded-full border border-cta-outline px-4 py-2 text-sm font-medium text-prix transition hover:bg-cta hover:text-cta-text disabled:opacity-40"
+          >
+            Ajouter
+          </button>
+        </form>
+      </section>
+
       {/* Les personnes qui comptent */}
       <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
         <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
@@ -523,83 +859,18 @@ export default function FicheClientePage() {
         )}
       </section>
 
-      {/* Historique des consultations */}
+      {/* Fil chronologique unifié — l'histoire d'une personne d'un
+          seul regard, plutôt que quatre blocs à recoller */}
       <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
         <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
-          Ses consultations
+          Son histoire
         </h2>
-        {fiche.consultations.length === 0 ? (
-          <p className="mt-3 text-sm text-mention">
-            Aucune consultation pour l&apos;instant.
-          </p>
-        ) : (
-          <ul className="mt-4">
-            {fiche.consultations.map((c) => (
-              <li
-                key={c.id}
-                className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-greige/40 py-3 last:border-0"
-              >
-                <span className="w-40 shrink-0 text-sm text-mention">
-                  {formatDate(c.date)}
-                </span>
-                <span className="text-sm text-ink">{c.formule}</span>
-                <span className="text-sm text-mention">
-                  {formatDuree(c.dureeSecondes)}
-                </span>
-                <span className="ml-auto">
-                  {c.issue === "terminee" && c.montant > 0 ? (
-                    <span className="font-bold tabular-nums text-aubergine">
-                      {euros(c.montant)}
-                    </span>
-                  ) : c.issue === "non_facturee" ? (
-                    <span className="rounded-full bg-blush px-2.5 py-0.5 text-xs text-mention">
-                      Non facturé
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs text-amber-700">
-                      Manqué
-                    </span>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* Ses recharges */}
-      <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
-        <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
-          Ses recharges
-        </h2>
-        {fiche.recharges.length === 0 ? (
-          <p className="mt-3 text-sm text-mention">
-            Aucune recharge pour l&apos;instant.
-          </p>
-        ) : (
-          <ul className="mt-4">
-            {fiche.recharges.map((r, i) => (
-              <li
-                key={i}
-                className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-greige/40 py-3 last:border-0"
-              >
-                <span
-                  aria-hidden
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-50 text-statut-online"
-                >
-                  ＋
-                </span>
-                <span className="w-40 shrink-0 text-sm text-mention">
-                  {formatDate(r.date)}
-                </span>
-                <span className="text-sm text-ink">{r.description}</span>
-                <span className="ml-auto font-bold tabular-nums text-statut-online">
-                  +{euros(r.montant)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <p className="mt-0.5 text-sm text-mention">
+          Consultations, notes, augures et recharges, mêlés par date.
+        </p>
+        <div className="mt-5">
+          <FilChronologique evenements={fil} />
+        </div>
       </section>
     </CabinetShell>
   );

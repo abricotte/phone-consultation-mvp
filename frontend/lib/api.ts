@@ -108,6 +108,36 @@ export const api = {
   adminDeleteNote: (noteId: string) =>
     request(`/admin/notes/${noteId}`, { method: "DELETE" }),
   adminGetSuivis: () => request("/admin/suivis"),
+  // Augures — ce qui a été annoncé
+  adminAddAugure: (
+    clienteId: string,
+    body: { contenu: string; echeance?: string | null; echeanceTexte?: string | null }
+  ) =>
+    request(`/admin/clientes/${clienteId}/augures`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  adminMajAugure: (id: string, statut: string) =>
+    request(`/admin/augures/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ statut }),
+    }),
+  adminGetAReprendre: () => request("/admin/a-reprendre"),
+  // Dates qui pèsent
+  adminAddDate: (
+    clienteId: string,
+    body: { libelle: string; date: string; recurrenceAnnuelle?: boolean }
+  ) =>
+    request(`/admin/clientes/${clienteId}/dates`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  adminDeleteDate: (id: string) =>
+    request(`/admin/dates/${id}`, { method: "DELETE" }),
+  adminGetDatesAVenir: (jours = 45) =>
+    request(`/admin/dates-a-venir?jours=${jours}`),
+  adminGetFrequentation: (jours = 30) =>
+    request(`/admin/frequentation?jours=${jours}`),
   adminGetRecharges: () => request("/admin/recharges"),
   // Profil praticienne
   adminGetProfil: () => request("/admin/profil"),
