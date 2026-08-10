@@ -105,11 +105,15 @@ async function appelImmediatEnCours(praticienneId, tarifs) {
   const soldeMinutes = Math.floor(soldeCents / tarifs.prixMinuteCents);
 
   return {
+    clienteId: sess.client_id,
     prenom: user?.first_name || 'Cliente',
     dateNaissance: user?.date_naissance || null,
     ascendant: user?.ascendant || null,
     soldeMinutes,
     connecte: !!sess.started_at, // false = ça sonne, true = en ligne
+    // Début de communication : le bandeau affiche un chrono vivant et en
+    // déduit le crédit restant (le débit n'a lieu qu'à la fin de l'appel).
+    depuis: sess.started_at || null,
     proches: (proches || []).map((p) => ({
       prenom: p.prenom,
       dateNaissance: p.date_naissance,
@@ -443,7 +447,12 @@ function issueSession(s) {
     return 'terminee';
   }
   if (s.status === 'cancelled') return 'manquee'; // jamais connectés / répondeur / annulé
-  if (s.status === 'active' || s.status === 'pending') return 'en_cours';
+  if (s.status === 'active' || s.status === 'pending') {
+    // Une session encore "active" des heures après est un reliquat
+    // (crash, test interrompu) : ne pas afficher "En cours" à tort.
+    const age = Date.now() - new Date(s.created_at).getTime();
+    return age > 2 * 3600 * 1000 ? 'interrompue' : 'en_cours';
+  }
   return s.status; // failed / refunded
 }
 
@@ -507,9 +516,12 @@ router.get('/clientes', async (req, res) => {
   try {
     const p = await getPraticienne();
 
+    // Fiches destinées à la praticienne (route adminOnly) : email et
+    // téléphone inclus — elle en a besoin pour recontacter ses clientes,
+    // comme tout carnet de cabinet. Jamais exposés côté public.
     const { data: clientes, error } = await supabase
       .from('users')
-      .select('id, first_name, last_name, created_at')
+      .select('id, first_name, last_name, email, phone, created_at')
       .eq('role', 'client')
       .order('created_at', { ascending: false })
       .limit(200);
@@ -529,7 +541,7 @@ router.get('/clientes', async (req, res) => {
           .in('user_id', ids),
         supabase
           .from('sessions')
-          .select('client_id, status, started_at, duration_seconds')
+          .select('client_id, status, started_at, duration_seconds, total_cost')
           .eq('praticienne_id', p.id)
           .in('client_id', ids),
       ]);
@@ -537,8 +549,9 @@ router.get('/clientes', async (req, res) => {
       for (const w of wallets || []) walletsParId[w.user_id] = parseFloat(w.balance || 0);
       for (const s of sessions || []) {
         if (s.status !== 'completed') continue;
-        const agg = (sessionsParId[s.client_id] ||= { nb: 0, derniere: null });
+        const agg = (sessionsParId[s.client_id] ||= { nb: 0, derniere: null, total: 0 });
         agg.nb += 1;
+        agg.total += parseFloat(s.total_cost || 0);
         if (s.started_at && (!agg.derniere || s.started_at > agg.derniere)) {
           agg.derniere = s.started_at;
         }
@@ -549,11 +562,14 @@ router.get('/clientes', async (req, res) => {
       clientes.map((c) => ({
         id: c.id,
         prenom: c.first_name || 'Cliente',
-        initiale: c.last_name ? `${c.last_name.charAt(0).toUpperCase()}.` : '',
+        nom: c.last_name || '',
+        email: c.email || null,
+        telephone: c.phone || null,
         inscriteLe: c.created_at,
         solde: walletsParId[c.id] ?? 0,
         nbConsultations: sessionsParId[c.id]?.nb ?? 0,
         derniereConsultation: sessionsParId[c.id]?.derniere ?? null,
+        totalDepense: Math.round((sessionsParId[c.id]?.total ?? 0) * 100) / 100,
       }))
     );
   } catch (err) {
@@ -569,7 +585,7 @@ router.get('/clientes/:id', async (req, res) => {
 
     const { data: cliente, error } = await supabase
       .from('users')
-      .select('id, first_name, last_name, date_naissance, ascendant, created_at, role')
+      .select('id, first_name, last_name, email, phone, date_naissance, ascendant, created_at, role')
       .eq('id', req.params.id)
       .eq('role', 'client')
       .maybeSingle();
@@ -580,7 +596,7 @@ router.get('/clientes/:id', async (req, res) => {
     const [{ data: wallet }, { data: proches }, { data: sessions }] = await Promise.all([
       supabase
         .from('wallets')
-        .select('balance')
+        .select('id, balance')
         .eq('user_id', cliente.id)
         .eq('praticienne_id', p.id)
         .maybeSingle(),
@@ -598,14 +614,39 @@ router.get('/clientes/:id', async (req, res) => {
         .limit(30),
     ]);
 
+    // Ses recharges (crédits Stripe) — l'autre moitié de son histoire
+    let recharges = [];
+    if (wallet?.id) {
+      const { data: tx } = await supabase
+        .from('transactions')
+        .select('amount, description, created_at')
+        .eq('wallet_id', wallet.id)
+        .eq('type', 'credit')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      recharges = (tx || []).map((t) => ({
+        date: t.created_at,
+        montant: parseFloat(t.amount || 0),
+        description: t.description || 'Recharge',
+      }));
+    }
+
+    const totalDepense = (sessions || [])
+      .filter((s) => s.status === 'completed')
+      .reduce((acc, s) => acc + parseFloat(s.total_cost || 0), 0);
+
     res.json({
       id: cliente.id,
       prenom: cliente.first_name || 'Cliente',
-      initiale: cliente.last_name ? `${cliente.last_name.charAt(0).toUpperCase()}.` : '',
+      nom: cliente.last_name || '',
+      email: cliente.email || null,
+      telephone: cliente.phone || null,
       inscriteLe: cliente.created_at,
       dateNaissance: cliente.date_naissance || null,
       ascendant: cliente.ascendant || null,
       solde: wallet ? parseFloat(wallet.balance || 0) : 0,
+      totalDepense: Math.round(totalDepense * 100) / 100,
+      recharges,
       proches: (proches || []).map((pr) => ({
         prenom: pr.prenom,
         dateNaissance: pr.date_naissance,
