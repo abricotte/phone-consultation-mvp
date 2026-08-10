@@ -115,6 +115,19 @@ export const api = {
     request("/admin/tarifs", { method: "PATCH", body: JSON.stringify(body) }),
   adminPatchTextes: (body: Record<string, unknown>) =>
     request("/admin/textes", { method: "PATCH", body: JSON.stringify(body) }),
+  // Changement de numéro, avec appel de vérification préalable
+  adminDemanderVerifTel: (telephone: string) =>
+    request("/admin/telephone/demander", {
+      method: "POST",
+      body: JSON.stringify({ telephone }),
+    }),
+  adminConfirmerVerifTel: (code: string) =>
+    request("/admin/telephone/confirmer", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    }),
+  adminAnnulerVerifTel: () =>
+    request("/admin/telephone/verification", { method: "DELETE" }),
   // Santé de la ligne téléphonique
   adminGetLigne: () => request("/admin/ligne"),
   adminAutotest: () => request("/admin/autotest"),

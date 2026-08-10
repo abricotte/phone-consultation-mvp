@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { chargerReglages, REGLAGES_DEFAUT } from "@/lib/reglages";
 
 interface Ligne {
   disponible: boolean;
@@ -26,9 +27,9 @@ interface Autotest {
   testeLe: string;
 }
 
-// Seuils : sous 5 € la ligne ne tiendra pas la journée, sous 1 € les
-// appels échouent. C'est le seul cas où ce bloc doit s'imposer.
-const SEUIL_BAS = 5;
+// Sous le seuil d'alerte (réglable dans « Mon profil »), la ligne ne
+// tiendra pas la journée ; sous 1 €, les appels échouent purement et
+// simplement. Seuls ces deux cas justifient que ce bloc s'impose.
 const SEUIL_CRITIQUE = 1;
 
 // Deux rendus : "alerte" (remonte en haut du cabinet, uniquement si le
@@ -42,8 +43,11 @@ export default function SanteLigne({
   const [test, setTest] = useState<Autotest | null>(null);
   const [testEnCours, setTestEnCours] = useState(false);
   const [ouvert, setOuvert] = useState(false);
+  // Seuil réglé dans « Mon profil » — pas une constante figée
+  const [seuilBas, setSeuilBas] = useState(REGLAGES_DEFAUT.seuilTwilio);
 
   useEffect(() => {
+    setSeuilBas(chargerReglages().seuilTwilio);
     api
       .adminGetLigne()
       .then((l: Ligne) => setLigne(l))
@@ -64,7 +68,7 @@ export default function SanteLigne({
 
   const soldeConnu = ligne?.disponible && typeof ligne.montant === "number";
   const montant = soldeConnu ? ligne!.montant! : null;
-  const bas = montant !== null && montant < SEUIL_BAS;
+  const bas = montant !== null && montant < seuilBas;
   const critique = montant !== null && montant < SEUIL_CRITIQUE;
 
   // En variante "alerte", on ne s'affiche QUE si le solde est bas.

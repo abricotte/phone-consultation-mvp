@@ -1417,6 +1417,179 @@ router.get('/profil', async (req, res) => {
   }
 });
 
+// ------------------------------------------------------------------
+// CHANGEMENT DE NUMÉRO — avec appel de vérification préalable.
+//
+// Le numéro de la praticienne est celui que Twilio compose pour la
+// joindre. Une faute de frappe la rendrait injoignable sans qu'elle
+// comprenne pourquoi. Le nouveau numéro est donc mis EN ATTENTE, Twilio
+// l'appelle et énonce un code, et il ne remplace l'ancien qu'une fois
+// le code saisi. Tant que rien n'est confirmé, l'ancien reste actif.
+// ------------------------------------------------------------------
+
+// Résout la fiche utilisateur de la praticienne
+async function utilisateurPraticienne(praticienneId) {
+  const { data: consultant } = await supabase
+    .from('consultants')
+    .select('user_id')
+    .eq('praticienne_id', praticienneId)
+    .limit(1)
+    .maybeSingle();
+  return consultant?.user_id || null;
+}
+
+// POST /api/admin/telephone/demander - Lance l'appel de vérification
+router.post('/telephone/demander', async (req, res) => {
+  try {
+    if (!twilio) {
+      return res.status(503).json({ error: 'Téléphonie non configurée.' });
+    }
+
+    const telephone = normalizePhone(req.body.telephone || '');
+    if (!estNumeroFrValide(telephone)) {
+      return res.status(400).json({
+        error: 'Numéro invalide. Indiquez un mobile français (ex. 06 12 34 56 78).',
+      });
+    }
+
+    const numeroLigne = normalizePhone(process.env.TWILIO_PHONE_NUMBER || '');
+    if (telephone === numeroLigne) {
+      return res.status(400).json({
+        error: "Ce numéro est celui de votre ligne : Twilio ne peut pas l'appeler depuis lui-même.",
+      });
+    }
+
+    const p = await getPraticienne();
+    const userId = await utilisateurPraticienne(p.id);
+    if (!userId) return res.status(500).json({ error: 'Profil praticienne introuvable.' });
+
+    // Une seule vérification en attente : on remplace la précédente
+    const code = String(Math.floor(1000 + Math.random() * 9000));
+    const expire = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    await supabase.from('verifications_numero').delete().eq('user_id', userId);
+    const { data: verif, error } = await supabase
+      .from('verifications_numero')
+      .insert({ user_id: userId, telephone, code, expire_le: expire })
+      .select('id')
+      .single();
+    if (error) throw error;
+
+    const backendUrl = (process.env.BACKEND_URL || '').replace(/\/+$/, '');
+    try {
+      const appel = await twilio.calls.create({
+        to: telephone,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        url: `${backendUrl}/api/calls/twiml/verification?id=${verif.id}`,
+        method: 'GET',
+        timeLimit: 60,
+      });
+      await supabase
+        .from('verifications_numero')
+        .update({ call_sid: appel.sid })
+        .eq('id', verif.id);
+    } catch (twErr) {
+      // L'appel n'est pas parti : inutile de laisser une attente fantôme
+      await supabase.from('verifications_numero').delete().eq('id', verif.id);
+      console.error('Appel de vérification impossible:', twErr.message);
+      return res.status(502).json({
+        error: "Impossible d'appeler ce numéro. Vérifiez-le et réessayez.",
+      });
+    }
+
+    console.log(`Vérification de numéro lancée vers ${masquer(telephone)}`);
+    res.json({
+      message: 'Votre téléphone va sonner. Notez le code annoncé.',
+      telephone,
+      expireDans: 600,
+    });
+  } catch (err) {
+    console.error('Erreur demande de vérification:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Masque un numéro pour les journaux
+function masquer(n) {
+  return typeof n === 'string' && n.length >= 8
+    ? `${n.slice(0, 4)}****${n.slice(-4)}`
+    : '(inconnu)';
+}
+
+// POST /api/admin/telephone/confirmer - Valide le code et enregistre
+router.post('/telephone/confirmer', async (req, res) => {
+  try {
+    const code = String(req.body.code || '').trim();
+    if (!/^\d{4}$/.test(code)) {
+      return res.status(400).json({ error: 'Code à 4 chiffres attendu.' });
+    }
+
+    const p = await getPraticienne();
+    const userId = await utilisateurPraticienne(p.id);
+    if (!userId) return res.status(500).json({ error: 'Profil praticienne introuvable.' });
+
+    const { data: verif } = await supabase
+      .from('verifications_numero')
+      .select('id, telephone, code, tentatives, expire_le')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!verif) {
+      return res.status(404).json({ error: 'Aucune vérification en cours.' });
+    }
+    if (new Date(verif.expire_le) < new Date()) {
+      await supabase.from('verifications_numero').delete().eq('id', verif.id);
+      return res.status(410).json({ error: 'Code expiré. Relancez la vérification.' });
+    }
+    if (verif.tentatives >= 5) {
+      await supabase.from('verifications_numero').delete().eq('id', verif.id);
+      return res.status(429).json({ error: 'Trop de tentatives. Relancez la vérification.' });
+    }
+    if (verif.code !== code) {
+      await supabase
+        .from('verifications_numero')
+        .update({ tentatives: verif.tentatives + 1 })
+        .eq('id', verif.id);
+      return res.status(401).json({
+        error: `Code incorrect (${4 - verif.tentatives} essai${4 - verif.tentatives > 1 ? 's' : ''} restant${4 - verif.tentatives > 1 ? 's' : ''}).`,
+      });
+    }
+
+    // Code juste : le numéro a sonné, il est joignable — on l'enregistre
+    const { error: majErr } = await supabase
+      .from('users')
+      .update({ phone: verif.telephone })
+      .eq('id', userId);
+    if (majErr) throw majErr;
+
+    await supabase.from('verifications_numero').delete().eq('id', verif.id);
+    console.log(`Numéro praticienne confirmé : ${masquer(verif.telephone)}`);
+
+    res.json({
+      message: 'Numéro vérifié et enregistré.',
+      telephone: verif.telephone,
+    });
+  } catch (err) {
+    console.error('Erreur confirmation de numéro:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// DELETE /api/admin/telephone/verification - Abandonner
+router.delete('/telephone/verification', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+    const userId = await utilisateurPraticienne(p.id);
+    if (userId) {
+      await supabase.from('verifications_numero').delete().eq('user_id', userId);
+    }
+    res.json({ message: 'Vérification annulée.' });
+  } catch (err) {
+    console.error('Erreur annulation vérification:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // PATCH /api/admin/tarifs - Modifier tarifs, forfaits et paliers
 router.patch('/tarifs', async (req, res) => {
   try {

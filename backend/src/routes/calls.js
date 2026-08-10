@@ -591,6 +591,53 @@ async function playWarning(conferenceSid) {
   }
 }
 
+// GET /api/calls/twiml/verification - Énonce le code de vérification du
+// nouveau numéro de la praticienne. Le code est lu en base à partir de
+// l'identifiant de vérification : il ne transite jamais dans l'URL.
+router.get('/twiml/verification', twilioSignature, async (req, res) => {
+  const response = new VoiceResponse();
+
+  try {
+    const { data: verif } = await supabase
+      .from('verifications_numero')
+      .select('code, expire_le')
+      .eq('id', req.query.id)
+      .maybeSingle();
+
+    if (!verif || new Date(verif.expire_le) < new Date()) {
+      response.say(
+        { language: 'fr-FR' },
+        "Cette vérification n'est plus valide. Relancez-la depuis votre cabinet."
+      );
+    } else {
+      // Chiffre par chiffre, avec des pauses : un code dicté trop vite
+      // au téléphone est inutilisable.
+      const chiffres = verif.code.split('').join(', ');
+      response.pause({ length: 1 });
+      response.say(
+        { language: 'fr-FR' },
+        'Bonjour Elena. Voici le code de vérification de votre nouveau numéro.'
+      );
+      for (let i = 0; i < 3; i++) {
+        response.pause({ length: 1 });
+        response.say({ language: 'fr-FR' }, chiffres);
+      }
+      response.pause({ length: 1 });
+      response.say(
+        { language: 'fr-FR' },
+        'Saisissez ce code dans votre cabinet pour confirmer. À bientôt.'
+      );
+    }
+  } catch (err) {
+    console.error('Erreur TwiML vérification:', err);
+    response.say({ language: 'fr-FR' }, 'Une erreur est survenue. Réessayez.');
+  }
+
+  response.hangup();
+  res.type('text/xml');
+  res.send(response.toString());
+});
+
 // GET /api/calls/twiml/warning - Bip + message « il vous reste 2 minutes »
 router.get('/twiml/warning', twilioSignature, (req, res) => {
   const response = new VoiceResponse();

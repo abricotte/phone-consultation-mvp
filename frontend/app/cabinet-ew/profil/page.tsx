@@ -89,6 +89,57 @@ export default function ProfilPraticiennePage() {
   const [textesMsg, setTextesMsg] = useState("");
   const [textesEnCours, setTextesEnCours] = useState(false);
 
+  // Changement de numéro — en deux temps : appel, puis code
+  const [nouveauTel, setNouveauTel] = useState("");
+  const [etapeTel, setEtapeTel] = useState<"saisie" | "code">("saisie");
+  const [codeTel, setCodeTel] = useState("");
+  const [telMsg, setTelMsg] = useState("");
+  const [telErr, setTelErr] = useState("");
+  const [telEnCours, setTelEnCours] = useState(false);
+
+  async function demanderVerif(e: React.FormEvent) {
+    e.preventDefault();
+    setTelMsg("");
+    setTelErr("");
+    setTelEnCours(true);
+    try {
+      const r = await api.adminDemanderVerifTel(nouveauTel);
+      setTelMsg(r.message);
+      setEtapeTel("code");
+    } catch (err) {
+      setTelErr(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setTelEnCours(false);
+    }
+  }
+
+  async function confirmerVerif(e: React.FormEvent) {
+    e.preventDefault();
+    setTelMsg("");
+    setTelErr("");
+    setTelEnCours(true);
+    try {
+      const r = await api.adminConfirmerVerifTel(codeTel);
+      setProfil((p) => (p ? { ...p, telephone: r.telephone } : p));
+      setTelMsg("Numéro vérifié et enregistré.");
+      setEtapeTel("saisie");
+      setNouveauTel("");
+      setCodeTel("");
+    } catch (err) {
+      setTelErr(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setTelEnCours(false);
+    }
+  }
+
+  async function annulerVerif() {
+    await api.adminAnnulerVerifTel().catch(() => {});
+    setEtapeTel("saisie");
+    setCodeTel("");
+    setTelMsg("");
+    setTelErr("");
+  }
+
   // Mot de passe
   const [mdpActuel, setMdpActuel] = useState("");
   const [mdpNouveau, setMdpNouveau] = useState("");
@@ -226,11 +277,74 @@ export default function ProfilPraticiennePage() {
             <dd className="text-ink">{formatTel(profil.numeroLigne)}</dd>
           </div>
         </dl>
-        <p className="mt-4 rounded-xl bg-blush px-4 py-3 text-xs text-mention">
-          ⏳ La modification de votre numéro arrive — avec un appel de
-          vérification avant enregistrement, pour qu&apos;une faute de frappe ne
-          puisse jamais vous rendre injoignable.
-        </p>
+        {/* Changement de numéro : vérifié par appel AVANT enregistrement */}
+        <div className="mt-5 border-t border-greige/50 pt-5">
+          <p className="text-sm font-medium text-aubergine">
+            Changer mon numéro
+          </p>
+          <p className="mt-0.5 text-xs text-mention">
+            Votre téléphone sonnera et une voix vous dictera un code. Votre
+            numéro actuel reste actif tant que le code n&apos;est pas confirmé —
+            une faute de frappe ne peut donc pas vous rendre injoignable.
+          </p>
+
+          {etapeTel === "saisie" ? (
+            <form onSubmit={demanderVerif} className="mt-3 flex flex-wrap gap-2">
+              <input
+                type="tel"
+                value={nouveauTel}
+                onChange={(e) => setNouveauTel(e.target.value)}
+                placeholder="06 12 34 56 78"
+                required
+                className={`${champ} max-w-56`}
+              />
+              <button type="submit" disabled={telEnCours} className={bouton}>
+                {telEnCours ? "Appel en cours…" : "M'appeler pour vérifier"}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={confirmerVerif} className="mt-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="\d{4}"
+                  maxLength={4}
+                  value={codeTel}
+                  onChange={(e) => setCodeTel(e.target.value.replace(/\D/g, ""))}
+                  placeholder="1234"
+                  required
+                  autoFocus
+                  className={`${champ} w-28 text-center text-xl font-bold tracking-[0.3em]`}
+                />
+                <button type="submit" disabled={telEnCours} className={bouton}>
+                  {telEnCours ? "Vérification…" : "Confirmer"}
+                </button>
+                <button
+                  type="button"
+                  onClick={annulerVerif}
+                  className="text-sm text-mention hover:text-aubergine"
+                >
+                  Annuler
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-mention">
+                Le code annoncé pour le {formatTel(nouveauTel)} · valable 10 min
+              </p>
+            </form>
+          )}
+
+          {telMsg && (
+            <p className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+              📞 {telMsg}
+            </p>
+          )}
+          {telErr && (
+            <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {telErr}
+            </p>
+          )}
+        </div>
       </Section>
 
       {/* Tarifs */}
@@ -498,6 +612,11 @@ export default function ProfilPraticiennePage() {
           dans Supabase — une action à faire dans votre tableau de bord.
         </p>
       </Section>
+
+      <p className="mt-6 text-center text-xs text-mention">
+        Cette page vous appartient : rien de ce qui s&apos;y trouve
+        n&apos;est visible par vos clientes.
+      </p>
     </CabinetShell>
   );
 }
