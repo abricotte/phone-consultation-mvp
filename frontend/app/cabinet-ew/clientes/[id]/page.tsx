@@ -8,6 +8,7 @@ import CabinetShell from "@/components/CabinetShell";
 import FilChronologique, {
   type EvenementFil,
 } from "@/components/FilChronologique";
+import { capitaliser, depuisQuand, comparerEcheances, echeanceProche } from "@/lib/format";
 import {
   signeAstrologique,
   formatDateNaissance,
@@ -361,7 +362,7 @@ export default function FicheClientePage() {
           </div>
           <div className="min-w-0">
             <h1 className="font-jakarta text-3xl font-bold tracking-tight text-aubergine">
-              {fiche.prenom} {fiche.nom}
+              {capitaliser(fiche.prenom)} {capitaliser(fiche.nom)}
             </h1>
             {signe ? (
               <p className="mt-0.5 text-sm text-ink">
@@ -485,32 +486,49 @@ export default function FicheClientePage() {
           </div>
 
           {/* SIGNAL DE SILENCE — information de lecture, jamais une
-              relance : dans ce métier, un silence s'interprète. */}
-          {fiche.rythme?.silenceJours !== null && (
+              relance : dans ce métier, un silence s'interprète.
+              Un « rythme » n'a de sens qu'à partir de plusieurs appels ;
+              en dessous, on dit simplement la dernière fois. */}
+          {tenues.length > 0 && (
             <p
               className={`mt-5 rounded-xl px-4 py-2.5 text-sm ${
-                fiche.rythme.inhabituel
+                fiche.rythme?.inhabituel
                   ? "bg-amber-50 text-amber-800"
                   : "bg-cream text-mention"
               }`}
             >
-              {fiche.rythme.intervalleMoyenJours !== null ? (
+              {tenues.length >= 3 && fiche.rythme?.intervalleMoyenJours ? (
                 <>
-                  Elle appelait tous les{" "}
+                  Elle appelle tous les{" "}
                   <strong className="font-semibold">
                     {fiche.rythme.intervalleMoyenJours} jours
                   </strong>{" "}
-                  en moyenne · silence depuis{" "}
+                  en moyenne ·{" "}
+                  {fiche.rythme.silenceJours === 0 ? (
+                    <strong className="font-semibold">vue aujourd&apos;hui</strong>
+                  ) : (
+                    <>
+                      dernier appel{" "}
+                      <strong className="font-semibold">
+                        {depuisQuand(tenues[0].date)}
+                      </strong>
+                      {fiche.rythme.inhabituel && " — inhabituel pour elle"}
+                    </>
+                  )}
+                </>
+              ) : tenues.length === 1 ? (
+                <>
+                  Première consultation le{" "}
                   <strong className="font-semibold">
-                    {fiche.rythme.silenceJours} jours
-                  </strong>
-                  {fiche.rythme.inhabituel && " — inhabituel pour elle"}
+                    {formatDate(tenues[0].date)}
+                  </strong>{" "}
+                  · {depuisQuand(tenues[0].date)}
                 </>
               ) : (
                 <>
-                  Dernier appel il y a{" "}
+                  {tenues.length} consultations · dernière{" "}
                   <strong className="font-semibold">
-                    {fiche.rythme.silenceJours} jours
+                    {depuisQuand(tenues[0].date)}
                   </strong>
                 </>
               )}
@@ -526,16 +544,32 @@ export default function FicheClientePage() {
             Mon carnet
           </h2>
           <p className="text-xs text-mention">
-            🔒 Strictement privé — jamais visible par {fiche.prenom}
+            🔒 Strictement privé — jamais visible par {capitaliser(fiche.prenom)}
           </p>
         </div>
 
-        <form onSubmit={handleAjoutNote} className="mt-4">
+        {/* Étiquettes rapides : un geste au lieu d'une phrase */}
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {["Amour", "Travail", "Famille", "Argent", "Santé", "Deuil"].map((e) => (
+            <button
+              key={e}
+              type="button"
+              onClick={() =>
+                setContenu((c) => (c.includes(`${e} :`) ? c : `${e} : ${c}`))
+              }
+              className="rounded-full border border-greige/70 bg-ivory px-3 py-1 text-xs font-medium text-mention transition hover:border-cta/50 hover:text-aubergine"
+            >
+              {e}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={handleAjoutNote} className="mt-3">
           <textarea
             value={contenu}
             onChange={(e) => setContenu(e.target.value)}
             rows={3}
-            placeholder={`Ce que vous voulez retenir de cette séance avec ${fiche.prenom}…`}
+            placeholder={`Ce que vous voulez retenir de cette séance avec ${capitaliser(fiche.prenom)}…`}
             className="w-full rounded-2xl border border-greige bg-ivory px-4 py-3 text-ink focus:border-cta-outline focus:outline-none"
           />
 
@@ -547,7 +581,7 @@ export default function FicheClientePage() {
                 onChange={(e) => setASuivre(e.target.checked)}
                 className="h-4 w-4 rounded border-greige accent-cta"
               />
-              À suivre
+              À suivre — remontera dans « À reprendre »
             </label>
 
             {aSuivre && (
@@ -573,8 +607,9 @@ export default function FicheClientePage() {
 
           {aSuivre && (
             <p className="mt-2 text-xs text-mention">
-              Les annonces datées se retrouvent dans « À suivre » — pour
-              pouvoir demander plus tard : « alors, ce qui devait arriver ? »
+              Cette note apparaîtra dans votre zone « À reprendre » à
+              l&apos;approche de l&apos;échéance. Pour une vraie prédiction,
+              utilisez plutôt « Ce que je lui ai annoncé » ci-dessous.
             </p>
           )}
 
@@ -606,7 +641,11 @@ export default function FicheClientePage() {
                       {n.contenu}
                     </p>
                     <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-mention">
-                      <span>{formatDate(n.createdAt)}</span>
+                      {/* Relatif : « il y a 3 semaines » se lit plus vite
+                          qu'une date quand on relit avant un appel */}
+                      <span title={formatDate(n.createdAt)}>
+                        {depuisQuand(n.createdAt)}
+                      </span>
                       {n.aSuivre && (
                         <span
                           className={`rounded-full px-2 py-0.5 font-medium ${
@@ -698,55 +737,87 @@ export default function FicheClientePage() {
         </form>
 
         {augures.length > 0 && (
-          <ul className="mt-5 space-y-2.5 border-t border-gold/30 pt-4">
-            {augures.map((a) => (
-              <li
-                key={a.id}
-                className={`rounded-2xl border px-4 py-3 ${
-                  a.statut === "attente"
-                    ? "border-gold/50 bg-gold/5"
-                    : "border-greige/50 bg-ivory"
-                }`}
-              >
-                <p
-                  className={`text-sm ${
-                    a.statut === "attente" ? "text-ink" : "text-mention"
-                  }`}
-                >
-                  {a.contenu}
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                  <span className="text-mention">
-                    {a.echeanceTexte ||
-                      (a.echeance ? formatDate(a.echeance) : "sans échéance")}
-                  </span>
-                  <span className="text-mention">·</span>
-                  {(
-                    [
-                      ["attente", "en attente"],
-                      ["confirme", "✓ advenu"],
-                      ["pas_encore", "pas encore"],
-                    ] as const
-                  ).map(([code, label]) => (
-                    <button
-                      key={code}
-                      onClick={() => majStatutAugure(a, code)}
-                      className={`rounded-full px-2.5 py-0.5 font-medium transition ${
-                        a.statut === code
-                          ? code === "confirme"
-                            ? "bg-green-50 text-statut-online"
-                            : code === "pas_encore"
-                            ? "bg-greige/50 text-mention"
-                            : "bg-gold/20 text-gold-dark"
-                          : "text-mention hover:bg-blush"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </li>
-            ))}
+          <ul className="mt-5 space-y-3 border-t border-gold/30 pt-4">
+            {/* Les augures en attente d'abord, échéance la plus proche en
+                tête — celui de « vers octobre » passe devant celui de 2027 */}
+            {[...augures]
+              .sort((a, b) => {
+                const ouvert = (x: Note) => (x.statut === "attente" ? 0 : 1);
+                if (ouvert(a) !== ouvert(b)) return ouvert(a) - ouvert(b);
+                return comparerEcheances(a, b);
+              })
+              .map((a) => {
+                const enAttente = a.statut === "attente";
+                const urgent = enAttente && echeanceProche(a.echeance);
+                return (
+                  <li
+                    key={a.id}
+                    className={`rounded-2xl border-l-4 border-y border-r px-4 py-3 ${
+                      urgent
+                        ? "border-l-cta border-y-gold/40 border-r-gold/40 bg-gold/[0.08]"
+                        : enAttente
+                        ? "border-l-gold border-y-gold/30 border-r-gold/30 bg-gold/[0.04]"
+                        : "border-l-greige border-y-greige/50 border-r-greige/50 bg-ivory"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+                      <div className="min-w-0 flex-1">
+                        {/* La prédiction en premier, en grand : c'est elle
+                            qu'on relit. L'échéance juste dessous. */}
+                        <p
+                          className={`text-[15px] leading-snug ${
+                            enAttente ? "font-medium text-ink" : "text-mention"
+                          }`}
+                        >
+                          {a.contenu}
+                        </p>
+                        <p className="mt-1 text-xs text-mention">
+                          {a.echeanceTexte ||
+                            (a.echeance ? formatDate(a.echeance) : "sans échéance")}
+                          {urgent && (
+                            <span className="ml-2 font-semibold text-prix">
+                              · l&apos;heure approche
+                            </span>
+                          )}
+                          {a.closeLe && a.statut === "confirme" && (
+                            <span className="ml-2 text-statut-online">
+                              · advenu le {formatDate(a.closeLe)}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+
+                      {/* Vrais boutons : bordure, fond, état actif net */}
+                      <div
+                        role="group"
+                        aria-label="Statut de l'augure"
+                        className="flex shrink-0 overflow-hidden rounded-full border border-greige/70"
+                      >
+                        {(
+                          [
+                            ["attente", "En attente", "bg-amber-100 text-amber-800"],
+                            ["confirme", "✓ Advenu", "bg-[#3B6D11] text-white"],
+                            ["pas_encore", "Pas encore", "bg-greige text-ink"],
+                          ] as const
+                        ).map(([code, label, actifClasses]) => (
+                          <button
+                            key={code}
+                            onClick={() => majStatutAugure(a, code)}
+                            aria-pressed={a.statut === code}
+                            className={`px-3 py-1.5 text-xs font-semibold transition ${
+                              a.statut === code
+                                ? actifClasses
+                                : "bg-ivory text-mention hover:bg-blush"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
           </ul>
         )}
       </section>
