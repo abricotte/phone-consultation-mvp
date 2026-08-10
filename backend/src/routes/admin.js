@@ -651,14 +651,22 @@ router.get('/clientes/:id', async (req, res) => {
         .limit(30),
     ]);
 
-    // Le carnet : notes privées de la praticienne sur cette cliente
-    const { data: notes } = await supabase
-      .from('notes_praticienne')
-      .select('id, contenu, a_suivre, echeance, close_le, created_at')
-      .eq('praticienne_id', p.id)
-      .eq('client_id', cliente.id)
-      .order('created_at', { ascending: false })
-      .limit(50);
+    // Le carnet : notes ET augures, séparés à la lecture
+    const [{ data: notes }, { data: datesMarquantes }] = await Promise.all([
+      supabase
+        .from('notes_praticienne')
+        .select(CHAMPS_NOTE)
+        .eq('praticienne_id', p.id)
+        .eq('client_id', cliente.id)
+        .order('created_at', { ascending: false })
+        .limit(80),
+      supabase
+        .from('dates_marquantes')
+        .select('id, libelle, date, recurrence_annuelle, created_at')
+        .eq('praticienne_id', p.id)
+        .eq('client_id', cliente.id)
+        .order('date', { ascending: true }),
+    ]);
 
     // Ses recharges (crédits Stripe) — l'autre moitié de son histoire
     let recharges = [];
@@ -681,6 +689,39 @@ router.get('/clientes/:id', async (req, res) => {
       .filter((s) => s.status === 'completed')
       .reduce((acc, s) => acc + parseFloat(s.total_cost || 0), 0);
 
+    // SIGNAL DE SILENCE : à quel rythme elle appelait, et depuis combien
+    // de temps elle ne l'a pas fait. Information de lecture — un silence
+    // s'interprète, il ne se relance pas mécaniquement.
+    const dates = (sessions || [])
+      .filter((s) => s.status === 'completed' && s.started_at)
+      .map((s) => new Date(s.started_at).getTime())
+      .sort((a, b) => b - a); // du plus récent au plus ancien
+
+    let rythme = { intervalleMoyenJours: null, silenceJours: null, inhabituel: false };
+    if (dates.length > 0) {
+      const silenceJours = Math.floor((Date.now() - dates[0]) / 86400000);
+      let intervalleMoyenJours = null;
+      if (dates.length >= 3) {
+        // Au moins deux intervalles pour parler d'un rythme
+        const ecarts = [];
+        for (let i = 0; i < dates.length - 1; i++) {
+          ecarts.push((dates[i] - dates[i + 1]) / 86400000);
+        }
+        intervalleMoyenJours = Math.round(
+          ecarts.reduce((a, b) => a + b, 0) / ecarts.length
+        );
+      }
+      rythme = {
+        intervalleMoyenJours,
+        silenceJours,
+        // Le silence dépasse nettement son habitude
+        inhabituel:
+          intervalleMoyenJours !== null &&
+          intervalleMoyenJours > 0 &&
+          silenceJours > intervalleMoyenJours * 2,
+      };
+    }
+
     res.json({
       id: cliente.id,
       prenom: cliente.first_name || 'Cliente',
@@ -693,7 +734,18 @@ router.get('/clientes/:id', async (req, res) => {
       solde: wallet ? parseFloat(wallet.balance || 0) : 0,
       totalDepense: Math.round(totalDepense * 100) / 100,
       recharges,
-      notes: (notes || []).map(serialiserNote),
+      // Notes et augures séparés : ce qu'elle a observé vs ce qu'elle a annoncé
+      notes: (notes || []).filter((n) => (n.type || 'note') === 'note').map(serialiserNote),
+      augures: (notes || []).filter((n) => n.type === 'augure').map(serialiserNote),
+      datesMarquantes: (datesMarquantes || []).map((d) => ({
+        id: d.id,
+        libelle: d.libelle,
+        date: d.date,
+        recurrenceAnnuelle: d.recurrence_annuelle,
+        createdAt: d.created_at,
+      })),
+      // SIGNAL DE SILENCE — information, jamais relance automatique
+      rythme,
       proches: (proches || []).map((pr) => ({
         prenom: pr.prenom,
         dateNaissance: pr.date_naissance,
@@ -752,16 +804,24 @@ router.get('/recharges', async (req, res) => {
 // CARNET DE NOTES — privé, jamais exposé aux clientes.
 // ------------------------------------------------------------------
 
+const CHAMPS_NOTE =
+  'id, contenu, type, a_suivre, echeance, echeance_texte, statut, close_le, created_at';
+
 function serialiserNote(n) {
   return {
     id: n.id,
     contenu: n.contenu,
+    type: n.type || 'note',
     aSuivre: n.a_suivre,
     echeance: n.echeance,
+    echeanceTexte: n.echeance_texte || null,
+    statut: n.statut || null,
     closeLe: n.close_le,
     createdAt: n.created_at,
   };
 }
+
+const STATUTS_AUGURE = ['attente', 'confirme', 'pas_encore'];
 
 // POST /api/admin/clientes/:id/notes - Ajouter une note
 router.post('/clientes/:id/notes', async (req, res) => {
@@ -805,7 +865,7 @@ router.post('/clientes/:id/notes', async (req, res) => {
         a_suivre: aSuivre,
         echeance,
       })
-      .select('id, contenu, a_suivre, echeance, close_le, created_at')
+      .select(CHAMPS_NOTE)
       .single();
 
     if (error) throw error;
@@ -834,7 +894,7 @@ router.patch('/notes/:id', async (req, res) => {
       .update(maj)
       .eq('id', req.params.id)
       .eq('praticienne_id', p.id)
-      .select('id, contenu, a_suivre, echeance, close_le, created_at');
+      .select(CHAMPS_NOTE);
 
     if (error) throw error;
     if (!data || data.length === 0) {
@@ -911,6 +971,329 @@ router.get('/suivis', async (req, res) => {
     );
   } catch (err) {
     console.error('Erreur suivis:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ------------------------------------------------------------------
+// AUGURES — ce que la praticienne a ANNONCÉ, distinct de ses notes.
+// ------------------------------------------------------------------
+
+// POST /api/admin/clientes/:id/augures - Poser un augure
+router.post('/clientes/:id/augures', async (req, res) => {
+  try {
+    const contenu = typeof req.body.contenu === 'string' ? req.body.contenu.trim() : '';
+    if (!contenu) return res.status(400).json({ error: "L'augure est vide." });
+    if (contenu.length > 5000) {
+      return res.status(400).json({ error: 'Texte trop long (5000 caractères maximum).' });
+    }
+
+    // Échéance souple : un texte ("vers octobre") et/ou une date
+    const echeanceTexte =
+      typeof req.body.echeanceTexte === 'string'
+        ? req.body.echeanceTexte.trim().slice(0, 120) || null
+        : null;
+    let echeance = null;
+    if (req.body.echeance) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(req.body.echeance)) {
+        return res.status(400).json({ error: 'Échéance invalide (format AAAA-MM-JJ).' });
+      }
+      echeance = req.body.echeance;
+    }
+
+    const p = await getPraticienne();
+    const { data: cliente } = await supabase
+      .from('users').select('id').eq('id', req.params.id).eq('role', 'client').maybeSingle();
+    if (!cliente) return res.status(404).json({ error: 'Cliente non trouvée' });
+
+    const { data: augure, error } = await supabase
+      .from('notes_praticienne')
+      .insert({
+        praticienne_id: p.id,
+        client_id: req.params.id,
+        contenu,
+        type: 'augure',
+        statut: 'attente',
+        a_suivre: true,
+        echeance,
+        echeance_texte: echeanceTexte,
+      })
+      .select(CHAMPS_NOTE)
+      .single();
+
+    if (error) throw error;
+    res.status(201).json(serialiserNote(augure));
+  } catch (err) {
+    console.error('Erreur ajout augure:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PATCH /api/admin/augures/:id - Changer le statut d'un augure
+router.patch('/augures/:id', async (req, res) => {
+  try {
+    const statut = req.body.statut;
+    if (!STATUTS_AUGURE.includes(statut)) {
+      return res.status(400).json({ error: 'Statut invalide.' });
+    }
+
+    const p = await getPraticienne();
+    const { data, error } = await supabase
+      .from('notes_praticienne')
+      .update({
+        statut,
+        // « en attente » rouvre l'augure ; les deux autres le clôturent
+        close_le: statut === 'attente' ? null : new Date().toISOString(),
+      })
+      .eq('id', req.params.id)
+      .eq('praticienne_id', p.id)
+      .eq('type', 'augure')
+      .select(CHAMPS_NOTE);
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      return res.status(404).json({ error: 'Augure non trouvé' });
+    }
+    res.json(serialiserNote(data[0]));
+  } catch (err) {
+    console.error('Erreur mise à jour augure:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// GET /api/admin/a-reprendre - Les augures dont l'heure vient
+router.get('/a-reprendre', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+    // Fenêtre : tout ce qui échoit dans les 30 jours, plus le passé
+    const horizon = new Date();
+    horizon.setDate(horizon.getDate() + 30);
+
+    const { data: augures, error } = await supabase
+      .from('notes_praticienne')
+      .select('id, client_id, contenu, echeance, echeance_texte, created_at')
+      .eq('praticienne_id', p.id)
+      .eq('type', 'augure')
+      .eq('statut', 'attente')
+      .order('echeance', { ascending: true, nullsFirst: false })
+      .limit(100);
+
+    if (error) throw error;
+
+    // Ne remontent que ceux dont l'échéance approche ou est passée.
+    // Sans date (échéance en toutes lettres), on garde : à elle de juger.
+    const limite = horizon.toISOString().slice(0, 10);
+    const retenus = (augures || []).filter((a) => !a.echeance || a.echeance <= limite);
+
+    const ids = [...new Set(retenus.map((a) => a.client_id))];
+    let noms = {};
+    if (ids.length > 0) {
+      const { data: users } = await supabase
+        .from('users').select('id, first_name, last_name').in('id', ids);
+      for (const u of users || []) {
+        noms[u.id] = `${u.first_name || 'Cliente'} ${u.last_name || ''}`.trim();
+      }
+    }
+
+    res.json(
+      retenus.map((a) => ({
+        id: a.id,
+        clienteId: a.client_id,
+        cliente: noms[a.client_id] || 'Cliente',
+        contenu: a.contenu,
+        echeance: a.echeance,
+        echeanceTexte: a.echeance_texte || null,
+        depasse: a.echeance ? a.echeance < new Date().toISOString().slice(0, 10) : false,
+        createdAt: a.created_at,
+      }))
+    );
+  } catch (err) {
+    console.error('Erreur à reprendre:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ------------------------------------------------------------------
+// DATES QUI PÈSENT — confiées en consultation, strictement privées.
+// ------------------------------------------------------------------
+
+// POST /api/admin/clientes/:id/dates - Enregistrer une date marquante
+router.post('/clientes/:id/dates', async (req, res) => {
+  try {
+    const libelle = typeof req.body.libelle === 'string' ? req.body.libelle.trim() : '';
+    if (!libelle) return res.status(400).json({ error: 'Le libellé est requis.' });
+    if (libelle.length > 200) {
+      return res.status(400).json({ error: 'Libellé trop long (200 caractères maximum).' });
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(req.body.date || '')) {
+      return res.status(400).json({ error: 'Date invalide (format AAAA-MM-JJ).' });
+    }
+
+    const p = await getPraticienne();
+    const { data: cliente } = await supabase
+      .from('users').select('id').eq('id', req.params.id).eq('role', 'client').maybeSingle();
+    if (!cliente) return res.status(404).json({ error: 'Cliente non trouvée' });
+
+    const { data: d, error } = await supabase
+      .from('dates_marquantes')
+      .insert({
+        praticienne_id: p.id,
+        client_id: req.params.id,
+        libelle,
+        date: req.body.date,
+        recurrence_annuelle: req.body.recurrenceAnnuelle !== false,
+      })
+      .select('id, libelle, date, recurrence_annuelle, created_at')
+      .single();
+
+    if (error) throw error;
+    res.status(201).json({
+      id: d.id,
+      libelle: d.libelle,
+      date: d.date,
+      recurrenceAnnuelle: d.recurrence_annuelle,
+      createdAt: d.created_at,
+    });
+  } catch (err) {
+    console.error('Erreur ajout date marquante:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// DELETE /api/admin/dates/:id
+router.delete('/dates/:id', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+    const { data, error } = await supabase
+      .from('dates_marquantes')
+      .delete()
+      .eq('id', req.params.id)
+      .eq('praticienne_id', p.id)
+      .select('id');
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      return res.status(404).json({ error: 'Date non trouvée' });
+    }
+    res.json({ message: 'Date supprimée.' });
+  } catch (err) {
+    console.error('Erreur suppression date:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Jours restants avant la prochaine occurrence d'un jour/mois donné
+function joursAvant(dateISO, recurrent = true) {
+  if (!dateISO) return null;
+  const [, mois, jour] = dateISO.split('-').map(Number);
+  const auj = new Date();
+  auj.setHours(0, 0, 0, 0);
+
+  if (!recurrent) {
+    const d = new Date(dateISO + 'T00:00:00');
+    return Math.round((d - auj) / 86400000);
+  }
+  // Prochaine occurrence annuelle
+  let prochaine = new Date(auj.getFullYear(), mois - 1, jour);
+  if (prochaine < auj) prochaine = new Date(auj.getFullYear() + 1, mois - 1, jour);
+  return Math.round((prochaine - auj) / 86400000);
+}
+
+// GET /api/admin/dates-a-venir?jours=45 - Anniversaires et dates qui pèsent
+router.get('/dates-a-venir', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+    const fenetre = Math.min(180, Math.max(1, parseInt(req.query.jours, 10) || 45));
+
+    const [{ data: clientes }, { data: proches }, { data: marquantes }] =
+      await Promise.all([
+        supabase
+          .from('users')
+          .select('id, first_name, last_name, date_naissance')
+          .eq('role', 'client')
+          .not('date_naissance', 'is', null),
+        supabase.from('proches').select('client_id, prenom, date_naissance, lien')
+          .not('date_naissance', 'is', null),
+        supabase
+          .from('dates_marquantes')
+          .select('id, client_id, libelle, date, recurrence_annuelle')
+          .eq('praticienne_id', p.id),
+      ]);
+
+    const nomsClientes = {};
+    for (const c of clientes || []) {
+      nomsClientes[c.id] = `${c.first_name || 'Cliente'} ${c.last_name || ''}`.trim();
+    }
+    // Les proches appartiennent à des clientes qui n'ont pas forcément
+    // renseigné leur propre date de naissance : compléter les noms.
+    const idsManquants = [...new Set((proches || []).map((x) => x.client_id))]
+      .filter((id) => !nomsClientes[id]);
+    if (idsManquants.length > 0) {
+      const { data: autres } = await supabase
+        .from('users').select('id, first_name, last_name').in('id', idsManquants);
+      for (const u of autres || []) {
+        nomsClientes[u.id] = `${u.first_name || 'Cliente'} ${u.last_name || ''}`.trim();
+      }
+    }
+    const idsMarquantes = [...new Set((marquantes || []).map((x) => x.client_id))]
+      .filter((id) => !nomsClientes[id]);
+    if (idsMarquantes.length > 0) {
+      const { data: autres } = await supabase
+        .from('users').select('id, first_name, last_name').in('id', idsMarquantes);
+      for (const u of autres || []) {
+        nomsClientes[u.id] = `${u.first_name || 'Cliente'} ${u.last_name || ''}`.trim();
+      }
+    }
+
+    const evenements = [];
+
+    for (const c of clientes || []) {
+      const j = joursAvant(c.date_naissance, true);
+      if (j !== null && j <= fenetre) {
+        evenements.push({
+          type: 'anniversaire_cliente',
+          clienteId: c.id,
+          cliente: nomsClientes[c.id],
+          libelle: `Anniversaire de ${c.first_name || 'la cliente'}`,
+          date: c.date_naissance,
+          jours: j,
+        });
+      }
+    }
+
+    for (const pr of proches || []) {
+      const j = joursAvant(pr.date_naissance, true);
+      if (j !== null && j <= fenetre) {
+        evenements.push({
+          type: 'anniversaire_proche',
+          clienteId: pr.client_id,
+          cliente: nomsClientes[pr.client_id] || 'Cliente',
+          libelle: `Anniversaire de ${pr.prenom} (${pr.lien})`,
+          date: pr.date_naissance,
+          jours: j,
+        });
+      }
+    }
+
+    for (const d of marquantes || []) {
+      const j = joursAvant(d.date, d.recurrence_annuelle);
+      if (j !== null && j >= 0 && j <= fenetre) {
+        evenements.push({
+          type: 'date_marquante',
+          clienteId: d.client_id,
+          cliente: nomsClientes[d.client_id] || 'Cliente',
+          libelle: d.libelle,
+          date: d.date,
+          jours: j,
+          recurrenceAnnuelle: d.recurrence_annuelle,
+        });
+      }
+    }
+
+    evenements.sort((a, b) => a.jours - b.jours);
+    res.json(evenements);
+  } catch (err) {
+    console.error('Erreur dates à venir:', err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
