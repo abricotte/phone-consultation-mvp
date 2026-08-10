@@ -109,6 +109,12 @@ export const api = {
     request(`/admin/notes/${noteId}`, { method: "DELETE" }),
   adminGetSuivis: () => request("/admin/suivis"),
   adminGetRecharges: () => request("/admin/recharges"),
+  // Profil praticienne
+  adminGetProfil: () => request("/admin/profil"),
+  adminPatchTarifs: (body: Record<string, unknown>) =>
+    request("/admin/tarifs", { method: "PATCH", body: JSON.stringify(body) }),
+  adminPatchTextes: (body: Record<string, unknown>) =>
+    request("/admin/textes", { method: "PATCH", body: JSON.stringify(body) }),
   // Santé de la ligne téléphonique
   adminGetLigne: () => request("/admin/ligne"),
   adminAutotest: () => request("/admin/autotest"),

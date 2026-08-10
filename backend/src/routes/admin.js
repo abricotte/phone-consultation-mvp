@@ -1354,6 +1354,193 @@ router.get('/frequentation', async (req, res) => {
 });
 
 // ------------------------------------------------------------------
+// PROFIL PRATICIENNE — ce qu'elle doit pouvoir changer seule, sans
+// passer par la base de données.
+// ------------------------------------------------------------------
+
+// GET /api/admin/profil - Tarifs, textes et coordonnées
+router.get('/profil', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+    const t = p.config_tarifs || {};
+    const r = t.recharge || {};
+    const b = p.config_branding || {};
+
+    // Son numéro personnel (celui que Twilio compose pour la joindre)
+    let telephone = null;
+    let email = null;
+    const { data: consultant } = await supabase
+      .from('consultants')
+      .select('user_id')
+      .eq('praticienne_id', p.id)
+      .limit(1)
+      .maybeSingle();
+    if (consultant?.user_id) {
+      const { data: u } = await supabase
+        .from('users')
+        .select('phone, email')
+        .eq('id', consultant.user_id)
+        .maybeSingle();
+      telephone = u?.phone || null;
+      email = u?.email || null;
+    }
+
+    res.json({
+      nomPublic: p.nom_public,
+      telephone,
+      email,
+      numeroLigne: process.env.TWILIO_PHONE_NUMBER || null,
+      tarifs: {
+        prixMinute: t.prix_minute ?? 2.9,
+        creditMinimumMinutes: t.credit_minimum_minutes ?? 5,
+        bipAvantFinSecondes: t.bip_avant_fin_secondes ?? 120,
+        forfaits: t.forfaits ?? [],
+        recharge: {
+          suggestionsMinutes: r.suggestions_minutes ?? [10, 20, 30],
+          defautMinutes: r.defaut_minutes ?? 20,
+          pasMinutes: r.pas_minutes ?? 5,
+          minMinutes: r.min_minutes ?? 5,
+          maxMinutes: r.max_minutes ?? 90,
+        },
+      },
+      textes: {
+        tagline: b.tagline || '',
+        signature: b.signature || '',
+        messageAbsence: b.message_absence || '',
+      },
+      messagesVocaux: p.messages_vocaux || {},
+      autoOffHeures: p.auto_off_heures ?? 4,
+    });
+  } catch (err) {
+    console.error('Erreur profil praticienne:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PATCH /api/admin/tarifs - Modifier tarifs, forfaits et paliers
+router.patch('/tarifs', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+    const actuel = p.config_tarifs || {};
+    const suivant = { ...actuel, recharge: { ...(actuel.recharge || {}) } };
+
+    const nombre = (v, min, max) => {
+      const n = Number(v);
+      return Number.isFinite(n) && n >= min && n <= max ? n : null;
+    };
+
+    if ('prixMinute' in req.body) {
+      const v = nombre(req.body.prixMinute, 0.5, 50);
+      if (v === null) return res.status(400).json({ error: 'Prix à la minute invalide (0,50 € à 50 €).' });
+      suivant.prix_minute = v;
+    }
+    if ('creditMinimumMinutes' in req.body) {
+      const v = nombre(req.body.creditMinimumMinutes, 1, 60);
+      if (v === null) return res.status(400).json({ error: 'Crédit minimum invalide (1 à 60 min).' });
+      suivant.credit_minimum_minutes = Math.round(v);
+    }
+    if ('bipAvantFinSecondes' in req.body) {
+      const v = nombre(req.body.bipAvantFinSecondes, 0, 600);
+      if (v === null) return res.status(400).json({ error: 'Signal de fin invalide (0 à 600 s).' });
+      suivant.bip_avant_fin_secondes = Math.round(v);
+    }
+
+    if (Array.isArray(req.body.forfaits)) {
+      const forfaits = [];
+      for (const f of req.body.forfaits) {
+        const minutes = nombre(f.minutes, 5, 240);
+        const prix = nombre(f.prix, 1, 2000);
+        const nom = typeof f.nom === 'string' ? f.nom.trim().slice(0, 80) : '';
+        const code = typeof f.code === 'string' ? f.code.trim().slice(0, 40) : '';
+        if (!code || !nom || minutes === null || prix === null) {
+          return res.status(400).json({ error: 'Forfait invalide (code, nom, durée 5-240 min, prix).' });
+        }
+        forfaits.push({ code, nom, minutes: Math.round(minutes), prix });
+      }
+      suivant.forfaits = forfaits;
+    }
+
+    const rech = req.body.recharge;
+    if (rech && typeof rech === 'object') {
+      if (Array.isArray(rech.suggestionsMinutes)) {
+        const s = rech.suggestionsMinutes
+          .map((x) => nombre(x, 1, 240))
+          .filter((x) => x !== null)
+          .map(Math.round);
+        if (s.length === 0) return res.status(400).json({ error: 'Paliers de recharge invalides.' });
+        suivant.recharge.suggestions_minutes = s;
+      }
+      for (const [cle, champ, min, max] of [
+        ['defautMinutes', 'defaut_minutes', 1, 240],
+        ['pasMinutes', 'pas_minutes', 1, 60],
+        ['minMinutes', 'min_minutes', 1, 240],
+        ['maxMinutes', 'max_minutes', 1, 600],
+      ]) {
+        if (cle in rech) {
+          const v = nombre(rech[cle], min, max);
+          if (v === null) return res.status(400).json({ error: `Valeur invalide pour ${cle}.` });
+          suivant.recharge[champ] = Math.round(v);
+        }
+      }
+      if (suivant.recharge.min_minutes > suivant.recharge.max_minutes) {
+        return res.status(400).json({ error: 'La durée minimale dépasse la maximale.' });
+      }
+    }
+
+    const { error } = await supabase
+      .from('praticiennes')
+      .update({ config_tarifs: suivant })
+      .eq('id', p.id);
+    if (error) throw error;
+
+    clearCache(); // les tarifs sont mis en cache : le vider
+    res.json({ message: 'Tarifs mis à jour.' });
+  } catch (err) {
+    console.error('Erreur mise à jour tarifs:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PATCH /api/admin/textes - Baseline, signature, message d'absence
+router.patch('/textes', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+    const b = { ...(p.config_branding || {}) };
+
+    const texte = (v, max) =>
+      typeof v === 'string' ? v.trim().slice(0, max) : null;
+
+    if ('tagline' in req.body) {
+      const v = texte(req.body.tagline, 200);
+      if (v === null) return res.status(400).json({ error: 'Baseline invalide.' });
+      b.tagline = v;
+    }
+    if ('signature' in req.body) {
+      const v = texte(req.body.signature, 300);
+      if (v === null) return res.status(400).json({ error: 'Signature invalide.' });
+      b.signature = v;
+    }
+    if ('messageAbsence' in req.body) {
+      const v = texte(req.body.messageAbsence, 300);
+      if (v === null) return res.status(400).json({ error: "Message d'absence invalide." });
+      b.message_absence = v;
+    }
+
+    const { error } = await supabase
+      .from('praticiennes')
+      .update({ config_branding: b })
+      .eq('id', p.id);
+    if (error) throw error;
+
+    clearCache();
+    res.json({ message: 'Textes mis à jour.' });
+  } catch (err) {
+    console.error('Erreur mise à jour textes:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ------------------------------------------------------------------
 // SANTÉ DE LA LIGNE — solde Twilio et auto-test de joignabilité.
 // Une ligne à sec fait échouer les appels en silence : ce voyant
 // évite d'ouvrir la permanence avec un tuyau cassé.

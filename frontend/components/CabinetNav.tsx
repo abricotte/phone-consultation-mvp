@@ -8,6 +8,7 @@ const ONGLETS = [
   { href: "/cabinet-ew/journal", label: "Journal", icone: "☾" },
   { href: "/cabinet-ew/clientes", label: "Clientes", icone: "✧" },
   { href: "/cabinet-ew/revenus", label: "Revenus", icone: "◈" },
+  { href: "/cabinet-ew/profil", label: "Profil", icone: "⚙" },
 ];
 
 export default function CabinetNav() {
