@@ -26,14 +26,22 @@ interface Autotest {
   testeLe: string;
 }
 
-// Seuil d'alerte : en dessous, la ligne ne tiendra pas une consultation
-// complète et les appels échoueront en silence.
+// Seuils : sous 5 € la ligne ne tiendra pas la journée, sous 1 € les
+// appels échouent. C'est le seul cas où ce bloc doit s'imposer.
 const SEUIL_BAS = 5;
+const SEUIL_CRITIQUE = 1;
 
-export default function SanteLigne() {
+// Deux rendus : "alerte" (remonte en haut du cabinet, uniquement si le
+// solde est bas) et "pied" (une ligne discrète en bas de page).
+export default function SanteLigne({
+  variante = "pied",
+}: {
+  variante?: "pied" | "alerte";
+}) {
   const [ligne, setLigne] = useState<Ligne | null>(null);
   const [test, setTest] = useState<Autotest | null>(null);
   const [testEnCours, setTestEnCours] = useState(false);
+  const [ouvert, setOuvert] = useState(false);
 
   useEffect(() => {
     api
@@ -44,9 +52,9 @@ export default function SanteLigne() {
 
   async function lancerTest() {
     setTestEnCours(true);
+    setOuvert(true);
     try {
-      const r = await api.adminAutotest();
-      setTest(r);
+      setTest(await api.adminAutotest());
     } catch {
       setTest(null);
     } finally {
@@ -55,83 +63,86 @@ export default function SanteLigne() {
   }
 
   const soldeConnu = ligne?.disponible && typeof ligne.montant === "number";
-  const bas = soldeConnu && ligne!.montant! < SEUIL_BAS;
-  const vide = soldeConnu && ligne!.montant! < 1;
+  const montant = soldeConnu ? ligne!.montant! : null;
+  const bas = montant !== null && montant < SEUIL_BAS;
+  const critique = montant !== null && montant < SEUIL_CRITIQUE;
 
+  // En variante "alerte", on ne s'affiche QUE si le solde est bas.
+  if (variante === "alerte" && !bas) return null;
+
+  if (variante === "alerte") {
+    return (
+      <div
+        className={`mt-4 rounded-2xl border-2 px-5 py-4 ${
+          critique ? "border-red-300 bg-red-50" : "border-amber-300 bg-amber-50"
+        }`}
+      >
+        <p
+          className={`text-sm font-bold ${
+            critique ? "text-red-700" : "text-amber-800"
+          }`}
+        >
+          {critique
+            ? `⛔ Ligne épuisée (${montant!.toFixed(2)} ${ligne!.devise}) — vos appels vont échouer`
+            : `⚠️ Solde bas : ${montant!.toFixed(2)} ${ligne!.devise} — environ ${ligne!.minutesEstimees} min`}
+        </p>
+        <p className="mt-0.5 text-sm text-ink">
+          Rechargez votre compte Twilio pour ne pas perdre de consultations.
+        </p>
+      </div>
+    );
+  }
+
+  // Variante "pied" : discrète, dépliable
   return (
-    <section
-      className={`mt-6 rounded-3xl border p-6 shadow-soft ${
-        vide
-          ? "border-red-300 bg-red-50/60"
-          : bas
-          ? "border-amber-300 bg-amber-50/50"
-          : "border-greige/50 bg-ivory"
-      }`}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
-            Votre ligne téléphonique
-          </p>
-
+    <div className="mt-8 border-t border-greige/50 pt-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
+        <p className="text-mention">
+          Ligne téléphonique :{" "}
           {soldeConnu ? (
-            <>
-              <p
-                className={`mt-1 font-serif text-2xl font-semibold tabular-nums ${
-                  vide ? "text-red-600" : bas ? "text-amber-700" : "text-aubergine"
-                }`}
-              >
-                {ligne!.montant!.toFixed(2)} {ligne!.devise}
-              </p>
-              <p className="text-xs text-mention">
-                {ligne!.minutesEstimees !== null
-                  ? `environ ${ligne!.minutesEstimees} min d'appel`
-                  : "—"}
-              </p>
-            </>
+            <span className={bas ? "font-bold text-amber-700" : "font-semibold text-ink"}>
+              {montant!.toFixed(2)} {ligne!.devise}
+            </span>
           ) : (
-            <p className="mt-1 text-sm text-mention">
-              {ligne
-                ? "Solde non lisible (compte post-payé ou permission absente)"
-                : "Vérification…"}
-            </p>
+            <span className="text-mention">
+              {ligne ? "solde non lisible" : "…"}
+            </span>
           )}
-        </div>
+          {soldeConnu && ligne!.minutesEstimees !== null && (
+            <span className="text-mention"> · ~{ligne!.minutesEstimees} min</span>
+          )}
+        </p>
 
         <button
           onClick={lancerTest}
           disabled={testEnCours}
-          className="rounded-full border border-cta-outline px-5 py-2.5 text-sm font-medium text-prix transition hover:bg-cta hover:text-cta-text disabled:opacity-50"
+          className="text-sm font-medium text-prix underline-offset-2 transition hover:underline disabled:opacity-50"
         >
           {testEnCours ? "Vérification…" : "Suis-je joignable ?"}
         </button>
       </div>
 
-      {vide && (
-        <p className="mt-4 rounded-xl bg-red-100/70 px-4 py-2.5 text-sm font-medium text-red-700">
-          ⛔ Solde épuisé — vos appels échoueront. Rechargez votre compte Twilio
-          avant de passer en ligne.
-        </p>
-      )}
-      {bas && !vide && (
-        <p className="mt-4 rounded-xl bg-amber-100/70 px-4 py-2.5 text-sm font-medium text-amber-800">
-          ⚠️ Solde bas — pensez à recharger votre compte Twilio pour ne pas
-          perdre de consultations.
-        </p>
-      )}
-
-      {test && (
-        <div className="mt-5 border-t border-greige/50 pt-4">
-          <p
-            className={`text-sm font-semibold ${
-              test.pret ? "text-statut-online" : "text-red-600"
-            }`}
-          >
-            {test.pret
-              ? "✓ Tout est prêt — vous pouvez ouvrir votre ligne."
-              : "✕ Un point bloque — voyez ci-dessous."}
-          </p>
-          <ul className="mt-2 space-y-1.5">
+      {ouvert && test && (
+        <div className="mt-3 rounded-2xl border border-greige/50 bg-ivory p-4">
+          <div className="flex items-start justify-between gap-3">
+            <p
+              className={`text-sm font-bold ${
+                test.pret ? "text-statut-online" : "text-red-600"
+              }`}
+            >
+              {test.pret
+                ? "✓ Tout est prêt — vous pouvez ouvrir votre ligne."
+                : "✕ Un point bloque."}
+            </p>
+            <button
+              onClick={() => setOuvert(false)}
+              aria-label="Fermer"
+              className="shrink-0 text-mention hover:text-aubergine"
+            >
+              ✕
+            </button>
+          </div>
+          <ul className="mt-2 space-y-1">
             {test.controles.map((c) => (
               <li key={c.cle} className="flex items-start gap-2 text-sm">
                 <span
@@ -142,17 +153,17 @@ export default function SanteLigne() {
                 >
                   {c.ok ? "✓" : "✕"}
                 </span>
-                <span>
-                  <span className={c.ok ? "text-ink" : "font-medium text-red-700"}>
+                <span className="min-w-0">
+                  <span className={c.ok ? "text-ink" : "font-bold text-red-700"}>
                     {c.libelle}
                   </span>
-                  <span className="text-mention"> — {c.detail}</span>
+                  <span className="break-all text-mention"> — {c.detail}</span>
                 </span>
               </li>
             ))}
           </ul>
         </div>
       )}
-    </section>
+    </div>
   );
 }

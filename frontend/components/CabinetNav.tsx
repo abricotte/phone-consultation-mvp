@@ -19,8 +19,13 @@ export default function CabinetNav() {
   }
 
   return (
-    <nav aria-label="Cabinet praticienne" className="flex items-center gap-3">
-      <div className="flex flex-1 gap-1 overflow-x-auto rounded-full border border-greige/60 bg-ivory p-1 shadow-soft [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    // Sur téléphone, les trois pilules occupent toute la largeur et
+    // « Déconnexion » passe à la ligne : plus d'onglet tronqué.
+    <nav
+      aria-label="Cabinet praticienne"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2"
+    >
+      <div className="flex w-full gap-1 overflow-x-auto rounded-full border border-greige/60 bg-ivory p-1 shadow-soft sm:w-auto sm:flex-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {ONGLETS.map((o) => {
           const actif =
             o.href === "/cabinet-ew"
@@ -48,7 +53,7 @@ export default function CabinetNav() {
 
       <button
         onClick={handleLogout}
-        className="whitespace-nowrap text-xs text-mention transition hover:text-red-600"
+        className="ml-auto whitespace-nowrap text-xs text-mention transition hover:text-red-600"
       >
         Déconnexion
       </button>

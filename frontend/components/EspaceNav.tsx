@@ -36,8 +36,13 @@ export default function EspaceNav() {
   }
 
   return (
-    <nav aria-label="Espace cliente" className="flex items-center gap-3">
-      <div className="flex flex-1 gap-1 overflow-x-auto rounded-full border border-greige/60 bg-ivory p-1 shadow-soft [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    // Sur téléphone : pilules sur toute la largeur, Déconnexion en
+    // dessous — sinon le dernier onglet se retrouve tronqué.
+    <nav
+      aria-label="Espace cliente"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2"
+    >
+      <div className="flex w-full gap-1 overflow-x-auto rounded-full border border-greige/60 bg-ivory p-1 shadow-soft sm:w-auto sm:flex-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {ONGLETS.map((o) => {
           const actif = pathname === o.href;
           return (
@@ -62,7 +67,7 @@ export default function EspaceNav() {
 
       <button
         onClick={handleLogout}
-        className="whitespace-nowrap text-xs text-mention transition hover:text-red-600"
+        className="ml-auto whitespace-nowrap text-xs text-mention transition hover:text-red-600"
       >
         Déconnexion
       </button>

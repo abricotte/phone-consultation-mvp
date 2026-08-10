@@ -413,7 +413,10 @@ router.get('/jour', async (req, res) => {
 
     if (sessionsError) throw sessionsError;
 
+    // Distinction nette : une consultation ABOUTIE (vous vous êtes parlé)
+    // n'est pas une TENTATIVE SANS RÉPONSE. Les mélanger fausse la lecture.
     const terminees = sessions.filter((s) => s.status === 'completed');
+    const sansReponse = sessions.filter((s) => s.status === 'cancelled');
     const dureeTotaleSecondes = terminees.reduce(
       (acc, s) => acc + (s.duration_seconds || 0), 0
     );
@@ -438,6 +441,8 @@ router.get('/jour', async (req, res) => {
     res.json({
       appelsDuJour: sessions.length,
       appelsTermines: terminees.length,
+      consultationsAbouties: terminees.length,
+      tentativesSansReponse: sansReponse.length,
       appelsActifs: sessions.filter((s) => s.status === 'active').length,
       forfaitsManuels: sessions.filter((s) => s.type === 'forfait_manuel').length,
       dureeTotaleMinutes: Math.round(dureeTotaleSecondes / 60),
