@@ -90,6 +90,38 @@ const ISSUES: Record<string, { label: string; classes: string }> = {
 interface ClienteRef {
   id: string;
   inscriteLe: string;
+  solde: number;
+}
+
+// Export CSV — séparateur ';' et BOM UTF-8 pour qu'Excel FR l'ouvre bien
+function exporterCSV(appels: Appel[], mois: string) {
+  const lignes = [
+    ["Date", "Heure", "Cliente", "Formule", "Durée (s)", "Issue", "Montant (€)"],
+    ...appels.map((a) => {
+      const d = new Date(a.date);
+      return [
+        d.toLocaleDateString("fr-FR"),
+        d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+        `${a.cliente.prenom} ${a.cliente.initiale}`.trim(),
+        a.formule,
+        String(a.dureeSecondes || 0),
+        a.issue,
+        a.montant.toFixed(2).replace(".", ","),
+      ];
+    }),
+  ];
+
+  const csv = lignes
+    .map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";"))
+    .join("\r\n");
+
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `consultations-${mois}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function JournalPage() {
@@ -158,6 +190,10 @@ export default function JournalPage() {
       return inscrite ? cleMois(inscrite) === moisActif : false;
     }).length;
 
+    // Crédit encaissé mais pas encore consommé : comptablement une
+    // dette envers les clientes, pas un revenu acquis.
+    const creditEnCirculation = clientes.reduce((acc, c) => acc + (c.solde || 0), 0);
+
     return {
       appels: duMois.length,
       tenues: tenues.length,
@@ -167,6 +203,8 @@ export default function JournalPage() {
       panierMoyen: facturees.length ? total / facturees.length : 0,
       clientes: idsDuMois.size,
       nouvelles,
+      creditEnCirculation,
+      lignesDuMois: duMois,
     };
   }, [appels, clientes, moisActif]);
 
@@ -190,20 +228,31 @@ export default function JournalPage() {
           )}
         </div>
 
-        {moisDisponibles.length > 1 && (
-          <select
-            value={moisActif}
-            onChange={(e) => setMoisChoisi(e.target.value)}
-            aria-label="Choisir un mois"
-            className="rounded-full border border-greige bg-ivory px-4 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
-          >
-            {moisDisponibles.map((m) => (
-              <option key={m} value={m}>
-                {libelleMois(m)}
-              </option>
-            ))}
-          </select>
-        )}
+        <div className="flex items-center gap-2">
+          {moisDisponibles.length > 1 && (
+            <select
+              value={moisActif}
+              onChange={(e) => setMoisChoisi(e.target.value)}
+              aria-label="Choisir un mois"
+              className="rounded-full border border-greige bg-ivory px-4 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
+            >
+              {moisDisponibles.map((m) => (
+                <option key={m} value={m}>
+                  {libelleMois(m)}
+                </option>
+              ))}
+            </select>
+          )}
+          {stats.appels > 0 && (
+            <button
+              onClick={() => exporterCSV(stats.lignesDuMois, moisActif)}
+              title="Télécharger le mois en CSV (pour votre comptabilité)"
+              className="whitespace-nowrap rounded-full border border-cta-outline px-4 py-2 text-sm font-medium text-prix transition hover:bg-cta hover:text-cta-text"
+            >
+              ↓ Export CSV
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Indicateurs du mois — pour toi seule */}
@@ -273,6 +322,24 @@ export default function JournalPage() {
               </p>
             </div>
           </div>
+
+          {/* Crédit encaissé mais pas encore gagné — une dette, pas un revenu */}
+          {stats.creditEnCirculation > 0 && (
+            <div className="mt-5 flex flex-wrap items-baseline justify-between gap-2 border-t border-greige/50 pt-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+                  Crédit en circulation
+                </p>
+                <p className="text-xs text-mention">
+                  Encaissé mais pas encore consommé — comptablement une dette
+                  envers vos clientes.
+                </p>
+              </div>
+              <p className="font-serif text-2xl font-semibold tabular-nums text-aubergine">
+                {euros(stats.creditEnCirculation)}
+              </p>
+            </div>
+          )}
 
           {stats.manques >= 3 && stats.manques > stats.tenues && (
             <p className="mt-5 rounded-xl bg-amber-50 px-4 py-2.5 text-sm text-amber-800">

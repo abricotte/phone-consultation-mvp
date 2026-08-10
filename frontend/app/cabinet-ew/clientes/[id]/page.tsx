@@ -33,6 +33,15 @@ interface RechargeFiche {
   description: string;
 }
 
+interface Note {
+  id: string;
+  contenu: string;
+  aSuivre: boolean;
+  echeance: string | null;
+  closeLe: string | null;
+  createdAt: string;
+}
+
 interface Fiche {
   id: string;
   prenom: string;
@@ -47,6 +56,7 @@ interface Fiche {
   proches: ProcheFiche[];
   consultations: ConsultationFiche[];
   recharges: RechargeFiche[];
+  notes: Note[];
 }
 
 const LIEN_LABELS: Record<string, string> = {
@@ -92,6 +102,64 @@ export default function FicheClientePage() {
   const [loading, setLoading] = useState(true);
   const [accesRefuse, setAccesRefuse] = useState(false);
 
+  // Carnet
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [contenu, setContenu] = useState("");
+  const [aSuivre, setASuivre] = useState(false);
+  const [echeance, setEcheance] = useState("");
+  const [enregistre, setEnregistre] = useState(false);
+  const [noteErreur, setNoteErreur] = useState("");
+
+  async function handleAjoutNote(e: React.FormEvent) {
+    e.preventDefault();
+    setNoteErreur("");
+    if (!contenu.trim()) return;
+    setEnregistre(true);
+    try {
+      const note = await api.adminAddNote(params.id, {
+        contenu: contenu.trim(),
+        aSuivre,
+        echeance: aSuivre && echeance ? echeance : null,
+      });
+      setNotes((prev) => [note, ...prev]);
+      setContenu("");
+      setASuivre(false);
+      setEcheance("");
+    } catch (err) {
+      setNoteErreur(err instanceof Error ? err.message : "Enregistrement impossible");
+    } finally {
+      setEnregistre(false);
+    }
+  }
+
+  async function handleClore(note: Note) {
+    const close = !note.closeLe;
+    setNotes((prev) =>
+      prev.map((n) =>
+        n.id === note.id
+          ? { ...n, closeLe: close ? new Date().toISOString() : null }
+          : n
+      )
+    );
+    try {
+      await api.adminCloreNote(note.id, close);
+    } catch {
+      setNotes((prev) =>
+        prev.map((n) => (n.id === note.id ? { ...n, closeLe: note.closeLe } : n))
+      );
+    }
+  }
+
+  async function handleSupprimeNote(id: string) {
+    const sauvegarde = notes;
+    setNotes((prev) => prev.filter((n) => n.id !== id));
+    try {
+      await api.adminDeleteNote(id);
+    } catch {
+      setNotes(sauvegarde);
+    }
+  }
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -100,7 +168,10 @@ export default function FicheClientePage() {
     }
     api
       .adminGetCliente(params.id)
-      .then((data: Fiche) => setFiche(data))
+      .then((data: Fiche) => {
+        setFiche(data);
+        setNotes(data.notes || []);
+      })
       .catch(() => setAccesRefuse(true))
       .finally(() => setLoading(false));
   }, [params.id]);
@@ -281,6 +352,137 @@ export default function FicheClientePage() {
           </div>
         </section>
       )}
+
+      {/* ===== CARNET PRIVÉ ===== */}
+      <section className="mt-5 rounded-3xl border border-gold/40 bg-gradient-to-br from-blush/50 to-ivory p-7 shadow-soft">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-serif text-xl font-semibold text-aubergine">
+            Mon carnet
+          </h2>
+          <p className="text-xs text-mention">
+            🔒 Strictement privé — jamais visible par {fiche.prenom}
+          </p>
+        </div>
+
+        <form onSubmit={handleAjoutNote} className="mt-4">
+          <textarea
+            value={contenu}
+            onChange={(e) => setContenu(e.target.value)}
+            rows={3}
+            placeholder={`Ce que vous voulez retenir de cette séance avec ${fiche.prenom}…`}
+            className="w-full rounded-2xl border border-greige bg-ivory px-4 py-3 text-ink focus:border-cta-outline focus:outline-none"
+          />
+
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-aubergine">
+              <input
+                type="checkbox"
+                checked={aSuivre}
+                onChange={(e) => setASuivre(e.target.checked)}
+                className="h-4 w-4 rounded border-greige accent-cta"
+              />
+              À suivre
+            </label>
+
+            {aSuivre && (
+              <label className="flex items-center gap-2 text-sm text-mention">
+                Vers le
+                <input
+                  type="date"
+                  value={echeance}
+                  onChange={(e) => setEcheance(e.target.value)}
+                  className="rounded-xl border border-greige bg-ivory px-3 py-1.5 text-ink focus:border-cta-outline focus:outline-none"
+                />
+              </label>
+            )}
+
+            <button
+              type="submit"
+              disabled={enregistre || !contenu.trim()}
+              className="ml-auto rounded-full bg-cta px-5 py-2 font-medium text-cta-text transition hover:bg-cta-dark disabled:opacity-40"
+            >
+              {enregistre ? "…" : "Noter"}
+            </button>
+          </div>
+
+          {aSuivre && (
+            <p className="mt-2 text-xs text-mention">
+              Les annonces datées se retrouvent dans « À suivre » — pour
+              pouvoir demander plus tard : « alors, ce qui devait arriver ? »
+            </p>
+          )}
+
+          {noteErreur && (
+            <p className="mt-2 rounded-lg bg-red-50 p-2 text-sm text-red-600">
+              {noteErreur}
+            </p>
+          )}
+        </form>
+
+        {notes.length > 0 && (
+          <ul className="mt-5 space-y-2.5 border-t border-greige/50 pt-4">
+            {notes.map((n) => (
+              <li
+                key={n.id}
+                className={`group rounded-2xl border px-4 py-3 ${
+                  n.aSuivre && !n.closeLe
+                    ? "border-gold/50 bg-gold/5"
+                    : "border-greige/50 bg-ivory"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`whitespace-pre-wrap text-sm ${
+                        n.closeLe ? "text-mention line-through" : "text-ink"
+                      }`}
+                    >
+                      {n.contenu}
+                    </p>
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-mention">
+                      <span>{formatDate(n.createdAt)}</span>
+                      {n.aSuivre && (
+                        <span
+                          className={`rounded-full px-2 py-0.5 font-medium ${
+                            n.closeLe
+                              ? "bg-greige/40 text-mention"
+                              : "bg-gold/20 text-gold-dark"
+                          }`}
+                        >
+                          {n.closeLe
+                            ? "✓ advenu"
+                            : n.echeance
+                            ? `à suivre · ${formatDate(n.echeance)}`
+                            : "à suivre"}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="flex shrink-0 gap-1 opacity-0 transition group-hover:opacity-100">
+                    {n.aSuivre && (
+                      <button
+                        onClick={() => handleClore(n)}
+                        title={n.closeLe ? "Rouvrir" : "Marquer comme advenu"}
+                        className="rounded-full px-2 py-1 text-xs text-mention hover:bg-blush hover:text-aubergine"
+                      >
+                        {n.closeLe ? "↺" : "✓"}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleSupprimeNote(n.id)}
+                      title="Supprimer"
+                      className="rounded-full px-2 py-1 text-xs text-mention hover:bg-red-50 hover:text-red-600"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {/* Les personnes qui comptent */}
       <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">

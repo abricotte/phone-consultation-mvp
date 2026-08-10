@@ -104,6 +104,29 @@ async function appelImmediatEnCours(praticienneId, tarifs) {
   const soldeCents = wallet ? Math.round(parseFloat(wallet.balance) * 100) : 0;
   const soldeMinutes = Math.floor(soldeCents / tarifs.prixMinuteCents);
 
+  // PENSE-BÊTE D'AVANT-APPEL : sa dernière consultation et les 3
+  // dernières notes du carnet, sous les yeux avant même de décrocher.
+  const [{ data: derniere }, { data: notes }] = await Promise.all([
+    supabase
+      .from('sessions')
+      .select('started_at')
+      .eq('praticienne_id', praticienneId)
+      .eq('client_id', sess.client_id)
+      .eq('status', 'completed')
+      .not('started_at', 'is', null)
+      .neq('id', sess.id) // pas la consultation en cours
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('notes_praticienne')
+      .select('contenu, a_suivre, echeance, close_le, created_at')
+      .eq('praticienne_id', praticienneId)
+      .eq('client_id', sess.client_id)
+      .order('created_at', { ascending: false })
+      .limit(3),
+  ]);
+
   return {
     clienteId: sess.client_id,
     prenom: user?.first_name || 'Cliente',
@@ -114,6 +137,14 @@ async function appelImmediatEnCours(praticienneId, tarifs) {
     // Début de communication : le bandeau affiche un chrono vivant et en
     // déduit le crédit restant (le débit n'a lieu qu'à la fin de l'appel).
     depuis: sess.started_at || null,
+    derniereConsultation: derniere?.started_at || null,
+    notes: (notes || []).map((n) => ({
+      contenu: n.contenu,
+      aSuivre: n.a_suivre,
+      echeance: n.echeance,
+      close: !!n.close_le,
+      createdAt: n.created_at,
+    })),
     proches: (proches || []).map((p) => ({
       prenom: p.prenom,
       dateNaissance: p.date_naissance,
@@ -614,6 +645,15 @@ router.get('/clientes/:id', async (req, res) => {
         .limit(30),
     ]);
 
+    // Le carnet : notes privées de la praticienne sur cette cliente
+    const { data: notes } = await supabase
+      .from('notes_praticienne')
+      .select('id, contenu, a_suivre, echeance, close_le, created_at')
+      .eq('praticienne_id', p.id)
+      .eq('client_id', cliente.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
     // Ses recharges (crédits Stripe) — l'autre moitié de son histoire
     let recharges = [];
     if (wallet?.id) {
@@ -647,6 +687,7 @@ router.get('/clientes/:id', async (req, res) => {
       solde: wallet ? parseFloat(wallet.balance || 0) : 0,
       totalDepense: Math.round(totalDepense * 100) / 100,
       recharges,
+      notes: (notes || []).map(serialiserNote),
       proches: (proches || []).map((pr) => ({
         prenom: pr.prenom,
         dateNaissance: pr.date_naissance,
@@ -669,6 +710,323 @@ router.get('/clientes/:id', async (req, res) => {
     console.error('Erreur fiche cliente:', err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
+});
+
+// ------------------------------------------------------------------
+// CARNET DE NOTES — privé, jamais exposé aux clientes.
+// ------------------------------------------------------------------
+
+function serialiserNote(n) {
+  return {
+    id: n.id,
+    contenu: n.contenu,
+    aSuivre: n.a_suivre,
+    echeance: n.echeance,
+    closeLe: n.close_le,
+    createdAt: n.created_at,
+  };
+}
+
+// POST /api/admin/clientes/:id/notes - Ajouter une note
+router.post('/clientes/:id/notes', async (req, res) => {
+  try {
+    const contenu = typeof req.body.contenu === 'string' ? req.body.contenu.trim() : '';
+    if (!contenu) {
+      return res.status(400).json({ error: 'La note est vide.' });
+    }
+    if (contenu.length > 5000) {
+      return res.status(400).json({ error: 'Note trop longue (5000 caractères maximum).' });
+    }
+
+    const aSuivre = req.body.aSuivre === true;
+    let echeance = null;
+    if (aSuivre && req.body.echeance) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(req.body.echeance)) {
+        return res.status(400).json({ error: 'Échéance invalide (format AAAA-MM-JJ).' });
+      }
+      echeance = req.body.echeance;
+    }
+
+    const p = await getPraticienne();
+
+    // La cliente doit exister (et être une cliente)
+    const { data: cliente } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', req.params.id)
+      .eq('role', 'client')
+      .maybeSingle();
+
+    if (!cliente) return res.status(404).json({ error: 'Cliente non trouvée' });
+
+    const { data: note, error } = await supabase
+      .from('notes_praticienne')
+      .insert({
+        praticienne_id: p.id,
+        client_id: req.params.id,
+        session_id: req.body.sessionId || null,
+        contenu,
+        a_suivre: aSuivre,
+        echeance,
+      })
+      .select('id, contenu, a_suivre, echeance, close_le, created_at')
+      .single();
+
+    if (error) throw error;
+
+    res.status(201).json(serialiserNote(note));
+  } catch (err) {
+    console.error('Erreur ajout note:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PATCH /api/admin/notes/:id - Clore ou rouvrir un suivi
+router.patch('/notes/:id', async (req, res) => {
+  try {
+    const maj = {};
+    if (Object.prototype.hasOwnProperty.call(req.body, 'close')) {
+      maj.close_le = req.body.close ? new Date().toISOString() : null;
+    }
+    if (Object.keys(maj).length === 0) {
+      return res.status(400).json({ error: 'Aucun champ à mettre à jour.' });
+    }
+
+    const p = await getPraticienne();
+    const { data, error } = await supabase
+      .from('notes_praticienne')
+      .update(maj)
+      .eq('id', req.params.id)
+      .eq('praticienne_id', p.id)
+      .select('id, contenu, a_suivre, echeance, close_le, created_at');
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      return res.status(404).json({ error: 'Note non trouvée' });
+    }
+
+    res.json(serialiserNote(data[0]));
+  } catch (err) {
+    console.error('Erreur mise à jour note:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// DELETE /api/admin/notes/:id - Supprimer une note
+router.delete('/notes/:id', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+    const { data, error } = await supabase
+      .from('notes_praticienne')
+      .delete()
+      .eq('id', req.params.id)
+      .eq('praticienne_id', p.id)
+      .select('id');
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      return res.status(404).json({ error: 'Note non trouvée' });
+    }
+
+    res.json({ message: 'Note supprimée.' });
+  } catch (err) {
+    console.error('Erreur suppression note:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// GET /api/admin/suivis - Les annonces datées encore ouvertes
+router.get('/suivis', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+
+    const { data: notes, error } = await supabase
+      .from('notes_praticienne')
+      .select('id, client_id, contenu, echeance, created_at')
+      .eq('praticienne_id', p.id)
+      .eq('a_suivre', true)
+      .is('close_le', null)
+      .order('echeance', { ascending: true, nullsFirst: false })
+      .limit(100);
+
+    if (error) throw error;
+
+    const ids = [...new Set((notes || []).map((n) => n.client_id))];
+    let nomsParId = {};
+    if (ids.length > 0) {
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, first_name, last_name')
+        .in('id', ids);
+      for (const u of users || []) {
+        nomsParId[u.id] = `${u.first_name || 'Cliente'} ${u.last_name || ''}`.trim();
+      }
+    }
+
+    res.json(
+      (notes || []).map((n) => ({
+        id: n.id,
+        clienteId: n.client_id,
+        cliente: nomsParId[n.client_id] || 'Cliente',
+        contenu: n.contenu,
+        echeance: n.echeance,
+        createdAt: n.created_at,
+      }))
+    );
+  } catch (err) {
+    console.error('Erreur suivis:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ------------------------------------------------------------------
+// SANTÉ DE LA LIGNE — solde Twilio et auto-test de joignabilité.
+// Une ligne à sec fait échouer les appels en silence : ce voyant
+// évite d'ouvrir la permanence avec un tuyau cassé.
+// ------------------------------------------------------------------
+
+async function soldeTwilio() {
+  if (!twilio) return { disponible: false, raison: 'Twilio non configuré' };
+  try {
+    const balance = await twilio.balance.fetch();
+    const montant = parseFloat(balance.balance);
+    return {
+      disponible: true,
+      montant,
+      devise: balance.currency || 'USD',
+    };
+  } catch (err) {
+    // Compte post-payé ou permission absente : ce n'est pas une panne
+    return { disponible: false, raison: err.message };
+  }
+}
+
+// GET /api/admin/ligne - Solde Twilio + estimation en minutes
+router.get('/ligne', async (req, res) => {
+  try {
+    const solde = await soldeTwilio();
+
+    // Estimation prudente : ~0,03 €/min pour DEUX jambes d'appel
+    // (Twilio facture chaque jambe séparément).
+    const COUT_MINUTE_ESTIME = 0.03;
+    let minutesEstimees = null;
+    if (solde.disponible && typeof solde.montant === 'number') {
+      minutesEstimees = Math.floor(solde.montant / COUT_MINUTE_ESTIME);
+    }
+
+    res.json({
+      ...solde,
+      minutesEstimees,
+      coutMinuteEstime: COUT_MINUTE_ESTIME,
+      numeroLigne: process.env.TWILIO_PHONE_NUMBER || null,
+    });
+  } catch (err) {
+    console.error('Erreur solde ligne:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// GET /api/admin/autotest - « Suis-je joignable ? »
+router.get('/autotest', async (req, res) => {
+  const controles = [];
+
+  // 1. Numéro de la ligne configuré
+  const numeroLigne = process.env.TWILIO_PHONE_NUMBER || null;
+  controles.push({
+    cle: 'numero_ligne',
+    libelle: 'Numéro de la ligne configuré',
+    ok: !!numeroLigne,
+    detail: numeroLigne || 'TWILIO_PHONE_NUMBER absent',
+  });
+
+  // 2. Twilio joignable + solde
+  const solde = await soldeTwilio();
+  if (solde.disponible) {
+    const suffisant = solde.montant > 1;
+    controles.push({
+      cle: 'solde_twilio',
+      libelle: 'Solde Twilio',
+      ok: suffisant,
+      detail: `${solde.montant.toFixed(2)} ${solde.devise}${suffisant ? '' : ' — trop bas pour tenir un appel'}`,
+    });
+  } else {
+    controles.push({
+      cle: 'solde_twilio',
+      libelle: 'Solde Twilio',
+      ok: !!twilio, // compte post-payé : Twilio répond mais pas de solde
+      detail: twilio ? 'Solde non lisible (compte post-payé ?)' : 'Twilio non configuré',
+    });
+  }
+
+  // 3. Numéro personnel de la praticienne
+  try {
+    const p = await getPraticienne();
+    const { data: consultant } = await supabase
+      .from('consultants')
+      .select('user_id')
+      .eq('praticienne_id', p.id)
+      .limit(1)
+      .maybeSingle();
+
+    let tel = null;
+    if (consultant?.user_id) {
+      const { data: u } = await supabase
+        .from('users')
+        .select('phone')
+        .eq('id', consultant.user_id)
+        .maybeSingle();
+      tel = u?.phone || null;
+    }
+
+    const memeQueLigne =
+      tel && numeroLigne && tel.replace(/\D/g, '') === numeroLigne.replace(/\D/g, '');
+
+    controles.push({
+      cle: 'numero_praticienne',
+      libelle: 'Votre numéro personnel',
+      ok: !!tel && !memeQueLigne,
+      detail: !tel
+        ? 'Aucun numéro enregistré : vous ne pouvez pas être appelée'
+        : memeQueLigne
+        ? 'Identique au numéro de la ligne : Twilio ne peut pas vous joindre'
+        : tel,
+    });
+  } catch (e) {
+    controles.push({
+      cle: 'numero_praticienne',
+      libelle: 'Votre numéro personnel',
+      ok: false,
+      detail: 'Vérification impossible',
+    });
+  }
+
+  // 4. URL publique du backend (indispensable aux callbacks Twilio)
+  const backendUrl = (process.env.BACKEND_URL || '').replace(/\/+$/, '');
+  controles.push({
+    cle: 'backend_url',
+    libelle: 'Adresse publique du serveur',
+    ok: /^https:\/\//.test(backendUrl),
+    detail: backendUrl || 'BACKEND_URL absent — les appels ne peuvent pas aboutir',
+  });
+
+  // 5. Base de données
+  try {
+    const { error } = await supabase.from('praticiennes').select('id').limit(1);
+    controles.push({
+      cle: 'base',
+      libelle: 'Base de données',
+      ok: !error,
+      detail: error ? error.message : 'Connectée',
+    });
+  } catch (e) {
+    controles.push({ cle: 'base', libelle: 'Base de données', ok: false, detail: 'Injoignable' });
+  }
+
+  res.json({
+    pret: controles.every((c) => c.ok),
+    controles,
+    testeLe: new Date().toISOString(),
+  });
 });
 
 module.exports = router;

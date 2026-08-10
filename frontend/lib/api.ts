@@ -82,6 +82,26 @@ export const api = {
   adminGetAppels: () => request("/admin/appels"),
   adminGetClientes: () => request("/admin/clientes"),
   adminGetCliente: (id: string) => request(`/admin/clientes/${id}`),
+  // Carnet privé de la praticienne
+  adminAddNote: (
+    clienteId: string,
+    body: { contenu: string; aSuivre?: boolean; echeance?: string | null }
+  ) =>
+    request(`/admin/clientes/${clienteId}/notes`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  adminCloreNote: (noteId: string, close: boolean) =>
+    request(`/admin/notes/${noteId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ close }),
+    }),
+  adminDeleteNote: (noteId: string) =>
+    request(`/admin/notes/${noteId}`, { method: "DELETE" }),
+  adminGetSuivis: () => request("/admin/suivis"),
+  // Santé de la ligne téléphonique
+  adminGetLigne: () => request("/admin/ligne"),
+  adminAutotest: () => request("/admin/autotest"),
   adminLancerConsultation: (telephone: string, forfaitCode: string) =>
     request("/admin/consultation-minutee", {
       method: "POST",

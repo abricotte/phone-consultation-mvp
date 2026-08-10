@@ -14,6 +14,14 @@ interface ProcheCabinet {
   lien: string;
 }
 
+interface NoteBandeau {
+  contenu: string;
+  aSuivre: boolean;
+  echeance: string | null;
+  close: boolean;
+  createdAt: string;
+}
+
 export interface AppelEnCours {
   clienteId: string | null;
   prenom: string;
@@ -22,7 +30,25 @@ export interface AppelEnCours {
   soldeMinutes: number;
   connecte: boolean;
   depuis: string | null;
+  derniereConsultation: string | null;
+  notes: NoteBandeau[];
   proches: ProcheCabinet[];
+}
+
+// "il y a 3 semaines", "hier", "il y a 5 mois"
+function depuisQuand(iso: string): string {
+  const jours = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (jours <= 0) return "aujourd'hui";
+  if (jours === 1) return "hier";
+  if (jours < 7) return `il y a ${jours} jours`;
+  if (jours < 31) {
+    const s = Math.round(jours / 7);
+    return `il y a ${s} semaine${s > 1 ? "s" : ""}`;
+  }
+  const m = Math.round(jours / 30);
+  if (m < 12) return `il y a ${m} mois`;
+  const a = Math.floor(m / 12);
+  return `il y a ${a} an${a > 1 ? "s" : ""}`;
 }
 
 const LIEN_LABELS: Record<string, string> = {
@@ -161,6 +187,66 @@ export default function BandeauAppelEnCours({ appel }: { appel: AppelEnCours }) 
           ⏳ Il ne lui reste que {minutesRestantes} min de crédit — la
           communication sera coupée à la fin.
         </p>
+      )}
+
+      {/* PENSE-BÊTE : sa dernière venue et vos dernières notes, sous les
+          yeux avant même de décrocher. */}
+      {(appel.derniereConsultation || (appel.notes?.length ?? 0) > 0) && (
+        <div className="mt-5 rounded-2xl border border-gold/40 bg-gold/5 px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-dark">
+            ✦ Avant de décrocher
+          </p>
+
+          {appel.derniereConsultation ? (
+            <p className="mt-1 text-sm text-ink">
+              Dernière consultation{" "}
+              <strong className="font-semibold text-aubergine">
+                {depuisQuand(appel.derniereConsultation)}
+              </strong>
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-ink">
+              <strong className="font-semibold text-aubergine">
+                Première consultation
+              </strong>{" "}
+              — vous ne vous êtes jamais parlé.
+            </p>
+          )}
+
+          {(appel.notes?.length ?? 0) > 0 && (
+            <ul className="mt-2 space-y-1.5">
+              {appel.notes.map((n, i) => (
+                <li key={i} className="flex gap-2 text-sm">
+                  <span aria-hidden className="mt-0.5 shrink-0 text-gold-dark">
+                    ·
+                  </span>
+                  <span className={n.close ? "text-mention line-through" : "text-ink"}>
+                    {n.contenu}
+                    {n.aSuivre && !n.close && (
+                      <span className="ml-1.5 rounded-full bg-gold/20 px-2 py-0.5 text-xs font-medium text-gold-dark">
+                        à suivre
+                        {n.echeance &&
+                          ` · ${new Date(n.echeance).toLocaleDateString("fr-FR", {
+                            month: "long",
+                            year: "numeric",
+                          })}`}
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {appel.clienteId && (
+            <a
+              href={`/cabinet-ew/clientes/${appel.clienteId}`}
+              className="mt-2 inline-block text-xs font-medium text-prix hover:underline"
+            >
+              Ouvrir son carnet →
+            </a>
+          )}
+        </div>
       )}
 
       {(appel.proches?.length ?? 0) > 0 && (
