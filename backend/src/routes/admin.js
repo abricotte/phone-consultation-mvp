@@ -509,12 +509,13 @@ router.get('/appels', async (req, res) => {
     if (clientIds.length > 0) {
       const { data: users } = await supabase
         .from('users')
-        .select('id, first_name, last_name')
+        .select('id, first_name, last_name, phone')
         .in('id', clientIds);
       for (const u of users || []) {
         nomsParId[u.id] = {
           prenom: u.first_name || 'Cliente',
           initiale: u.last_name ? `${u.last_name.charAt(0).toUpperCase()}.` : '',
+          telephone: u.phone || null, // rappeler en un clic un appel manqué
         };
       }
     }
@@ -525,8 +526,8 @@ router.get('/appels', async (req, res) => {
         date: s.started_at || s.created_at,
         clienteId: s.client_id,
         cliente: s.client_id
-          ? nomsParId[s.client_id] || { prenom: 'Cliente', initiale: '' }
-          : { prenom: 'Rendez-vous', initiale: '' }, // forfait manuel sans compte
+          ? nomsParId[s.client_id] || { prenom: 'Cliente', initiale: '', telephone: null }
+          : { prenom: 'Rendez-vous', initiale: '', telephone: null }, // forfait manuel
         formule: libelleFormule(s),
         issue: issueSession(s),
         dureeSecondes: s.duration_seconds || 0,

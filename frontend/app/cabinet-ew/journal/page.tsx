@@ -10,11 +10,18 @@ interface Appel {
   id: string;
   date: string;
   clienteId: string | null;
-  cliente: { prenom: string; initiale: string };
+  cliente: { prenom: string; initiale: string; telephone: string | null };
   formule: string;
   issue: string;
   dureeSecondes: number;
   montant: number;
+}
+
+// +33612345678 → 06 12 34 56 78
+function formatTel(t: string | null): string {
+  if (!t) return "";
+  const fr = t.replace(/^\+33/, "0");
+  return /^0\d{9}$/.test(fr) ? fr.replace(/(\d{2})(?=\d)/g, "$1 ").trim() : t;
 }
 
 function formatDuree(s: number): string {
@@ -130,6 +137,20 @@ export default function JournalPage() {
   const [loading, setLoading] = useState(true);
   const [accesRefuse, setAccesRefuse] = useState(false);
   const [moisChoisi, setMoisChoisi] = useState<string>("");
+  // Taux de provision pour charges — réglage personnel, gardé sur ce
+  // navigateur (aucune donnée à partager avec le serveur pour ça).
+  const [provision, setProvision] = useState(25);
+
+  useEffect(() => {
+    const v = localStorage.getItem("provisionPourcent");
+    if (v !== null) setProvision(Number(v));
+  }, []);
+
+  function majProvision(v: number) {
+    const borne = Math.min(90, Math.max(0, v || 0));
+    setProvision(borne);
+    localStorage.setItem("provisionPourcent", String(borne));
+  }
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -323,6 +344,44 @@ export default function JournalPage() {
             </div>
           </div>
 
+          {/* Provision pour charges — ce qui reste vraiment */}
+          {stats.total > 0 && (
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-greige/50 pt-4">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                <span className="text-sm text-mention">
+                  Encaissé{" "}
+                  <strong className="font-semibold text-aubergine">
+                    {euros(stats.total)}
+                  </strong>
+                </span>
+                <span className="text-sm text-mention">
+                  à provisionner{" "}
+                  <strong className="font-semibold text-amber-700">
+                    {euros((stats.total * provision) / 100)}
+                  </strong>
+                </span>
+                <span className="text-sm text-mention">
+                  net estimé{" "}
+                  <strong className="font-semibold text-statut-online">
+                    {euros(stats.total * (1 - provision / 100))}
+                  </strong>
+                </span>
+              </div>
+              <label className="flex items-center gap-2 text-xs text-mention">
+                Provision
+                <input
+                  type="number"
+                  min={0}
+                  max={90}
+                  value={provision}
+                  onChange={(e) => majProvision(Number(e.target.value))}
+                  className="w-16 rounded-lg border border-greige bg-ivory px-2 py-1 text-right text-ink focus:border-cta-outline focus:outline-none"
+                />
+                %
+              </label>
+            </div>
+          )}
+
           {/* Crédit encaissé mais pas encore gagné — une dette, pas un revenu */}
           {stats.creditEnCirculation > 0 && (
             <div className="mt-5 flex flex-wrap items-baseline justify-between gap-2 border-t border-greige/50 pt-4">
@@ -350,6 +409,59 @@ export default function JournalPage() {
           )}
         </section>
       )}
+
+      {/* Appels manqués récents — à rappeler, en un clic */}
+      {(() => {
+        const recents = appels
+          .filter((a) => a.issue === "manquee" && a.clienteId)
+          .filter((a) => Date.now() - new Date(a.date).getTime() < 7 * 86400000)
+          .slice(0, 6);
+        if (recents.length === 0) return null;
+        return (
+          <section className="mt-5 rounded-3xl border border-amber-200 bg-amber-50/50 p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+              ☎ À rappeler — {recents.length} appel
+              {recents.length > 1 ? "s" : ""} manqué
+              {recents.length > 1 ? "s" : ""} cette semaine
+            </p>
+            <ul className="mt-3 space-y-1.5">
+              {recents.map((a) => (
+                <li
+                  key={a.id}
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
+                >
+                  <span className="w-32 shrink-0 text-mention">
+                    {new Date(a.date).toLocaleDateString("fr-FR", {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                    })}{" "}
+                    {heure(a.date)}
+                  </span>
+                  <a
+                    href={`/cabinet-ew/clientes/${a.clienteId}`}
+                    className="font-medium text-aubergine hover:text-cta hover:underline"
+                  >
+                    {a.cliente.prenom} {a.cliente.initiale}
+                  </a>
+                  {a.cliente.telephone && (
+                    <a
+                      href={`tel:${a.cliente.telephone}`}
+                      className="rounded-full bg-ivory px-3 py-1 text-xs font-medium text-prix ring-1 ring-cta-outline transition hover:bg-cta hover:text-cta-text"
+                    >
+                      ☎ {formatTel(a.cliente.telephone)}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-mention">
+              Elle a essayé de vous joindre — un rappel transforme souvent un
+              appel manqué en consultation.
+            </p>
+          </section>
+        );
+      })()}
 
       {jours.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-10 text-center">

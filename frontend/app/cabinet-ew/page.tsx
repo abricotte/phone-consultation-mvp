@@ -8,6 +8,7 @@ import CabinetShell from "@/components/CabinetShell";
 import BandeauAppelEnCours, {
   type AppelEnCours,
 } from "@/components/BandeauAppelEnCours";
+import SanteLigne from "@/components/SanteLigne";
 
 interface Forfait {
   code: string;
@@ -240,6 +241,10 @@ export default function AdminPage() {
           <BandeauAppelEnCours appel={statut.appelEnCours} />
         </div>
       )}
+
+      {/* Santé de la ligne : une ligne à sec fait échouer les appels en
+          silence — le voyant évite d'ouvrir avec un tuyau cassé */}
+      <SanteLigne />
 
       {/* ===== Statut ===== */}
       <div className="mt-8 rounded-2xl border border-greige/70 bg-ivory p-8 text-center shadow-soft">
