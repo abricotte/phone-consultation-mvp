@@ -468,7 +468,7 @@ router.get('/appels', async (req, res) => {
       )
       .eq('praticienne_id', p.id)
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(200); // de quoi naviguer sur plusieurs mois côté cabinet
 
     if (error) throw error;
 

@@ -5,44 +5,15 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
-import {
-  signeAstrologique,
-  formatDateNaissance,
-  signeParCode,
-} from "@/lib/astro";
-
-// Libellés des liens (miroir du backend / de la page profil)
-const LIEN_LABELS: Record<string, string> = {
-  compagnon: "Compagnon / compagne",
-  ex: "Ex",
-  mere: "Mère",
-  pere: "Père",
-  enfant: "Enfant",
-  ami: "Ami(e)",
-  autre: "Autre",
-};
+import BandeauAppelEnCours, {
+  type AppelEnCours,
+} from "@/components/BandeauAppelEnCours";
 
 interface Forfait {
   code: string;
   nom: string;
   minutes: number;
   prix: number;
-}
-
-interface ProcheCabinet {
-  prenom: string;
-  dateNaissance: string | null;
-  ascendant: string | null;
-  lien: string;
-}
-
-interface AppelEnCours {
-  prenom: string;
-  dateNaissance: string | null;
-  ascendant: string | null;
-  soldeMinutes: number;
-  connecte: boolean;
-  proches: ProcheCabinet[];
 }
 
 interface Statut {
@@ -263,6 +234,13 @@ export default function AdminPage() {
         </p>
       )}
 
+      {/* Consultation en cours — priorité absolue quand le téléphone sonne */}
+      {statut?.appelEnCours && (
+        <div className="mt-6">
+          <BandeauAppelEnCours appel={statut.appelEnCours} />
+        </div>
+      )}
+
       {/* ===== Statut ===== */}
       <div className="mt-8 rounded-2xl border border-greige/70 bg-ivory p-8 text-center shadow-soft">
         <div className="mb-4 flex justify-center">
@@ -290,70 +268,6 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* Identité de la cliente (appel immédiat) — visible uniquement ici,
-            pour toi, jamais exposé ailleurs */}
-        {statut?.appelEnCours && (
-          <div className="mx-auto mb-4 max-w-sm rounded-xl border border-amber-200 bg-amber-50/70 px-5 py-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
-              {statut.appelEnCours.connecte
-                ? "📞 En ligne avec"
-                : "📞 Appel entrant"}
-            </p>
-            <p className="mt-1 font-serif text-2xl font-semibold text-aubergine">
-              {statut.appelEnCours.prenom}
-            </p>
-            {(() => {
-              const s = signeAstrologique(statut.appelEnCours.dateNaissance);
-              const asc = signeParCode(statut.appelEnCours.ascendant);
-              if (!s && !asc) return null;
-              return (
-                <p className="mt-0.5 text-sm text-mention">
-                  {[
-                    s ? `${s.emoji} ${s.nom}` : null,
-                    asc ? `asc. ${asc.nom}` : null,
-                    statut.appelEnCours.dateNaissance
-                      ? `né(e) le ${formatDateNaissance(
-                          statut.appelEnCours.dateNaissance
-                        )}`
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
-              );
-            })()}
-            <p className="mt-1 text-sm text-mention">
-              Solde : {statut.appelEnCours.soldeMinutes} min de crédit
-            </p>
-
-            {(statut.appelEnCours.proches?.length ?? 0) > 0 && (
-              <div className="mt-3 border-t border-amber-200 pt-3 text-left">
-                <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
-                  Les personnes qui comptent
-                </p>
-                <ul className="mt-1.5 space-y-1">
-                  {statut.appelEnCours.proches.map((p, i) => {
-                    const s = signeAstrologique(p.dateNaissance);
-                    return (
-                      <li key={i} className="text-sm text-aubergine">
-                        <span className="font-medium">{p.prenom}</span>
-                        <span className="text-mention">
-                          {" "}
-                          · {LIEN_LABELS[p.lien] || "Autre"}
-                          {p.dateNaissance &&
-                            ` · ${formatDateNaissance(p.dateNaissance)}`}
-                          {s && ` · ${s.emoji} ${s.nom}`}
-                          {signeParCode(p.ascendant) &&
-                            ` · asc. ${signeParCode(p.ascendant)!.nom}`}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
 
         {disponible && statut?.enLigneDepuis && (
           <p className="mb-4 text-sm text-mention">
