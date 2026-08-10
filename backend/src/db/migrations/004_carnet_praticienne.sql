@@ -38,9 +38,20 @@ CREATE INDEX IF NOT EXISTS idx_notes_a_suivre
   ON notes_praticienne(praticienne_id, echeance)
   WHERE a_suivre = true AND close_le IS NULL;
 
-DROP TRIGGER IF EXISTS notes_praticienne_updated_at ON notes_praticienne;
-CREATE TRIGGER notes_praticienne_updated_at BEFORE UPDATE ON notes_praticienne
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+-- Création conditionnelle du déclencheur, SANS "DROP" : le script reste
+-- rejouable sans déclencher l'avertissement « opération destructive »
+-- de l'éditeur SQL Supabase.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger
+     WHERE tgname = 'notes_praticienne_updated_at'
+       AND tgrelid = 'notes_praticienne'::regclass
+  ) THEN
+    CREATE TRIGGER notes_praticienne_updated_at BEFORE UPDATE ON notes_praticienne
+      FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  END IF;
+END $$;
 
 -- RLS deny-all : le backend passe en service role, aucun accès direct
 ALTER TABLE notes_praticienne ENABLE ROW LEVEL SECURITY;
