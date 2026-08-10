@@ -80,6 +80,16 @@ export default function ConsultationsPage() {
         votre espace.
       </p>
 
+      {/* Règle de facturation — annoncée clairement, elle rassure autant
+          qu'elle informe : une communication écourtée n'est jamais due. */}
+      <p className="mt-4 rounded-2xl bg-blush px-4 py-3 text-sm text-ink">
+        <span aria-hidden className="mr-1.5">
+          ✦
+        </span>
+        La facturation démarre à la première minute de communication. Un appel
+        interrompu avant 60&nbsp;secondes ne vous est jamais facturé.
+      </p>
+
       {chargement && (
         <p className="mt-10 text-center text-mention">Chargement…</p>
       )}
@@ -120,12 +130,17 @@ export default function ConsultationsPage() {
                   Durée : {formatDuree(c.durationSeconds)}
                 </p>
               </div>
-              <div className="text-right">
+              <div className="shrink-0 text-right">
                 {c.montant === 0 ? (
                   // Franchise de connexion : appel coupé sous 60 s → 0 €
-                  <span className="rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700">
-                    Non facturée
-                  </span>
+                  <>
+                    <span className="inline-block rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700">
+                      Non facturée
+                    </span>
+                    <p className="mt-1 text-xs text-mention">
+                      moins d&apos;une minute
+                    </p>
+                  </>
                 ) : (
                   <span className="font-serif text-xl font-semibold text-prix">
                     {c.montant != null ? `${c.montant.toFixed(2)}€` : "—"}
