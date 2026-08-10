@@ -101,7 +101,7 @@ export default function FicheClientePage() {
 
       <a
         href="/cabinet-ew/clientes"
-        className="mt-8 inline-block text-sm font-medium text-cream/70 transition-colors hover:text-cream"
+        className="mt-8 inline-block text-sm font-medium text-prix transition-colors hover:text-cta"
       >
         ← Toutes les clientes
       </a>
