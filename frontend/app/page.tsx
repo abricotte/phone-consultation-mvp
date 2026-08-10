@@ -1,5 +1,6 @@
 import Formules from "@/components/Formules";
 import CompteurVisite from "@/components/CompteurVisite";
+import BandeRendezVous from "@/components/BandeRendezVous";
 
 export default function Home() {
   return (
@@ -130,6 +131,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ===== Prendre rendez-vous (Calendly) ===== */}
+      <BandeRendezVous />
 
       {/* ===== À propos ===== */}
       <section className="bg-blush">
