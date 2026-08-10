@@ -1298,6 +1298,61 @@ router.get('/dates-a-venir', async (req, res) => {
   }
 });
 
+// GET /api/admin/frequentation?jours=30 - Quand les clientes viennent.
+// Lit UNIQUEMENT des compteurs agrégés : aucune identité n'y figure,
+// par construction (cf. migration 006).
+router.get('/frequentation', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+    const jours = Math.min(180, Math.max(7, parseInt(req.query.jours, 10) || 30));
+    const depuis = new Date();
+    depuis.setDate(depuis.getDate() - jours);
+
+    const { data: visites, error } = await supabase
+      .from('visites_agregees')
+      .select('jour, heure, jour_semaine, avec_credit, page, compteur')
+      .eq('praticienne_id', p.id)
+      .gte('jour', depuis.toISOString().slice(0, 10));
+
+    if (error) throw error;
+
+    // Grille jour de semaine × heure, deux compteurs par case
+    const grille = {};
+    let totalAvec = 0;
+    let totalSans = 0;
+
+    for (const v of visites || []) {
+      const cle = `${v.jour_semaine}-${v.heure}`;
+      const c = (grille[cle] ||= { jourSemaine: v.jour_semaine, heure: v.heure, avecCredit: 0, sansCredit: 0 });
+      if (v.avec_credit) {
+        c.avecCredit += v.compteur;
+        totalAvec += v.compteur;
+      } else {
+        c.sansCredit += v.compteur;
+        totalSans += v.compteur;
+      }
+    }
+
+    const cases = Object.values(grille);
+    // Le meilleur créneau : là où le plus de clientes AVEC crédit passent
+    const meilleur = cases.reduce(
+      (best, c) => (!best || c.avecCredit > best.avecCredit ? c : best),
+      null
+    );
+
+    res.json({
+      jours,
+      cases,
+      totalAvecCredit: totalAvec,
+      totalSansCredit: totalSans,
+      meilleurCreneau: meilleur && meilleur.avecCredit > 0 ? meilleur : null,
+    });
+  } catch (err) {
+    console.error('Erreur fréquentation:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // ------------------------------------------------------------------
 // SANTÉ DE LA LIGNE — solde Twilio et auto-test de joignabilité.
 // Une ligne à sec fait échouer les appels en silence : ce voyant

@@ -72,7 +72,10 @@ function exporterCSV(
     stripe: number;
     twilio: number;
     fixes: number;
-    provision: number;
+    urssaf: number;
+    impot: number;
+    tauxUrssaf: number;
+    tauxImpot: number;
     net: number;
     encaisseTTC: number;
     tva: number;
@@ -108,10 +111,8 @@ function exporterCSV(
     ["Frais Stripe (estimation)", "", "", "", "", "", `-${eur(frais.stripe)}`],
     ["Frais Twilio (estimation)", "", "", "", "", "", `-${eur(frais.twilio)}`],
     ["Coûts fixes", "", "", "", "", "", `-${eur(frais.fixes)}`],
-    [
-      frais.tvaActive ? "Provision charges (sur le HT)" : "Provision charges",
-      "", "", "", "", "", `-${eur(frais.provision)}`,
-    ],
+    [`URSSAF (${frais.tauxUrssaf} %)`, "", "", "", "", "", `-${eur(frais.urssaf)}`],
+    [`Impôt (${frais.tauxImpot} %)`, "", "", "", "", "", `-${eur(frais.impot)}`],
     ["NET ESTIMÉ", "", "", "", "", "", eur(frais.net)],
     [],
     ["Estimations de pilotage — les pièces officielles proviennent de Stripe et des relevés bancaires."],
@@ -203,8 +204,10 @@ export default function RevenusPage() {
     const fraisTwilio = (secondes / 60) * TWILIO_MINUTE;
 
     const coutsFixes = reglages.coutsFixes;
-    // Assiette des cotisations : le chiffre d'affaires HT
-    const provision = (encaisseHT * reglages.provision) / 100;
+    // Assiette des cotisations ET de l'impôt : le chiffre d'affaires HT
+    const urssaf = (encaisseHT * reglages.urssaf) / 100;
+    const impot = (encaisseHT * reglages.impot) / 100;
+    const provision = urssaf + impot;
     const net = encaisseHT - fraisStripe - fraisTwilio - coutsFixes - provision;
 
     const minutes = secondes / 60;
@@ -218,6 +221,8 @@ export default function RevenusPage() {
       fraisStripe,
       fraisTwilio,
       coutsFixes,
+      urssaf,
+      impot,
       provision,
       net,
       nbFacturees: facturees.length,
@@ -307,7 +312,10 @@ export default function RevenusPage() {
                   stripe: cascade.fraisStripe,
                   twilio: cascade.fraisTwilio,
                   fixes: cascade.coutsFixes,
-                  provision: cascade.provision,
+                  urssaf: cascade.urssaf,
+                  impot: cascade.impot,
+                  tauxUrssaf: reglages.urssaf,
+                  tauxImpot: reglages.impot,
                   net: cascade.net,
                   encaisseTTC: cascade.encaisseTTC,
                   tva: cascade.tvaCollectee,
@@ -396,11 +404,14 @@ export default function RevenusPage() {
                   },
                   { l: "Coûts fixes", v: -cascade.coutsFixes, reglable: "coutsFixes" as const },
                   {
-                    l: reglages.tvaActive
-                      ? "Provision charges (sur le HT)"
-                      : "Provision charges",
-                    v: -cascade.provision,
-                    reglable: "provision" as const,
+                    l: reglages.tvaActive ? "URSSAF (sur le HT)" : "URSSAF",
+                    v: -cascade.urssaf,
+                    reglable: "urssaf" as const,
+                  },
+                  {
+                    l: reglages.tvaActive ? "Impôt (sur le HT)" : "Impôt",
+                    v: -cascade.impot,
+                    reglable: "impot" as const,
                   },
                 ].map((r) => (
                   <tr
@@ -428,15 +439,16 @@ export default function RevenusPage() {
                             %
                           </label>
                         )}
-                        {r.reglable === "provision" && (
+                        {(r.reglable === "urssaf" || r.reglable === "impot") && (
                           <label className="flex items-center gap-1 text-xs text-mention">
                             <input
                               type="number"
                               min={0}
-                              max={90}
-                              value={reglages.provision}
+                              max={60}
+                              step={0.1}
+                              value={reglages[r.reglable]}
                               onChange={(e) =>
-                                majReglage("provision", Number(e.target.value))
+                                majReglage(r.reglable, Number(e.target.value))
                               }
                               className="w-14 rounded-lg border border-greige bg-ivory px-2 py-0.5 text-right text-ink focus:border-cta-outline focus:outline-none"
                             />

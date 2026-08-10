@@ -13,6 +13,12 @@ async function request(endpoint: string, options: RequestInit = {}) {
     },
   });
 
+  // 204 (ou corps vide) : rien à décoder — res.json() lèverait ici
+  if (res.status === 204) {
+    if (!res.ok) throw new Error("Une erreur est survenue");
+    return null;
+  }
+
   const data = await res.json();
 
   if (!res.ok) {
@@ -70,6 +76,9 @@ export const api = {
   // Config publique (tarifs de recharge, statut en ligne)
   getRechargeConfig: () => request("/config/recharge"),
   getStatut: () => request("/config/statut"),
+  // Compteur de fréquentation anonyme : aucun identifiant transmis
+  enregistrerVisite: (body: { page: string; avecCredit: boolean }) =>
+    request("/config/visite", { method: "POST", body: JSON.stringify(body) }),
 
   // Admin (praticienne)
   adminGetStatut: () => request("/admin/statut"),

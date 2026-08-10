@@ -1,8 +1,11 @@
 import Formules from "@/components/Formules";
+import CompteurVisite from "@/components/CompteurVisite";
 
 export default function Home() {
   return (
     <div>
+      {/* Fréquentation anonyme : aucun identifiant transmis */}
+      <CompteurVisite page="accueil" />
       {/* ===== Hero ===== */}
       <section className="bg-cream">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-24 md:grid-cols-2 md:py-32">

@@ -7,8 +7,10 @@ export interface Reglages {
   tvaActive: boolean;
   /** Taux de TVA en % — 20 % pour une prestation de service en France */
   tvaTaux: number;
-  /** Provision pour cotisations sociales et impôt, en % du CA HT */
-  provision: number;
+  /** Cotisations URSSAF, en % du CA HT — chiffre réel de sa déclaration */
+  urssaf: number;
+  /** Provision pour l'impôt sur le revenu, en % du CA HT */
+  impot: number;
   /** Abonnements mensuels (Railway, Supabase, domaine…) en € */
   coutsFixes: number;
   /** Seuil d'alerte du solde Twilio, en devise du compte */
@@ -18,9 +20,10 @@ export interface Reglages {
 }
 
 export const REGLAGES_DEFAUT: Reglages = {
-  tvaActive: false,
+  tvaActive: true,
   tvaTaux: 20,
-  provision: 25,
+  urssaf: 26, // taux réel constaté sur la déclaration
+  impot: 10, // volontairement un peu au-dessus du théorique, par prudence
   coutsFixes: 0,
   seuilTwilio: 5,
   seuilHabituee: 5,
@@ -35,9 +38,10 @@ function borner(r: Partial<Reglages>): Reglages {
     return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : defaut;
   };
   return {
-    tvaActive: r.tvaActive === true,
+    tvaActive: r.tvaActive !== false,
     tvaTaux: entre(r.tvaTaux, 0, 30, REGLAGES_DEFAUT.tvaTaux),
-    provision: entre(r.provision, 0, 90, REGLAGES_DEFAUT.provision),
+    urssaf: entre(r.urssaf, 0, 60, REGLAGES_DEFAUT.urssaf),
+    impot: entre(r.impot, 0, 60, REGLAGES_DEFAUT.impot),
     coutsFixes: entre(r.coutsFixes, 0, 100000, REGLAGES_DEFAUT.coutsFixes),
     seuilTwilio: entre(r.seuilTwilio, 0, 1000, REGLAGES_DEFAUT.seuilTwilio),
     seuilHabituee: entre(r.seuilHabituee, 1, 100, REGLAGES_DEFAUT.seuilHabituee),
@@ -50,10 +54,11 @@ export function chargerReglages(): Reglages {
     const brut = localStorage.getItem(CLE);
     if (brut) return borner(JSON.parse(brut));
 
-    // Reprise de l'ancien réglage isolé du taux de provision
+    // Reprise de l'ancien réglage : une provision unique devient URSSAF,
+    // l'impôt prenant sa valeur par défaut.
     const ancien = localStorage.getItem("provisionPourcent");
     if (ancien !== null) {
-      return borner({ ...REGLAGES_DEFAUT, provision: Number(ancien) });
+      return borner({ ...REGLAGES_DEFAUT, urssaf: Number(ancien) });
     }
   } catch {
     /* réglages illisibles : on repart des valeurs par défaut */

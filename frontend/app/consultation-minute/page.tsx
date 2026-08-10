@@ -4,6 +4,7 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { useElenaStatus } from "@/components/useElenaStatus";
 import RechargeSelector from "@/components/RechargeSelector";
+import CompteurVisite from "@/components/CompteurVisite";
 
 export default function ConsultationMinutePage() {
   const statut = useElenaStatus();
@@ -44,6 +45,9 @@ export default function ConsultationMinutePage() {
 
   return (
     <div>
+      {/* Fréquentation anonyme : aucun identifiant transmis */}
+      <CompteurVisite page="consultation-minute" />
+
       {/* ===== En-tête ===== */}
       <section className="bg-cream">
         <div className="mx-auto max-w-3xl px-5 py-20 text-center">
