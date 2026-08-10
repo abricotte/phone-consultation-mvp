@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
+import CabinetShell from "@/components/CabinetShell";
 import {
   signeAstrologique,
   formatDateNaissance,
@@ -185,10 +186,10 @@ export default function AdminPage() {
   if (loading)
     return <div className="mt-16 text-center text-mention">Chargement…</div>;
 
-  // Porte d'entrée dédiée de la praticienne
+  // Porte d'entrée dédiée de la praticienne (déjà sur fond nuit)
   if (nonConnectee)
     return (
-      <div className="px-4 py-16 sm:px-5">
+      <div className="min-h-screen bg-[#161B2E] px-4 py-16 font-jakarta sm:px-5">
         <div className="mx-auto max-w-md rounded-2xl border border-greige/60 bg-ivory p-8 shadow-soft">
           <h1 className="font-serif text-2xl font-semibold text-aubergine">
             Espace privé
@@ -249,10 +250,10 @@ export default function AdminPage() {
   const disponible = statut?.statut === "disponible";
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-10 font-jakarta">
+    <CabinetShell>
       <CabinetNav />
 
-      <h1 className="mt-8 font-serif text-3xl font-semibold text-aubergine">
+      <h1 className="mt-8 font-serif text-3xl font-semibold text-cream">
         Espace praticienne
       </h1>
 
@@ -493,6 +494,6 @@ export default function AdminPage() {
           cours
         </p>
       )}
-    </div>
+    </CabinetShell>
   );
 }

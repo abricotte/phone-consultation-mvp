@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
+import CabinetShell from "@/components/CabinetShell";
 
 interface Appel {
   id: string;
@@ -70,20 +71,20 @@ export default function JournalPage() {
   if (accesRefuse) notFound();
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-10 font-jakarta">
+    <CabinetShell>
       <CabinetNav />
 
-      <h1 className="mt-8 font-serif text-3xl font-semibold text-aubergine">
+      <h1 className="mt-8 font-serif text-3xl font-semibold text-cream">
         Journal des appels
       </h1>
-      <p className="mt-1 text-sm text-mention">
+      <p className="mt-1 text-sm text-cream/60">
         Les 50 derniers appels, tous types confondus.
       </p>
 
       {appels.length === 0 ? (
-        <div className="mt-8 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-10 text-center">
-          <p className="text-3xl">☾</p>
-          <p className="mt-2 text-sm text-mention">Aucun appel pour le moment.</p>
+        <div className="mt-8 rounded-2xl border border-dashed border-cream/20 px-5 py-10 text-center">
+          <p className="text-3xl text-cream/40">☾</p>
+          <p className="mt-2 text-sm text-cream/60">Aucun appel pour le moment.</p>
         </div>
       ) : (
         <ul className="mt-6 space-y-2">
@@ -132,6 +133,6 @@ export default function JournalPage() {
           })}
         </ul>
       )}
-    </div>
+    </CabinetShell>
   );
 }

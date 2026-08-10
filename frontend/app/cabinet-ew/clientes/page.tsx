@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
+import CabinetShell from "@/components/CabinetShell";
 
 interface Cliente {
   id: string;
@@ -66,15 +67,15 @@ export default function ClientesPage() {
     : clientes;
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-10 font-jakarta">
+    <CabinetShell>
       <CabinetNav />
 
       <div className="mt-8 flex flex-wrap items-baseline justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-semibold text-aubergine">
+          <h1 className="font-serif text-3xl font-semibold text-cream">
             Clientes
           </h1>
-          <p className="mt-1 text-sm text-mention">
+          <p className="mt-1 text-sm text-cream/60">
             {clientes.length} cliente{clientes.length > 1 ? "s" : ""} — cliquez
             sur une fiche pour préparer votre lecture.
           </p>
@@ -89,9 +90,9 @@ export default function ClientesPage() {
       </div>
 
       {visibles.length === 0 ? (
-        <div className="mt-8 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-10 text-center">
-          <p className="text-3xl">✧</p>
-          <p className="mt-2 text-sm text-mention">
+        <div className="mt-8 rounded-2xl border border-dashed border-cream/20 px-5 py-10 text-center">
+          <p className="text-3xl text-cream/40">✧</p>
+          <p className="mt-2 text-sm text-cream/60">
             {filtre ? "Aucune cliente ne correspond." : "Aucune cliente pour le moment."}
           </p>
         </div>
@@ -132,6 +133,6 @@ export default function ClientesPage() {
           ))}
         </ul>
       )}
-    </div>
+    </CabinetShell>
   );
 }

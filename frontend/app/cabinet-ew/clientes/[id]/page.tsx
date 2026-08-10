@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { notFound, useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
+import CabinetShell from "@/components/CabinetShell";
 import {
   signeAstrologique,
   formatDateNaissance,
@@ -95,12 +96,12 @@ export default function FicheClientePage() {
   const asc = signeParCode(fiche.ascendant);
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-10 font-jakarta">
+    <CabinetShell>
       <CabinetNav />
 
       <a
         href="/cabinet-ew/clientes"
-        className="mt-8 inline-block text-sm font-medium text-prix transition-colors hover:text-cta"
+        className="mt-8 inline-block text-sm font-medium text-cream/70 transition-colors hover:text-cream"
       >
         ← Toutes les clientes
       </a>
@@ -229,6 +230,6 @@ export default function FicheClientePage() {
           </ul>
         )}
       </section>
-    </div>
+    </CabinetShell>
   );
 }
