@@ -212,7 +212,7 @@ export default function JournalPage() {
     }).length;
 
     // Crédit encaissé mais pas encore consommé : comptablement une
-    // dette envers les clientes, pas un revenu acquis.
+    // argent déposé par les clientes, pas encore un revenu acquis.
     const creditEnCirculation = clientes.reduce((acc, c) => acc + (c.solde || 0), 0);
 
     return {
@@ -239,7 +239,7 @@ export default function JournalPage() {
 
       <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-semibold text-aubergine">
+          <h1 className="font-jakarta text-3xl font-bold tracking-tight text-aubergine">
             Journal des appels
           </h1>
           {moisActif && (
@@ -281,10 +281,10 @@ export default function JournalPage() {
         <section className="mt-5 rounded-3xl border border-greige/50 bg-ivory p-6 shadow-soft">
           <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Encaissé
               </p>
-              <p className="mt-0.5 font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {euros(stats.total)}
               </p>
               <p className="text-xs text-mention">
@@ -293,10 +293,10 @@ export default function JournalPage() {
             </div>
 
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Appels reçus
               </p>
-              <p className="mt-0.5 font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {stats.appels}
               </p>
               <p className="text-xs text-mention">
@@ -311,10 +311,10 @@ export default function JournalPage() {
             </div>
 
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Clientes
               </p>
-              <p className="mt-0.5 font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {stats.clientes}
               </p>
               <p className="text-xs text-mention">
@@ -329,10 +329,10 @@ export default function JournalPage() {
             </div>
 
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Temps d&apos;écoute
               </p>
-              <p className="mt-0.5 font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {stats.minutes}
                 <span className="ml-1 text-base font-normal text-mention">min</span>
               </p>
@@ -382,19 +382,21 @@ export default function JournalPage() {
             </div>
           )}
 
-          {/* Crédit encaissé mais pas encore gagné — une dette, pas un revenu */}
+          {/* Crédit encaissé mais pas encore consommé (formulation choisie :
+              « déposé, pas encore utilisé » plutôt que « dette », plus juste
+              à lire et sans la charge anxieuse du terme comptable) */}
           {stats.creditEnCirculation > 0 && (
             <div className="mt-5 flex flex-wrap items-baseline justify-between gap-2 border-t border-greige/50 pt-4">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+                <p className="text-xs font-bold uppercase tracking-wider text-mention">
                   Crédit en circulation
                 </p>
                 <p className="text-xs text-mention">
-                  Encaissé mais pas encore consommé — comptablement une dette
-                  envers vos clientes.
+                  Encaissé mais pas encore consommé — vos clientes ont déposé
+                  cet argent sans l&apos;avoir encore utilisé.
                 </p>
               </div>
-              <p className="font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="text-2xl font-bold tabular-nums tracking-tight text-aubergine">
                 {euros(stats.creditEnCirculation)}
               </p>
             </div>
@@ -419,7 +421,7 @@ export default function JournalPage() {
         if (recents.length === 0) return null;
         return (
           <section className="mt-5 rounded-3xl border border-amber-200 bg-amber-50/50 p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+            <p className="text-xs font-bold uppercase tracking-wider text-amber-800">
               ☎ À rappeler — {recents.length} appel
               {recents.length > 1 ? "s" : ""} manqué
               {recents.length > 1 ? "s" : ""} cette semaine
@@ -481,7 +483,7 @@ export default function JournalPage() {
             return (
               <section key={cle}>
                 <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2 border-b border-greige/60 pb-1.5">
-                  <h2 className="font-serif text-lg font-semibold capitalize text-aubergine">
+                  <h2 className="font-jakarta text-base font-bold uppercase tracking-wide text-aubergine">
                     {libelleJour(cle)}
                   </h2>
                   <p className="text-xs text-mention">
