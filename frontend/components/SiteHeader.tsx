@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 
-const NAV_LINKS = [
-  { href: "/#formules", label: "Formules" },
-  { href: "/consultation-minute", label: "Appeler maintenant" },
-  { href: "/dashboard", label: "Mon espace" },
-];
+// Navigation cliente volontairement réduite à deux gestes : retrouver
+// son espace, ou consulter. Le cabinet praticienne n'y figure JAMAIS —
+// il vit sur une URL non référencée, protégée par le rôle.
+const NAV_LINKS = [{ href: "/#formules", label: "Formules" }];
 
 export default function SiteHeader() {
   const [ouvert, setOuvert] = useState(false);
@@ -24,21 +23,27 @@ export default function SiteHeader() {
         </a>
 
         {/* Navigation desktop/tablette */}
-        <nav className="hidden items-center gap-6 text-sm sm:flex">
+        <nav className="hidden items-center gap-3 text-sm sm:flex">
           {NAV_LINKS.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-mention transition hover:text-cta"
+              className="mr-2 text-mention transition hover:text-cta"
             >
               {link.label}
             </a>
           ))}
           <a
-            href="/login"
+            href="/dashboard"
+            className="rounded-full bg-aubergine px-5 py-2 font-medium text-cream transition hover:bg-aubergine/90"
+          >
+            Mon espace
+          </a>
+          <a
+            href="/consultation-minute"
             className="rounded-full bg-cta px-5 py-2 font-medium text-cta-text shadow-card transition hover:bg-cta-dark"
           >
-            Connexion
+            Consulter Elena
           </a>
         </nav>
 
@@ -79,11 +84,20 @@ export default function SiteHeader() {
             ))}
             <li className="mt-2">
               <a
-                href="/login"
+                href="/dashboard"
+                onClick={() => setOuvert(false)}
+                className="block rounded-full bg-aubergine px-5 py-3 text-center font-medium text-cream transition hover:bg-aubergine/90"
+              >
+                Mon espace
+              </a>
+            </li>
+            <li className="mt-2">
+              <a
+                href="/consultation-minute"
                 onClick={() => setOuvert(false)}
                 className="block rounded-full bg-cta px-5 py-3 text-center font-medium text-cta-text shadow-card transition hover:bg-cta-dark"
               >
-                Connexion
+                Consulter Elena
               </a>
             </li>
           </ul>

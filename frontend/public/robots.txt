@@ -1,0 +1,9 @@
+# Espaces privés : jamais explorés, jamais indexés.
+# Le cabinet praticienne n'est référencé nulle part dans le site ;
+# cette règle ajoute une barrière contre l'indexation accidentelle.
+User-agent: *
+Disallow: /cabinet-ew
+Disallow: /dashboard
+Disallow: /compte
+Disallow: /profil
+Disallow: /consultations
