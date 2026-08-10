@@ -84,6 +84,14 @@ export default function AdminPage() {
   const [error, setError] = useState("");
   const [accesRefuse, setAccesRefuse] = useState(false);
 
+  // Porte d'entrée dédiée : sans jeton, on affiche un formulaire de
+  // connexion sur place (la praticienne ne passe plus par le login public)
+  const [nonConnectee, setNonConnectee] = useState(false);
+  const [lEmail, setLEmail] = useState("");
+  const [lMdp, setLMdp] = useState("");
+  const [lErreur, setLErreur] = useState("");
+  const [lEnCours, setLEnCours] = useState(false);
+
   // Consultation minutée
   const [telephone, setTelephone] = useState("");
   const [forfaitCode, setForfaitCode] = useState("");
@@ -98,11 +106,12 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-    // Pas de jeton, mauvais rôle, ou erreur d'accès → 404 générique.
-    // L'existence de cet espace ne doit être confirmée à personne.
+    // Sans jeton → formulaire de connexion dédié (porte d'entrée de la
+    // praticienne). Jeton présent mais mauvais rôle / erreur → 404
+    // générique : l'existence de cet espace n'est confirmée à personne.
     const token = localStorage.getItem("token");
     if (!token) {
-      setAccesRefuse(true);
+      setNonConnectee(true);
       setLoading(false);
       return;
     }
@@ -149,8 +158,88 @@ export default function AdminPage() {
     }
   }
 
+  async function handleConnexionCabinet(e: React.FormEvent) {
+    e.preventDefault();
+    setLErreur("");
+    setLEnCours(true);
+    try {
+      const data = await api.login({ email: lEmail, password: lMdp });
+      const role = data.user?.role;
+      if (role === "consultant" || role === "admin") {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        window.location.reload();
+        return;
+      }
+      // Compte cliente : jeton NON conservé, et même message qu'un vrai
+      // échec — cette porte ne confirme rien à qui n'est pas praticienne.
+      setLErreur("Email ou mot de passe incorrect");
+    } catch {
+      setLErreur("Email ou mot de passe incorrect");
+    } finally {
+      setLEnCours(false);
+    }
+  }
+
   if (loading)
     return <div className="mt-16 text-center text-mention">Chargement…</div>;
+
+  // Porte d'entrée dédiée de la praticienne
+  if (nonConnectee)
+    return (
+      <div className="px-4 py-16 sm:px-5">
+        <div className="mx-auto max-w-md rounded-2xl border border-greige/60 bg-ivory p-8 shadow-soft">
+          <h1 className="font-serif text-2xl font-semibold text-aubergine">
+            Espace privé
+          </h1>
+          <p className="mt-1 text-sm text-mention">
+            Réservé à la praticienne.
+          </p>
+
+          {lErreur && (
+            <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {lErreur}
+            </p>
+          )}
+
+          <form onSubmit={handleConnexionCabinet} className="mt-6 space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-aubergine">
+                Email
+              </label>
+              <input
+                type="email"
+                value={lEmail}
+                onChange={(e) => setLEmail(e.target.value)}
+                autoComplete="email"
+                required
+                className="w-full rounded-lg border border-greige bg-white px-3 py-2.5 text-ink"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-aubergine">
+                Mot de passe
+              </label>
+              <input
+                type="password"
+                value={lMdp}
+                onChange={(e) => setLMdp(e.target.value)}
+                autoComplete="current-password"
+                required
+                className="w-full rounded-lg border border-greige bg-white px-3 py-2.5 text-ink"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={lEnCours}
+              className="w-full rounded-full bg-cta py-3 font-medium text-cta-text hover:bg-cta-dark disabled:opacity-50"
+            >
+              {lEnCours ? "Connexion…" : "Entrer"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
 
   // 404 générique, identique aux autres pages inexistantes du site
   if (accesRefuse || (error && !statut)) notFound();

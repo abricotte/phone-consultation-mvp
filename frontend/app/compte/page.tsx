@@ -9,6 +9,7 @@ interface User {
   firstName: string;
   lastName: string;
   phone: string | null;
+  role?: string;
 }
 
 export default function ComptePage() {
@@ -37,6 +38,12 @@ export default function ComptePage() {
     api
       .getMe()
       .then((u: User) => {
+        // Espace réservé aux clientes : ici, la praticienne modifierait
+        // le numéro de sa propre ligne professionnelle sans le savoir.
+        if (u.role === "consultant" || u.role === "admin") {
+          window.location.replace("/cabinet-ew");
+          return;
+        }
         setUser(u);
         setPhone(u.phone || "");
       })

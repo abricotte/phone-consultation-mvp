@@ -117,6 +117,11 @@ export default function DashboardPage() {
 
     Promise.all([api.getMe(), api.getWallet(), api.getTransactions()])
       .then(([userData, walletData, txData]) => {
+        // Espace réservé aux clientes : la praticienne va dans son cabinet
+        if (userData.role === "consultant" || userData.role === "admin") {
+          window.location.replace("/cabinet-ew");
+          return;
+        }
         setUser(userData);
         setWallet(walletData);
         setTransactions(txData);

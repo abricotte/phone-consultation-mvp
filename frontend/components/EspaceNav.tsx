@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 // Navigation commune de l'espace cliente — présente sur chaque page de
@@ -13,6 +14,20 @@ const ONGLETS = [
 
 export default function EspaceNav() {
   const pathname = usePathname();
+
+  // L'espace cliente est réservé aux CLIENTES : le compte praticienne y
+  // est redirigé vers son cabinet. Le vécu a montré le danger — connectée
+  // ici, modifier "son" numéro écrase celui de la ligne professionnelle.
+  useEffect(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem("user") || "null");
+      if (u && (u.role === "consultant" || u.role === "admin")) {
+        window.location.replace("/cabinet-ew");
+      }
+    } catch {
+      /* user illisible : les gardes des pages (getMe) prennent le relais */
+    }
+  }, []);
 
   function handleLogout() {
     localStorage.removeItem("token");
