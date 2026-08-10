@@ -48,6 +48,12 @@ function conferenceName(sessionId) {
   return `consult-${sessionId}`;
 }
 
+// Masque un numéro pour les journaux : +33612345678 → +336****5678
+function masquerNumero(n) {
+  if (typeof n !== 'string' || n.length < 8) return '(inconnu)';
+  return `${n.slice(0, 4)}****${n.slice(-4)}`;
+}
+
 // Consultation Immédiate : on garde en mémoire le SID de l'appel d'Elena
 // pour pouvoir le raccrocher si le téléphone de la cliente tombe sur
 // répondeur (AMD). Backend mono-instance — cohérent avec les setTimeout
@@ -133,6 +139,26 @@ router.post('/initiate', authMiddleware, async (req, res) => {
     const consultantPhone = normalizePhone(consultantUser.phone);
     const confName = conferenceName(sessionId);
 
+    // Twilio refuse d'appeler un numéro depuis lui-même : si le numéro
+    // enregistré pour la praticienne est le numéro Twilio de la ligne,
+    // sa jambe échoue silencieusement (la cliente sonne, elle non).
+    const numeroTwilio = normalizePhone(process.env.TWILIO_PHONE_NUMBER);
+    if (consultantPhone && consultantPhone === numeroTwilio) {
+      console.error(
+        `Configuration invalide : le numéro de la praticienne (${masquerNumero(consultantPhone)}) est le numéro Twilio de la ligne. Renseignez son numéro personnel.`
+      );
+      return res.status(500).json({
+        error:
+          "Configuration téléphonique incorrecte : le numéro de la praticienne est identique au numéro de la ligne. L'appel ne peut pas aboutir.",
+      });
+    }
+    if (consultantPhone && consultantPhone === clientPhone) {
+      return res.status(400).json({
+        error:
+          'Votre numéro est identique à celui de la praticienne : la mise en relation est impossible.',
+      });
+    }
+
     // VERROU ATOMIQUE : disponible → en_consultation. Si la ligne vient
     // d'être prise par une autre cliente, refus propre sans appel.
     const verrou = await verrouillerConsultation(maxSeconds);
@@ -163,16 +189,26 @@ router.post('/initiate', authMiddleware, async (req, res) => {
         statusCallbackMethod: 'POST',
       });
 
-      // Appel du consultant → rejoint la même conférence
+      // Appel du consultant → rejoint la même conférence.
+      // statusCallback INDISPENSABLE : sans lui, un échec de cette jambe
+      // (numéro invalide, occupé, refus opérateur) passait totalement
+      // inaperçu — la cliente sonnait, la praticienne jamais, et aucun
+      // journal ne permettait de le voir.
       const consultantCall = await twilio.calls.create({
         to: consultantPhone,
         from: process.env.TWILIO_PHONE_NUMBER,
         url: `${backendUrl}/api/calls/twiml/join?sessionId=${sessionId}&role=consultant`,
         method: 'GET', // idem
         timeLimit: maxSeconds,
+        statusCallback: `${backendUrl}/api/calls/status`,
+        statusCallbackEvent: ['failed', 'busy', 'no-answer', 'canceled', 'completed'],
+        statusCallbackMethod: 'POST',
       });
       // Mémorisé pour raccrocher la jambe d'Elena si la cliente tombe sur répondeur
       consultantCallSids.set(sessionId, consultantCall.sid);
+      console.log(
+        `Appels lancés (session ${sessionId}) : cliente ${masquerNumero(clientPhone)} [${clientCall.sid}] · praticienne ${masquerNumero(consultantPhone)} [${consultantCall.sid}]`
+      );
     } catch (twilioErr) {
       // Échec du lancement → libérer immédiatement la praticienne
       await libererConsultation();

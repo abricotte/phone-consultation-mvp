@@ -132,6 +132,39 @@ router.get('/statut', async (req, res) => {
         ? await appelImmediatEnCours(p.id, tarifs)
         : null;
 
+    // Diagnostic ligne téléphonique (route adminOnly : visible d'elle seule).
+    // C'est CE numéro que Twilio compose pour la joindre — s'il est absent
+    // ou identique au numéro de la ligne, l'appel vers elle ne peut aboutir.
+    let ligne = { numeroPraticienne: null, numeroLigne: process.env.TWILIO_PHONE_NUMBER || null, probleme: null };
+    try {
+      const { data: consultant } = await supabase
+        .from('consultants')
+        .select('user_id')
+        .eq('praticienne_id', p.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (consultant?.user_id) {
+        const { data: u } = await supabase
+          .from('users')
+          .select('phone')
+          .eq('id', consultant.user_id)
+          .maybeSingle();
+        ligne.numeroPraticienne = u?.phone || null;
+      }
+
+      if (!ligne.numeroPraticienne) {
+        ligne.probleme = 'Aucun numéro enregistré pour la praticienne : elle ne peut pas être appelée.';
+      } else if (
+        ligne.numeroLigne &&
+        ligne.numeroPraticienne.replace(/\D/g, '') === ligne.numeroLigne.replace(/\D/g, '')
+      ) {
+        ligne.probleme = 'Le numéro de la praticienne est identique au numéro de la ligne : Twilio ne peut pas appeler un numéro depuis lui-même.';
+      }
+    } catch (e) {
+      ligne.probleme = 'Vérification impossible.';
+    }
+
     res.json({
       statut: statut.statut,
       enLigne: statut.enLigne,
@@ -140,6 +173,7 @@ router.get('/statut', async (req, res) => {
       autoOffHeures: p.auto_off_heures || 4,
       forfaits: tarifs.forfaits,
       appelEnCours,
+      ligne,
     });
   } catch (err) {
     console.error('Erreur statut admin:', err);
