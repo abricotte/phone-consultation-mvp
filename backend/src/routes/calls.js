@@ -5,6 +5,8 @@ const authMiddleware = require('../middleware/auth');
 const twilioSignature = require('../middleware/twilioSignature');
 const { verrouillerConsultation, libererConsultation, getPraticienne } = require('../config/praticienne');
 const { VoiceResponse } = require('twilio').twiml;
+// Source unique de normalisation (cf. utils/telephone.js)
+const { normaliser: normalizePhone, masquer: masquerNumeroTel } = require('../utils/telephone');
 
 const router = express.Router();
 
@@ -19,21 +21,6 @@ const MISE_EN_RELATION_TIMEOUT_SECONDS = 75; // fenêtre demandée : 60-90s
 const ATTENTE_PAUSE_SECONDES = 3;
 const ATTENTE_REPETITIONS = 12; // couvre largement le timeout, puis auto-boucle via <Redirect>
 
-// Normaliser un numéro de téléphone au format international
-function normalizePhone(phone) {
-  if (!phone) return phone;
-  // Supprimer les espaces, tirets, points
-  let cleaned = phone.replace(/[\s\-\.]/g, '');
-  // Convertir format français 06/07 → +336/+337
-  if (cleaned.startsWith('0') && cleaned.length === 10) {
-    cleaned = '+33' + cleaned.substring(1);
-  }
-  // Ajouter + si manquant pour les numéros internationaux
-  if (cleaned.startsWith('33') && !cleaned.startsWith('+')) {
-    cleaned = '+' + cleaned;
-  }
-  return cleaned;
-}
 
 // URL publique du backend (pour les callbacks Twilio).
 // Barre oblique finale retirée : l'URL fournie à Twilio doit être propre
@@ -48,11 +35,8 @@ function conferenceName(sessionId) {
   return `consult-${sessionId}`;
 }
 
-// Masque un numéro pour les journaux : +33612345678 → +336****5678
-function masquerNumero(n) {
-  if (typeof n !== 'string' || n.length < 8) return '(inconnu)';
-  return `${n.slice(0, 4)}****${n.slice(-4)}`;
-}
+// Masquage des numéros dans les journaux : même source que le reste
+const masquerNumero = masquerNumeroTel;
 
 // Consultation Immédiate : on garde en mémoire le SID de l'appel d'Elena
 // pour pouvoir le raccrocher si le téléphone de la cliente tombe sur

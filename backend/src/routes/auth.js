@@ -16,17 +16,11 @@ function motDePasseInvalide(pwd) {
   return null;
 }
 
-// Normalisation du numéro de téléphone au format E.164 (le numéro sert à
-// ÉMETTRE l'appel de consultation, il doit donc être composable).
-const PHONE_E164 = /^\+[1-9]\d{7,14}$/;
-function normalizePhone(phone) {
-  if (typeof phone !== 'string') return null;
-  let c = phone.replace(/[\s\-.()]/g, '');
-  if (c.startsWith('00')) c = '+' + c.slice(2); // préfixe international 00 → +
-  if (/^0\d{9}$/.test(c)) c = '+33' + c.slice(1); // format français 0X…
-  if (/^33\d{9}$/.test(c)) c = '+' + c; // 33… sans le +
-  return c;
-}
+// Source unique de normalisation (cf. utils/telephone.js)
+const {
+  normaliser: normalizePhone,
+  estNumeroFrancais,
+} = require('../utils/telephone');
 
 // POST /api/auth/register - Inscription
 router.post('/register', registerLimiter, async (req, res) => {
@@ -235,7 +229,7 @@ router.patch('/phone', authMiddleware, async (req, res) => {
   try {
     const normalized = normalizePhone(req.body.phone);
 
-    if (!normalized || !PHONE_E164.test(normalized)) {
+    if (!normalized || !estNumeroFrancais(normalized)) {
       return res.status(400).json({
         error:
           'Numéro invalide. Indiquez un numéro français (ex. 06 12 34 56 78) ou international (ex. +33 6 12 34 56 78).',

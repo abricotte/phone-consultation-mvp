@@ -13,6 +13,12 @@ const {
 
 const router = express.Router();
 
+// Source unique de normalisation (cf. utils/telephone.js)
+const {
+  normaliser: normalizePhone,
+  estMobileFrancais: estNumeroFrValide,
+} = require('../utils/telephone');
+
 // Réservé à la praticienne (rôle consultant) et aux admins
 function adminOnly(req, res, next) {
   if (req.user.role !== 'admin' && req.user.role !== 'consultant') {
@@ -23,22 +29,6 @@ function adminOnly(req, res, next) {
 
 router.use(authMiddleware, adminOnly);
 
-// Normaliser un numéro FR au format international (identique à calls.js)
-function normalizePhone(phone) {
-  if (!phone) return phone;
-  let cleaned = phone.replace(/[\s\-\.]/g, '');
-  if (cleaned.startsWith('0') && cleaned.length === 10) {
-    cleaned = '+33' + cleaned.substring(1);
-  }
-  if (cleaned.startsWith('33') && !cleaned.startsWith('+')) {
-    cleaned = '+' + cleaned;
-  }
-  return cleaned;
-}
-
-function estNumeroFrValide(phone) {
-  return /^\+33[67]?\d{8,9}$/.test(phone) && phone.length === 12;
-}
 
 // Purge paresseuse : anonymise les numéros clientes au-delà de la rétention
 async function purgerTelephones() {
