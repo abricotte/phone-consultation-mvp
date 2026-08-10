@@ -92,6 +92,17 @@ router.post('/initiate', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Cette session ne peut pas être démarrée' });
     }
 
+    // La praticienne ne peut pas se consulter elle-même : si la cliente
+    // connectée EST la praticienne, les deux jambes composeraient le même
+    // numéro (une seule et même fiche utilisateur), et modifier son numéro
+    // dans "Mon compte" changerait aussi celui de sa ligne professionnelle.
+    if (session.consultants.user_id === req.user.id) {
+      return res.status(400).json({
+        error:
+          "Vous êtes connectée avec le compte de la praticienne : impossible de s'appeler soi-même. Pour tester, utilisez un compte cliente distinct.",
+      });
+    }
+
     // Récupérer le téléphone du consultant
     const { data: consultantUser } = await supabase
       .from('users')
