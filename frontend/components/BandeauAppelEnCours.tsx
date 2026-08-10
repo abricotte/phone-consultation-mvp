@@ -109,7 +109,7 @@ export default function BandeauAppelEnCours({ appel }: { appel: AppelEnCours }) 
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-mention">
             {appel.connecte ? (
               <>
                 <span className="relative flex h-2 w-2">
@@ -126,7 +126,7 @@ export default function BandeauAppelEnCours({ appel }: { appel: AppelEnCours }) 
             )}
           </p>
 
-          <p className="mt-1.5 font-serif text-3xl font-semibold text-aubergine">
+          <p className="mt-1.5 text-3xl font-bold tracking-tight text-aubergine">
             {appel.clienteId ? (
               <a
                 href={`/cabinet-ew/clientes/${appel.clienteId}`}
@@ -158,20 +158,20 @@ export default function BandeauAppelEnCours({ appel }: { appel: AppelEnCours }) 
         <div className="flex shrink-0 gap-6 text-right">
           {appel.connecte && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Depuis
               </p>
-              <p className="font-serif text-3xl font-semibold tabular-nums text-aubergine">
+              <p className="text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {chrono(ecoulees)}
               </p>
             </div>
           )}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+            <p className="text-xs font-bold uppercase tracking-wider text-mention">
               Crédit restant
             </p>
             <p
-              className={`font-serif text-3xl font-semibold tabular-nums ${
+              className={`text-3xl font-bold tabular-nums tracking-tight ${
                 bientotFini ? "text-prix" : "text-aubergine"
               }`}
             >
@@ -193,7 +193,7 @@ export default function BandeauAppelEnCours({ appel }: { appel: AppelEnCours }) 
           yeux avant même de décrocher. */}
       {(appel.derniereConsultation || (appel.notes?.length ?? 0) > 0) && (
         <div className="mt-5 rounded-2xl border border-gold/40 bg-gold/5 px-4 py-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-dark">
+          <p className="text-xs font-bold uppercase tracking-wider text-gold-dark">
             ✦ Avant de décrocher
           </p>
 
@@ -251,7 +251,7 @@ export default function BandeauAppelEnCours({ appel }: { appel: AppelEnCours }) 
 
       {(appel.proches?.length ?? 0) > 0 && (
         <div className="mt-5 border-t border-greige/60 pt-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+          <p className="text-xs font-bold uppercase tracking-wider text-mention">
             Les personnes qui comptent
           </p>
           <ul className="mt-2 space-y-1">
