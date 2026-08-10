@@ -106,6 +106,9 @@ export default function JournalPage() {
   const [loading, setLoading] = useState(true);
   const [accesRefuse, setAccesRefuse] = useState(false);
   const [moisChoisi, setMoisChoisi] = useState<string>("");
+  // Trois moments d'usage : après une permanence (aujourd'hui), le
+  // lendemain matin (hier), la fin de mois (mois).
+  const [periode, setPeriode] = useState<"jour" | "hier" | "mois">("mois");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -118,6 +121,10 @@ export default function JournalPage() {
       .then(([a, c]: [Appel[], ClienteRef[]]) => {
         setAppels(a);
         setClientes(c);
+        // Ouvrir sur aujourd'hui si la journée a commencé ; sinon sur le
+        // mois — un écran vide au réveil n'apprend rien.
+        const auj = cleJour(new Date().toISOString());
+        if (a.some((x) => cleJour(x.date) === auj)) setPeriode("jour");
       })
       .catch(() => setAccesRefuse(true))
       .finally(() => setLoading(false));
@@ -131,21 +138,52 @@ export default function JournalPage() {
 
   const moisActif = moisChoisi || moisDisponibles[0] || "";
 
-  // Regroupement par jour à l'intérieur du mois affiché
+  // Clés du jour et de la veille (heure locale)
+  const cleAujourdhui = cleJour(new Date().toISOString());
+  const cleHier = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return cleJour(d.toISOString());
+  }, []);
+
+  // Les appels réellement affichés, selon la période choisie
+  const affiches = useMemo(() => {
+    if (periode === "jour") return appels.filter((a) => cleJour(a.date) === cleAujourdhui);
+    if (periode === "hier") return appels.filter((a) => cleJour(a.date) === cleHier);
+    return appels.filter((a) => cleMois(a.date) === moisActif);
+  }, [appels, periode, moisActif, cleAujourdhui, cleHier]);
+
+  // Résumé des trois périodes — lisible AVANT même de cliquer
+  const resume = useMemo(() => {
+    const bilan = (liste: Appel[]) => ({
+      appels: liste.length,
+      encaisse: liste
+        .filter((a) => a.issue === "terminee")
+        .reduce((acc, a) => acc + a.montant, 0),
+    });
+    return {
+      jour: bilan(appels.filter((a) => cleJour(a.date) === cleAujourdhui)),
+      hier: bilan(appels.filter((a) => cleJour(a.date) === cleHier)),
+      mois: bilan(appels.filter((a) => cleMois(a.date) === moisActif)),
+    };
+  }, [appels, moisActif, cleAujourdhui, cleHier]);
+
+  // Regroupement par jour des appels affichés
   const jours = useMemo(() => {
-    const duMois = appels.filter((a) => cleMois(a.date) === moisActif);
     const parJour = new Map<string, Appel[]>();
-    for (const a of duMois) {
+    for (const a of affiches) {
       const k = cleJour(a.date);
       if (!parJour.has(k)) parJour.set(k, []);
       parJour.get(k)!.push(a);
     }
     return [...parJour.entries()].sort((x, y) => (x[0] < y[0] ? 1 : -1));
-  }, [appels, moisActif]);
+  }, [affiches]);
 
-  // Indicateurs du mois affiché — réservés à la praticienne
+  // Indicateurs de la PÉRIODE affichée — réservés à la praticienne.
+  // Ils suivent le filtre : regarder « Aujourd'hui » et lire l'encaissé
+  // du mois serait incohérent.
   const stats = useMemo(() => {
-    const duMois = appels.filter((a) => cleMois(a.date) === moisActif);
+    const duMois = affiches;
     const tenues = duMois.filter(
       (a) => a.issue === "terminee" || a.issue === "non_facturee"
     );
@@ -155,15 +193,18 @@ export default function JournalPage() {
     const total = facturees.reduce((acc, a) => acc + a.montant, 0);
     const secondes = tenues.reduce((acc, a) => acc + a.dureeSecondes, 0);
 
-    // Clientes distinctes ayant appelé ce mois-ci
+    // Clientes distinctes ayant appelé sur la période
     const idsDuMois = new Set(
       duMois.map((a) => a.clienteId).filter(Boolean) as string[]
     );
-    // Parmi elles, celles inscrites pendant ce même mois
+    // Parmi elles, les nouvelles : inscrites pendant la période affichée
     const inscriptions = new Map(clientes.map((c) => [c.id, c.inscriteLe]));
     const nouvelles = [...idsDuMois].filter((id) => {
       const inscrite = inscriptions.get(id);
-      return inscrite ? cleMois(inscrite) === moisActif : false;
+      if (!inscrite) return false;
+      if (periode === "jour") return cleJour(inscrite) === cleAujourdhui;
+      if (periode === "hier") return cleJour(inscrite) === cleHier;
+      return cleMois(inscrite) === moisActif;
     }).length;
 
     return {
@@ -176,7 +217,7 @@ export default function JournalPage() {
       clientes: idsDuMois.size,
       nouvelles,
     };
-  }, [appels, clientes, moisActif]);
+  }, [affiches, clientes, moisActif, periode, cleAujourdhui, cleHier]);
 
   if (loading)
     return <div className="mt-16 text-center text-mention">Chargement…</div>;
@@ -186,37 +227,87 @@ export default function JournalPage() {
     <CabinetShell>
       <CabinetNav />
 
-      <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-jakarta text-3xl font-bold tracking-tight text-aubergine">
-            Journal des appels
-          </h1>
-          {moisActif && (
-            <p className="mt-1 text-sm capitalize text-mention">
-              {libelleMois(moisActif)}
-            </p>
-          )}
-        </div>
+      <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
+        <h1 className="font-jakarta text-3xl font-bold tracking-tight text-aubergine">
+          Journal des appels
+        </h1>
 
-        <div className="flex items-center gap-2">
-          {moisDisponibles.length > 1 && (
-            <select
-              value={moisActif}
-              onChange={(e) => setMoisChoisi(e.target.value)}
-              aria-label="Choisir un mois"
-              className="rounded-full border border-greige bg-ivory px-4 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
-            >
-              {moisDisponibles.map((m) => (
-                <option key={m} value={m}>
-                  {libelleMois(m)}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
+        {periode === "mois" && moisDisponibles.length > 1 && (
+          <select
+            value={moisActif}
+            onChange={(e) => setMoisChoisi(e.target.value)}
+            aria-label="Choisir un mois"
+            className="rounded-full border border-greige bg-ivory px-4 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
+          >
+            {moisDisponibles.map((m) => (
+              <option key={m} value={m}>
+                {libelleMois(m)}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
-      {/* Indicateurs du mois — pour toi seule */}
+      {/* Trois périodes, chiffres visibles AVANT de cliquer : souvent le
+          nombre suffit, sans avoir à ouvrir. */}
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        {(
+          [
+            { cle: "jour", titre: "Aujourd'hui", bilan: resume.jour },
+            { cle: "hier", titre: "Hier", bilan: resume.hier },
+            {
+              cle: "mois",
+              titre: libelleMois(moisActif).split(" ")[0] || "Ce mois",
+              bilan: resume.mois,
+            },
+          ] as const
+        ).map((p) => {
+          const actif = periode === p.cle;
+          return (
+            <button
+              key={p.cle}
+              onClick={() => setPeriode(p.cle)}
+              aria-pressed={actif}
+              className={`rounded-2xl border px-3 py-3 text-left transition ${
+                actif
+                  ? "border-aubergine bg-aubergine text-cream shadow-card"
+                  : "border-greige/60 bg-ivory hover:border-cta/40"
+              }`}
+            >
+              <span
+                className={`block text-xs font-bold uppercase tracking-wider ${
+                  actif ? "text-cream/70" : "text-mention"
+                }`}
+              >
+                {p.titre}
+              </span>
+              <span
+                className={`mt-0.5 block text-xl font-bold tabular-nums tracking-tight sm:text-2xl ${
+                  actif ? "text-cream" : "text-aubergine"
+                }`}
+              >
+                {p.bilan.appels}
+                <span
+                  className={`ml-1 text-xs font-normal ${
+                    actif ? "text-cream/70" : "text-mention"
+                  }`}
+                >
+                  appel{p.bilan.appels > 1 ? "s" : ""}
+                </span>
+              </span>
+              <span
+                className={`block text-xs font-semibold tabular-nums ${
+                  actif ? "text-cream/80" : "text-prix"
+                }`}
+              >
+                {euros(p.bilan.encaisse)}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Indicateurs de la période — pour toi seule */}
       {stats.appels > 0 && (
         <section className="mt-5 rounded-3xl border border-greige/50 bg-ivory p-6 shadow-soft">
           <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
@@ -353,7 +444,13 @@ export default function JournalPage() {
       {jours.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-10 text-center">
           <p className="text-3xl">☾</p>
-          <p className="mt-2 text-sm text-mention">Aucun appel sur cette période.</p>
+          <p className="mt-2 text-sm text-mention">
+            {periode === "jour"
+              ? "Aucun appel aujourd'hui."
+              : periode === "hier"
+              ? "Aucun appel hier."
+              : "Aucun appel ce mois-ci."}
+          </p>
         </div>
       ) : (
         <div className="mt-6 space-y-7">
