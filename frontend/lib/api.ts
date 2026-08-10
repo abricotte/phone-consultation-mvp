@@ -79,6 +79,9 @@ export const api = {
       body: JSON.stringify({ enLigne }),
     }),
   adminGetJour: () => request("/admin/jour"),
+  adminGetAppels: () => request("/admin/appels"),
+  adminGetClientes: () => request("/admin/clientes"),
+  adminGetCliente: (id: string) => request(`/admin/clientes/${id}`),
   adminLancerConsultation: (telephone: string, forfaitCode: string) =>
     request("/admin/consultation-minutee", {
       method: "POST",

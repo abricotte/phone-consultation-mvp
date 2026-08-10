@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
+import CabinetNav from "@/components/CabinetNav";
 import {
   signeAstrologique,
   formatDateNaissance,
@@ -248,8 +249,10 @@ export default function AdminPage() {
   const disponible = statut?.statut === "disponible";
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-10">
-      <h1 className="font-serif text-3xl font-semibold text-aubergine">
+    <div className="mx-auto max-w-4xl px-5 py-10 font-jakarta">
+      <CabinetNav />
+
+      <h1 className="mt-8 font-serif text-3xl font-semibold text-aubergine">
         Espace praticienne
       </h1>
 

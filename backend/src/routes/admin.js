@@ -416,4 +416,218 @@ router.get('/jour', async (req, res) => {
   }
 });
 
+// ------------------------------------------------------------------
+// PLATEFORME CABINET — journal des appels + fiches clientes.
+// Routes sous authMiddleware + adminOnly (cf. router.use en tête) :
+// réservées à la praticienne. Ni email ni numéro de téléphone exposés
+// (contrainte de confidentialité existante) — l'identité se limite au
+// prénom + initiale du nom.
+// ------------------------------------------------------------------
+
+// Libellé lisible d'une session pour le journal
+function libelleFormule(s) {
+  if (s.type === 'forfait' || s.type === 'forfait_manuel') {
+    if (s.forfait_code === 'decouverte') return 'Consultation Découverte';
+    if (s.forfait_code === 'complete') return 'Consultation Complète';
+    return s.forfait_minutes ? `Forfait ${s.forfait_minutes} min` : 'Forfait';
+  }
+  return 'Consultation Immédiate';
+}
+
+// Issue lisible d'une session pour le journal
+function issueSession(s) {
+  if (s.status === 'completed') {
+    if (s.type === 'minute' && (!s.total_cost || parseFloat(s.total_cost) === 0)) {
+      return 'non_facturee'; // franchise < 60 s
+    }
+    return 'terminee';
+  }
+  if (s.status === 'cancelled') return 'manquee'; // jamais connectés / répondeur / annulé
+  if (s.status === 'active' || s.status === 'pending') return 'en_cours';
+  return s.status; // failed / refunded
+}
+
+// GET /api/admin/appels - Journal des appels (50 derniers)
+router.get('/appels', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+
+    const { data: sessions, error } = await supabase
+      .from('sessions')
+      .select(
+        'id, type, status, forfait_code, forfait_minutes, client_id, created_at, started_at, ended_at, duration_seconds, total_cost, montant_paye'
+      )
+      .eq('praticienne_id', p.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+
+    // Prénoms des clientes concernées (une seule requête)
+    const clientIds = [...new Set(sessions.map((s) => s.client_id).filter(Boolean))];
+    let nomsParId = {};
+    if (clientIds.length > 0) {
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, first_name, last_name')
+        .in('id', clientIds);
+      for (const u of users || []) {
+        nomsParId[u.id] = {
+          prenom: u.first_name || 'Cliente',
+          initiale: u.last_name ? `${u.last_name.charAt(0).toUpperCase()}.` : '',
+        };
+      }
+    }
+
+    res.json(
+      sessions.map((s) => ({
+        id: s.id,
+        date: s.started_at || s.created_at,
+        clienteId: s.client_id,
+        cliente: s.client_id
+          ? nomsParId[s.client_id] || { prenom: 'Cliente', initiale: '' }
+          : { prenom: 'Rendez-vous', initiale: '' }, // forfait manuel sans compte
+        formule: libelleFormule(s),
+        issue: issueSession(s),
+        dureeSecondes: s.duration_seconds || 0,
+        montant:
+          s.type === 'forfait_manuel'
+            ? parseFloat(s.montant_paye || 0)
+            : parseFloat(s.total_cost || 0),
+      }))
+    );
+  } catch (err) {
+    console.error('Erreur journal des appels:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// GET /api/admin/clientes - Liste des clientes (avec agrégats)
+router.get('/clientes', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+
+    const { data: clientes, error } = await supabase
+      .from('users')
+      .select('id, first_name, last_name, created_at')
+      .eq('role', 'client')
+      .order('created_at', { ascending: false })
+      .limit(200);
+
+    if (error) throw error;
+
+    const ids = clientes.map((c) => c.id);
+    let walletsParId = {};
+    let sessionsParId = {};
+
+    if (ids.length > 0) {
+      const [{ data: wallets }, { data: sessions }] = await Promise.all([
+        supabase
+          .from('wallets')
+          .select('user_id, balance')
+          .eq('praticienne_id', p.id)
+          .in('user_id', ids),
+        supabase
+          .from('sessions')
+          .select('client_id, status, started_at, duration_seconds')
+          .eq('praticienne_id', p.id)
+          .in('client_id', ids),
+      ]);
+
+      for (const w of wallets || []) walletsParId[w.user_id] = parseFloat(w.balance || 0);
+      for (const s of sessions || []) {
+        if (s.status !== 'completed') continue;
+        const agg = (sessionsParId[s.client_id] ||= { nb: 0, derniere: null });
+        agg.nb += 1;
+        if (s.started_at && (!agg.derniere || s.started_at > agg.derniere)) {
+          agg.derniere = s.started_at;
+        }
+      }
+    }
+
+    res.json(
+      clientes.map((c) => ({
+        id: c.id,
+        prenom: c.first_name || 'Cliente',
+        initiale: c.last_name ? `${c.last_name.charAt(0).toUpperCase()}.` : '',
+        inscriteLe: c.created_at,
+        solde: walletsParId[c.id] ?? 0,
+        nbConsultations: sessionsParId[c.id]?.nb ?? 0,
+        derniereConsultation: sessionsParId[c.id]?.derniere ?? null,
+      }))
+    );
+  } catch (err) {
+    console.error('Erreur liste clientes:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// GET /api/admin/clientes/:id - Fiche cliente (profil de lecture + historique)
+router.get('/clientes/:id', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+
+    const { data: cliente, error } = await supabase
+      .from('users')
+      .select('id, first_name, last_name, date_naissance, ascendant, created_at, role')
+      .eq('id', req.params.id)
+      .eq('role', 'client')
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!cliente) return res.status(404).json({ error: 'Cliente non trouvée' });
+
+    const [{ data: wallet }, { data: proches }, { data: sessions }] = await Promise.all([
+      supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', cliente.id)
+        .eq('praticienne_id', p.id)
+        .maybeSingle(),
+      supabase
+        .from('proches')
+        .select('prenom, date_naissance, ascendant, lien')
+        .eq('client_id', cliente.id)
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('sessions')
+        .select('id, type, status, forfait_code, forfait_minutes, created_at, started_at, duration_seconds, total_cost, montant_paye')
+        .eq('praticienne_id', p.id)
+        .eq('client_id', cliente.id)
+        .order('created_at', { ascending: false })
+        .limit(30),
+    ]);
+
+    res.json({
+      id: cliente.id,
+      prenom: cliente.first_name || 'Cliente',
+      initiale: cliente.last_name ? `${cliente.last_name.charAt(0).toUpperCase()}.` : '',
+      inscriteLe: cliente.created_at,
+      dateNaissance: cliente.date_naissance || null,
+      ascendant: cliente.ascendant || null,
+      solde: wallet ? parseFloat(wallet.balance || 0) : 0,
+      proches: (proches || []).map((pr) => ({
+        prenom: pr.prenom,
+        dateNaissance: pr.date_naissance,
+        ascendant: pr.ascendant || null,
+        lien: pr.lien,
+      })),
+      consultations: (sessions || []).map((s) => ({
+        id: s.id,
+        date: s.started_at || s.created_at,
+        formule: libelleFormule(s),
+        issue: issueSession(s),
+        dureeSecondes: s.duration_seconds || 0,
+        montant:
+          s.type === 'forfait_manuel'
+            ? parseFloat(s.montant_paye || 0)
+            : parseFloat(s.total_cost || 0),
+      })),
+    });
+  } catch (err) {
+    console.error('Erreur fiche cliente:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;
