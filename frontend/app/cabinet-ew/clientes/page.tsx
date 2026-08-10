@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
+import { chargerReglages, REGLAGES_DEFAUT, type Reglages } from "@/lib/reglages";
 
 interface Cliente {
   id: string;
@@ -34,6 +35,57 @@ const TRIS = [
   { code: "inscription", label: "Date d'inscription" },
 ];
 
+// FILTRES DE LECTURE — délibérément PAS des statuts.
+// Pas de « Gold / Silver » : dans ce métier, hiérarchiser des personnes
+// en fragilité émotionnelle et pousser à la dépense serait incompatible
+// avec la prévention de la dépendance. Ce sont des angles de lecture
+// pour la praticienne, jamais des étiquettes portées par les clientes.
+const FILTRES = [
+  { code: "toutes", label: "Toutes" },
+  { code: "fideles", label: "Les plus fidèles" },
+  { code: "engagees", label: "Les plus engagées" },
+  { code: "nouvelles", label: "Nouvelles du mois" },
+  { code: "dormant", label: "Crédit dormant" },
+  { code: "silence", label: "Sans nouvelles" },
+  { code: "jamais", label: "Jamais consulté" },
+] as const;
+
+type CodeFiltre = (typeof FILTRES)[number]["code"];
+
+function joursDepuis(iso: string | null): number | null {
+  if (!iso) return null;
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+}
+
+function memeMois(iso: string): boolean {
+  const d = new Date(iso);
+  const n = new Date();
+  return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth();
+}
+
+// Une cliente entre-t-elle dans cet angle de lecture ?
+function correspond(c: Cliente, f: CodeFiltre, r: Reglages): boolean {
+  const silence = joursDepuis(c.derniereConsultation);
+  switch (f) {
+    case "fideles":
+      return c.nbConsultations >= r.seuilHabituee;
+    case "engagees":
+      return c.totalDepense > 0;
+    case "nouvelles":
+      return memeMois(c.inscriteLe);
+    case "dormant":
+      // A du crédit mais n'a pas appelé depuis 30 jours — POUR
+      // INFORMATION : aucune relance n'est déclenchée nulle part.
+      return c.solde > 0 && (silence === null || silence > 30);
+    case "silence":
+      return silence !== null && silence > 60;
+    case "jamais":
+      return c.nbConsultations === 0;
+    default:
+      return true;
+  }
+}
+
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("fr-FR", {
@@ -58,6 +110,8 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [recherche, setRecherche] = useState("");
   const [tri, setTri] = useState("recentes");
+  const [filtre, setFiltre] = useState<CodeFiltre>("toutes");
+  const [reglages, setReglages] = useState<Reglages>(REGLAGES_DEFAUT);
   const [loading, setLoading] = useState(true);
   const [accesRefuse, setAccesRefuse] = useState(false);
 
@@ -67,6 +121,7 @@ export default function ClientesPage() {
       window.location.replace("/cabinet-ew");
       return;
     }
+    setReglages(chargerReglages());
     api
       .adminGetClientes()
       .then((data: Cliente[]) => setClientes(data))
@@ -74,15 +129,25 @@ export default function ClientesPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Compte par filtre, affiché sur chaque onglet
+  const comptes = useMemo(() => {
+    const c = (f: CodeFiltre) => clientes.filter((x) => correspond(x, f, reglages)).length;
+    return Object.fromEntries(FILTRES.map((f) => [f.code, c(f.code)])) as Record<
+      CodeFiltre,
+      number
+    >;
+  }, [clientes, reglages]);
+
   const visibles = useMemo(() => {
     const f = recherche.trim().toLowerCase();
+    const parFiltre = clientes.filter((c) => correspond(c, filtre, reglages));
     const filtrees = f
-      ? clientes.filter((c) =>
+      ? parFiltre.filter((c) =>
           `${c.prenom} ${c.nom} ${c.email ?? ""} ${c.telephone ?? ""}`
             .toLowerCase()
             .includes(f)
         )
-      : [...clientes];
+      : [...parFiltre];
 
     const parDate = (v: string | null) => (v ? new Date(v).getTime() : 0);
 
@@ -129,7 +194,41 @@ export default function ClientesPage() {
         </p>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-3">
+      {/* Angles de lecture — pas des statuts : voir le commentaire des
+          FILTRES. Ce sont des façons de relire ma clientèle, pour moi. */}
+      <div className="mt-5 flex flex-wrap gap-2">
+        {FILTRES.map((f) => {
+          const actif = filtre === f.code;
+          const n = comptes[f.code] ?? 0;
+          if (f.code !== "toutes" && n === 0) return null;
+          return (
+            <button
+              key={f.code}
+              onClick={() => setFiltre(f.code)}
+              aria-pressed={actif}
+              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+                actif
+                  ? "bg-aubergine text-cream shadow-card"
+                  : "border border-greige/60 bg-ivory text-mention hover:border-cta/40"
+              }`}
+            >
+              {f.label}
+              <span className={`ml-1.5 tabular-nums ${actif ? "text-cream/70" : "text-mention/70"}`}>
+                {n}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {filtre === "dormant" && (
+        <p className="mt-2 rounded-xl bg-blush px-4 py-2.5 text-xs text-mention">
+          Pour information seulement — aucune relance n&apos;est envoyée, ni
+          automatiquement ni autrement. Un silence s&apos;interprète.
+        </p>
+      )}
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         <input
           type="search"
           value={recherche}
@@ -179,8 +278,28 @@ export default function ClientesPage() {
                 </span>
 
                 <span className="min-w-44 flex-1">
-                  <span className="block truncate font-medium text-ink">
-                    {c.prenom} {c.nom}
+                  <span className="flex items-center gap-1.5">
+                    <span className="truncate font-medium text-ink">
+                      {c.prenom} {c.nom}
+                    </span>
+                    {/* Marqueurs discrets, sans libellé de statut :
+                        ✦ habituée · • nouvelle. Pour ma lecture seule. */}
+                    {c.nbConsultations >= reglages.seuilHabituee && (
+                      <span
+                        aria-label={`${c.nbConsultations} consultations`}
+                        title={`Habituée — ${c.nbConsultations} consultations`}
+                        className="shrink-0 text-gold"
+                      >
+                        ✦
+                      </span>
+                    )}
+                    {memeMois(c.inscriteLe) && (
+                      <span
+                        aria-label="Nouvelle ce mois-ci"
+                        title="Nouvelle ce mois-ci"
+                        className="h-1.5 w-1.5 shrink-0 rounded-full bg-statut-online"
+                      />
+                    )}
                   </span>
                   <span className="block truncate text-xs text-mention">
                     {formatTel(c.telephone)}
