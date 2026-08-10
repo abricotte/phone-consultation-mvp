@@ -42,7 +42,9 @@ export default function EspaceNav() {
       aria-label="Espace cliente"
       className="flex flex-wrap items-center gap-x-3 gap-y-2"
     >
-      <div className="flex w-full gap-1 overflow-x-auto rounded-full border border-greige/60 bg-ivory p-1 shadow-soft sm:w-auto sm:flex-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* flex-wrap plutôt que défilement horizontal : le dernier onglet
+          sortait de l'écran sur téléphone sans qu'on le voie. */}
+      <div className="flex w-full flex-wrap gap-1 rounded-3xl border border-greige/60 bg-ivory p-1 shadow-soft sm:w-auto sm:flex-1">
         {ONGLETS.map((o) => {
           const actif = pathname === o.href;
           return (

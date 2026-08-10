@@ -117,7 +117,7 @@ export default function ClientesPage() {
       <CabinetNav />
 
       <div className="mt-8">
-        <h1 className="font-serif text-3xl font-semibold text-aubergine">
+        <h1 className="font-jakarta text-3xl font-bold tracking-tight text-aubergine">
           Mes clientes
         </h1>
         <p className="mt-1 text-sm text-mention">
@@ -171,7 +171,7 @@ export default function ClientesPage() {
                 className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-greige/50 bg-ivory px-5 py-4 shadow-soft transition hover:-translate-y-0.5 hover:border-cta/40"
               >
                 <span
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-serif text-lg font-semibold ${
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-bold ${
                     TEINTES[i % TEINTES.length]
                   }`}
                 >

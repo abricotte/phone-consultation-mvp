@@ -7,6 +7,7 @@ const ONGLETS = [
   { href: "/cabinet-ew", label: "Cabinet", icone: "✦" },
   { href: "/cabinet-ew/journal", label: "Journal", icone: "☾" },
   { href: "/cabinet-ew/clientes", label: "Clientes", icone: "✧" },
+  { href: "/cabinet-ew/revenus", label: "Revenus", icone: "◈" },
 ];
 
 export default function CabinetNav() {
@@ -25,7 +26,9 @@ export default function CabinetNav() {
       aria-label="Cabinet praticienne"
       className="flex flex-wrap items-center gap-x-3 gap-y-2"
     >
-      <div className="flex w-full gap-1 overflow-x-auto rounded-full border border-greige/60 bg-ivory p-1 shadow-soft sm:w-auto sm:flex-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* flex-wrap plutôt que défilement horizontal : à quatre onglets,
+          le dernier sortait de l'écran sur téléphone sans qu'on le voie. */}
+      <div className="flex w-full flex-wrap gap-1 rounded-3xl border border-greige/60 bg-ivory p-1 shadow-soft sm:w-auto sm:flex-1">
         {ONGLETS.map((o) => {
           const actif =
             o.href === "/cabinet-ew"

@@ -100,57 +100,12 @@ interface ClienteRef {
   solde: number;
 }
 
-// Export CSV — séparateur ';' et BOM UTF-8 pour qu'Excel FR l'ouvre bien
-function exporterCSV(appels: Appel[], mois: string) {
-  const lignes = [
-    ["Date", "Heure", "Cliente", "Formule", "Durée (s)", "Issue", "Montant (€)"],
-    ...appels.map((a) => {
-      const d = new Date(a.date);
-      return [
-        d.toLocaleDateString("fr-FR"),
-        d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
-        `${a.cliente.prenom} ${a.cliente.initiale}`.trim(),
-        a.formule,
-        String(a.dureeSecondes || 0),
-        a.issue,
-        a.montant.toFixed(2).replace(".", ","),
-      ];
-    }),
-  ];
-
-  const csv = lignes
-    .map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";"))
-    .join("\r\n");
-
-  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `consultations-${mois}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
 export default function JournalPage() {
   const [appels, setAppels] = useState<Appel[]>([]);
   const [clientes, setClientes] = useState<ClienteRef[]>([]);
   const [loading, setLoading] = useState(true);
   const [accesRefuse, setAccesRefuse] = useState(false);
   const [moisChoisi, setMoisChoisi] = useState<string>("");
-  // Taux de provision pour charges — réglage personnel, gardé sur ce
-  // navigateur (aucune donnée à partager avec le serveur pour ça).
-  const [provision, setProvision] = useState(25);
-
-  useEffect(() => {
-    const v = localStorage.getItem("provisionPourcent");
-    if (v !== null) setProvision(Number(v));
-  }, []);
-
-  function majProvision(v: number) {
-    const borne = Math.min(90, Math.max(0, v || 0));
-    setProvision(borne);
-    localStorage.setItem("provisionPourcent", String(borne));
-  }
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -211,10 +166,6 @@ export default function JournalPage() {
       return inscrite ? cleMois(inscrite) === moisActif : false;
     }).length;
 
-    // Crédit encaissé mais pas encore consommé : comptablement une
-    // argent déposé par les clientes, pas encore un revenu acquis.
-    const creditEnCirculation = clientes.reduce((acc, c) => acc + (c.solde || 0), 0);
-
     return {
       appels: duMois.length,
       tenues: tenues.length,
@@ -224,8 +175,6 @@ export default function JournalPage() {
       panierMoyen: facturees.length ? total / facturees.length : 0,
       clientes: idsDuMois.size,
       nouvelles,
-      creditEnCirculation,
-      lignesDuMois: duMois,
     };
   }, [appels, clientes, moisActif]);
 
@@ -263,15 +212,6 @@ export default function JournalPage() {
                 </option>
               ))}
             </select>
-          )}
-          {stats.appels > 0 && (
-            <button
-              onClick={() => exporterCSV(stats.lignesDuMois, moisActif)}
-              title="Télécharger le mois en CSV (pour votre comptabilité)"
-              className="whitespace-nowrap rounded-full border border-cta-outline px-4 py-2 text-sm font-medium text-prix transition hover:bg-cta hover:text-cta-text"
-            >
-              ↓ Export CSV
-            </button>
           )}
         </div>
       </div>
@@ -344,63 +284,8 @@ export default function JournalPage() {
             </div>
           </div>
 
-          {/* Provision pour charges — ce qui reste vraiment */}
-          {stats.total > 0 && (
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-greige/50 pt-4">
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                <span className="text-sm text-mention">
-                  Encaissé{" "}
-                  <strong className="font-semibold text-aubergine">
-                    {euros(stats.total)}
-                  </strong>
-                </span>
-                <span className="text-sm text-mention">
-                  à provisionner{" "}
-                  <strong className="font-semibold text-amber-700">
-                    {euros((stats.total * provision) / 100)}
-                  </strong>
-                </span>
-                <span className="text-sm text-mention">
-                  net estimé{" "}
-                  <strong className="font-semibold text-statut-online">
-                    {euros(stats.total * (1 - provision / 100))}
-                  </strong>
-                </span>
-              </div>
-              <label className="flex items-center gap-2 text-xs text-mention">
-                Provision
-                <input
-                  type="number"
-                  min={0}
-                  max={90}
-                  value={provision}
-                  onChange={(e) => majProvision(Number(e.target.value))}
-                  className="w-16 rounded-lg border border-greige bg-ivory px-2 py-1 text-right text-ink focus:border-cta-outline focus:outline-none"
-                />
-                %
-              </label>
-            </div>
-          )}
-
-          {/* Crédit encaissé mais pas encore consommé (formulation choisie :
-              « déposé, pas encore utilisé » plutôt que « dette », plus juste
-              à lire et sans la charge anxieuse du terme comptable) */}
-          {stats.creditEnCirculation > 0 && (
-            <div className="mt-5 flex flex-wrap items-baseline justify-between gap-2 border-t border-greige/50 pt-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-mention">
-                  Crédit en circulation
-                </p>
-                <p className="text-xs text-mention">
-                  Encaissé mais pas encore consommé — vos clientes ont déposé
-                  cet argent sans l&apos;avoir encore utilisé.
-                </p>
-              </div>
-              <p className="text-2xl font-bold tabular-nums tracking-tight text-aubergine">
-                {euros(stats.creditEnCirculation)}
-              </p>
-            </div>
-          )}
+          {/* Provision, net estimé et crédit en circulation ont leur propre
+              onglet « Revenus » : le journal reste le registre des appels. */}
 
           {stats.manques >= 3 && stats.manques > stats.tenues && (
             <p className="mt-5 rounded-xl bg-amber-50 px-4 py-2.5 text-sm text-amber-800">

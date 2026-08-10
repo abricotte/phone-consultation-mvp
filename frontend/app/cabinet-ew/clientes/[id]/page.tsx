@@ -227,7 +227,7 @@ export default function FicheClientePage() {
             {signe ? signe.emoji : fiche.prenom.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <h1 className="font-serif text-3xl font-semibold text-aubergine">
+            <h1 className="font-jakarta text-3xl font-bold tracking-tight text-aubergine">
               {fiche.prenom} {fiche.nom}
             </h1>
             {signe ? (
@@ -280,18 +280,18 @@ export default function FicheClientePage() {
           </div>
           <div className="flex gap-6 sm:justify-end">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Crédit
               </p>
-              <p className="font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="text-2xl font-bold tabular-nums tracking-tight text-aubergine">
                 {euros(fiche.solde)}
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Total dépensé
               </p>
-              <p className="font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="text-2xl font-bold tabular-nums tracking-tight text-aubergine">
                 {euros(fiche.totalDepense)}
               </p>
             </div>
@@ -304,10 +304,10 @@ export default function FicheClientePage() {
         <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-6 shadow-soft">
           <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Panier moyen
               </p>
-              <p className="mt-0.5 font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {euros(panierMoyen)}
               </p>
               <p className="text-xs text-mention">
@@ -315,10 +315,10 @@ export default function FicheClientePage() {
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Consultations
               </p>
-              <p className="mt-0.5 font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {tenues.length}
               </p>
               <p className="text-xs text-mention">
@@ -326,20 +326,20 @@ export default function FicheClientePage() {
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Temps d&apos;écoute
               </p>
-              <p className="mt-0.5 font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {minutesTotales}
                 <span className="ml-1 text-base font-normal text-mention">min</span>
               </p>
               <p className="text-xs text-mention">{dureeMoyenne} min par appel</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+              <p className="text-xs font-bold uppercase tracking-wider text-mention">
                 Recharges
               </p>
-              <p className="mt-0.5 font-serif text-2xl font-semibold tabular-nums text-aubergine">
+              <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {fiche.recharges.length}
               </p>
               <p className="text-xs text-mention">
@@ -356,7 +356,7 @@ export default function FicheClientePage() {
       {/* ===== CARNET PRIVÉ ===== */}
       <section className="mt-5 rounded-3xl border border-gold/40 bg-gradient-to-br from-blush/50 to-ivory p-7 shadow-soft">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="font-serif text-xl font-semibold text-aubergine">
+          <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
             Mon carnet
           </h2>
           <p className="text-xs text-mention">
@@ -486,7 +486,7 @@ export default function FicheClientePage() {
 
       {/* Les personnes qui comptent */}
       <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
-        <h2 className="font-serif text-xl font-semibold text-aubergine">
+        <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
           Les personnes qui comptent
         </h2>
         {fiche.proches.length === 0 ? (
@@ -525,7 +525,7 @@ export default function FicheClientePage() {
 
       {/* Historique des consultations */}
       <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
-        <h2 className="font-serif text-xl font-semibold text-aubergine">
+        <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
           Ses consultations
         </h2>
         {fiche.consultations.length === 0 ? (
@@ -569,7 +569,7 @@ export default function FicheClientePage() {
 
       {/* Ses recharges */}
       <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
-        <h2 className="font-serif text-xl font-semibold text-aubergine">
+        <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
           Ses recharges
         </h2>
         {fiche.recharges.length === 0 ? (
