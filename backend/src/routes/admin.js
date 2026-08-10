@@ -718,6 +718,36 @@ router.get('/clientes/:id', async (req, res) => {
   }
 });
 
+// GET /api/admin/recharges - Les recharges encaissées (pour la cascade
+// de l'onglet Revenus : les frais Stripe se calculent par transaction).
+router.get('/recharges', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+
+    const { data: transactions, error } = await supabase
+      .from('transactions')
+      .select('id, amount, description, created_at, wallet_id')
+      .eq('praticienne_id', p.id)
+      .eq('type', 'credit')
+      .order('created_at', { ascending: false })
+      .limit(300);
+
+    if (error) throw error;
+
+    res.json(
+      (transactions || []).map((t) => ({
+        id: t.id,
+        date: t.created_at,
+        montant: parseFloat(t.amount || 0),
+        description: t.description,
+      }))
+    );
+  } catch (err) {
+    console.error('Erreur recharges:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // ------------------------------------------------------------------
 // CARNET DE NOTES — privé, jamais exposé aux clientes.
 // ------------------------------------------------------------------

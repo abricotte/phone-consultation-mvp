@@ -99,6 +99,7 @@ export const api = {
   adminDeleteNote: (noteId: string) =>
     request(`/admin/notes/${noteId}`, { method: "DELETE" }),
   adminGetSuivis: () => request("/admin/suivis"),
+  adminGetRecharges: () => request("/admin/recharges"),
   // Santé de la ligne téléphonique
   adminGetLigne: () => request("/admin/ligne"),
   adminAutotest: () => request("/admin/autotest"),
