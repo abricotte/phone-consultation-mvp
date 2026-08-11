@@ -5,7 +5,12 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
-import { chargerReglages, REGLAGES_DEFAUT, type Reglages } from "@/lib/reglages";
+import {
+  chargerReglages,
+  rafraichirReglages,
+  REGLAGES_DEFAUT,
+  type Reglages,
+} from "@/lib/reglages";
 
 interface Cliente {
   id: string;
@@ -121,7 +126,10 @@ export default function ClientesPage() {
       window.location.replace("/cabinet-ew");
       return;
     }
+    // chargerReglages() ne rend que le dernier état connu : si cette page
+    // est la première ouverte, il est vide. On interroge donc la base.
     setReglages(chargerReglages());
+    rafraichirReglages().then(setReglages).catch(() => {});
     api
       .adminGetClientes()
       .then((data: Cliente[]) => setClientes(data))

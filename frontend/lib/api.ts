@@ -145,6 +145,9 @@ export const api = {
     request("/admin/tarifs", { method: "PATCH", body: JSON.stringify(body) }),
   adminPatchTextes: (body: Record<string, unknown>) =>
     request("/admin/textes", { method: "PATCH", body: JSON.stringify(body) }),
+  // Réglages de pilotage — en base, plus dans le navigateur
+  adminPatchReglages: (body: Record<string, unknown>) =>
+    request("/admin/reglages", { method: "PATCH", body: JSON.stringify(body) }),
   // Changement de numéro, avec appel de vérification préalable
   adminDemanderVerifTel: (telephone: string) =>
     request("/admin/telephone/demander", {

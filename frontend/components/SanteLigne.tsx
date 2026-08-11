@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { chargerReglages, REGLAGES_DEFAUT } from "@/lib/reglages";
+import { chargerReglages, rafraichirReglages, REGLAGES_DEFAUT } from "@/lib/reglages";
 
 interface Ligne {
   disponible: boolean;
@@ -47,7 +47,12 @@ export default function SanteLigne({
   const [seuilBas, setSeuilBas] = useState(REGLAGES_DEFAUT.seuilTwilio);
 
   useEffect(() => {
+    // chargerReglages() ne rend que le dernier état connu, éventuellement
+    // vide ; la base tranche.
     setSeuilBas(chargerReglages().seuilTwilio);
+    rafraichirReglages()
+      .then((r) => setSeuilBas(r.seuilTwilio))
+      .catch(() => {});
     api
       .adminGetLigne()
       .then((l: Ligne) => setLigne(l))

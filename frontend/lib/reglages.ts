@@ -1,6 +1,12 @@
-// Réglages personnels de la praticienne — conservés sur SON appareil.
-// Ce sont des paramètres de pilotage (taux, seuils), pas des données
-// métier : ils n'ont pas à transiter par le serveur ni à être partagés.
+// Réglages de pilotage de la praticienne (taux fiscaux, seuils).
+//
+// Ils étaient conservés dans le localStorage. Conséquence observée : le
+// défaut URSSAF est passé à 26 % dans le code, mais un navigateur qui avait
+// mémorisé l'ancien 23 % continuait de l'afficher — le « net estimé » était
+// optimiste de 3 points sans que rien ne le signale. Ils vivent désormais
+// en base, et suivent Elena d'une machine à l'autre.
+
+import { api } from "@/lib/api";
 
 export interface Reglages {
   /** Assujettie à la TVA (auto-entreprise non franchisée) */
@@ -32,7 +38,8 @@ export const REGLAGES_DEFAUT: Reglages = {
 const CLE = "reglagesCabinet";
 
 // Bornes de sécurité : un réglage aberrant fausserait tous les calculs
-function borner(r: Partial<Reglages>): Reglages {
+function borner(r: Partial<Reglages> | null | undefined): Reglages {
+  r = r ?? {};
   const entre = (v: unknown, min: number, max: number, defaut: number) => {
     const n = Number(v);
     return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : defaut;
@@ -48,35 +55,62 @@ function borner(r: Partial<Reglages>): Reglages {
   };
 }
 
+// Dernier état connu du serveur, partagé par toutes les pages du cabinet.
+// Évite que Revenus et Clientes calculent avec des taux différents le temps
+// que chacune interroge l'API de son côté.
+let cache: Reglages | null = null;
+
+/** Valeur immédiate pour l'état initial d'un composant, sans attente. */
 export function chargerReglages(): Reglages {
-  if (typeof window === "undefined") return REGLAGES_DEFAUT;
+  return cache ?? REGLAGES_DEFAUT;
+}
+
+/** Va chercher les réglages en base. À appeler au montage d'une page. */
+export async function rafraichirReglages(): Promise<Reglages> {
+  const p = await api.adminGetProfil();
+  cache = borner((p as { reglages?: Partial<Reglages> }).reglages);
+  return cache;
+}
+
+/** Enregistre en base et met le cache à jour. */
+export async function enregistrerReglages(
+  r: Partial<Reglages>
+): Promise<Reglages> {
+  const res = (await api.adminPatchReglages(r)) as { reglages: Reglages };
+  cache = borner(res.reglages);
+  return cache;
+}
+
+/**
+ * Réglages restés dans CE navigateur, s'il y en a — à remonter une seule
+ * fois vers le serveur. C'est ainsi qu'un URSSAF à 23 % mémorisé ici avant
+ * que le défaut ne passe à 26 % cesse enfin de fausser le net affiché.
+ *
+ * @returns null s'il n'y a rien à reprendre
+ */
+export function lireReglagesLocaux(): Reglages | null {
+  if (typeof window === "undefined") return null;
   try {
     const brut = localStorage.getItem(CLE);
     if (brut) return borner(JSON.parse(brut));
 
-    // Reprise de l'ancien réglage : une provision unique devient URSSAF,
-    // l'impôt prenant sa valeur par défaut.
     const ancien = localStorage.getItem("provisionPourcent");
     if (ancien !== null) {
       return borner({ ...REGLAGES_DEFAUT, urssaf: Number(ancien) });
     }
   } catch {
-    /* réglages illisibles : on repart des valeurs par défaut */
+    /* réglages illisibles : rien à reprendre */
   }
-  return REGLAGES_DEFAUT;
+  return null;
 }
 
-export function enregistrerReglages(r: Partial<Reglages>): Reglages {
-  const complet = borner({ ...chargerReglages(), ...r });
-  if (typeof window !== "undefined") {
-    localStorage.setItem(CLE, JSON.stringify(complet));
+/** Une fois les réglages en base, la copie locale ne doit plus dériver. */
+export function oublierReglagesLocaux(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(CLE);
+    localStorage.removeItem("provisionPourcent");
+  } catch {
+    /* sans importance : la base fait foi désormais */
   }
-  return complet;
-}
-
-export function enregistrerReglage<K extends keyof Reglages>(
-  cle: K,
-  valeur: Reglages[K]
-): Reglages {
-  return enregistrerReglages({ [cle]: valeur } as Partial<Reglages>);
 }

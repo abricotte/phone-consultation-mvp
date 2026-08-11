@@ -7,7 +7,7 @@ import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
 import {
   chargerReglages,
-  enregistrerReglage,
+  rafraichirReglages,
   enregistrerReglages,
   type Reglages,
 } from "@/lib/reglages";
@@ -145,7 +145,9 @@ export default function RevenusPage() {
       window.location.replace("/cabinet-ew");
       return;
     }
-    setReglages(chargerReglages());
+    // Les réglages viennent de la base : ils suivent Elena d'un navigateur
+    // à l'autre au lieu de dériver dans le cache de chaque machine.
+    rafraichirReglages().then(setReglages).catch(() => {});
 
     Promise.all([
       api.adminGetAppels(),
@@ -162,8 +164,8 @@ export default function RevenusPage() {
   }, []);
 
   function majReglage(cle: keyof Reglages, valeur: number) {
-    const suivant = enregistrerReglage(cle, valeur);
-    setReglages(suivant);
+    setReglages((r) => ({ ...r, [cle]: valeur })); // réponse immédiate
+    enregistrerReglages({ [cle]: valeur }).then(setReglages).catch(() => {});
   }
 
   const moisDisponibles = useMemo(() => {
@@ -503,9 +505,13 @@ export default function RevenusPage() {
                 <input
                   type="checkbox"
                   checked={reglages.tvaActive}
-                  onChange={(e) =>
-                    setReglages(enregistrerReglages({ tvaActive: e.target.checked }))
-                  }
+                  onChange={(e) => {
+                    const actif = e.target.checked;
+                    setReglages((r) => ({ ...r, tvaActive: actif }));
+                    enregistrerReglages({ tvaActive: actif })
+                      .then(setReglages)
+                      .catch(() => {});
+                  }}
                   className="h-4 w-4 rounded border-greige accent-cta"
                 />
                 Je suis assujettie à la TVA

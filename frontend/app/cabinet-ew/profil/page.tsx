@@ -6,8 +6,9 @@ import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
 import {
-  chargerReglages,
   enregistrerReglages,
+  lireReglagesLocaux,
+  oublierReglagesLocaux,
   REGLAGES_DEFAUT,
   type Reglages,
 } from "@/lib/reglages";
@@ -19,6 +20,25 @@ interface Forfait {
   prix: number;
 }
 
+// Choix fermés plutôt que saisie libre : sur cette page, une faute de frappe
+// ne casse pas un écran, elle facture réellement une cliente.
+const PALIERS_POSSIBLES = [5, 10, 15, 20, 30, 45, 60, 90];
+const DUREES_FORFAIT = [15, 20, 30, 45, 60];
+
+// 1,90 € → 4,90 € par pas de 10 centimes
+const PRIX_MINUTE_POSSIBLES = Array.from(
+  { length: 31 },
+  (_, i) => Math.round((1.9 + i * 0.1) * 100) / 100
+);
+
+// Prix de forfait par pas de 5 €, jusqu'à 300 €
+const PRIX_FORFAIT_POSSIBLES = Array.from({ length: 60 }, (_, i) => (i + 1) * 5);
+
+// Bornes dures — miroir de backend/src/utils/tarifs.js, qui fait foi.
+const RATIO_FORFAIT_MIN = 0.5;
+
+const euros = (n: number) => n.toFixed(2).replace(".", ",") + " €";
+
 interface Profil {
   nomPublic: string;
   telephone: string | null;
@@ -26,6 +46,8 @@ interface Profil {
   numeroLigne: string | null;
   tarifs: {
     prixMinute: number;
+    /** Les prix affichés sont TTC (obligatoire pour des particuliers) */
+    prixTTC: boolean;
     creditMinimumMinutes: number;
     bipAvantFinSecondes: number;
     forfaits: Forfait[];
@@ -39,6 +61,7 @@ interface Profil {
   };
   textes: { tagline: string; signature: string; messageAbsence: string };
   autoOffHeures: number;
+  reglages: Reglages;
 }
 
 function formatTel(t: string | null): string {
@@ -71,12 +94,15 @@ export default function ProfilPraticiennePage() {
   const [loading, setLoading] = useState(true);
   const [accesRefuse, setAccesRefuse] = useState(false);
   const [reglages, setReglages] = useState<Reglages>(REGLAGES_DEFAUT);
+  const [reglagesErr, setReglagesErr] = useState("");
 
   // Tarifs
   const [prixMinute, setPrixMinute] = useState(2.9);
   const [creditMin, setCreditMin] = useState(5);
   const [forfaits, setForfaits] = useState<Forfait[]>([]);
-  const [paliers, setPaliers] = useState("10, 20, 30");
+  // Cases à cocher plutôt qu'un champ texte : une virgule oubliée dans
+  // « 10, 20, 30 » cassait la page de recharge des clientes.
+  const [paliers, setPaliers] = useState<number[]>([10, 20, 30]);
   const [maxMinutes, setMaxMinutes] = useState(90);
   const [tarifsMsg, setTarifsMsg] = useState("");
   const [tarifsErr, setTarifsErr] = useState("");
@@ -153,7 +179,6 @@ export default function ProfilPraticiennePage() {
       window.location.replace("/cabinet-ew");
       return;
     }
-    setReglages(chargerReglages());
     api
       .adminGetProfil()
       .then((p: Profil) => {
@@ -161,18 +186,78 @@ export default function ProfilPraticiennePage() {
         setPrixMinute(p.tarifs.prixMinute);
         setCreditMin(p.tarifs.creditMinimumMinutes);
         setForfaits(p.tarifs.forfaits);
-        setPaliers(p.tarifs.recharge.suggestionsMinutes.join(", "));
+        setPaliers(p.tarifs.recharge.suggestionsMinutes);
         setMaxMinutes(p.tarifs.recharge.maxMinutes);
         setTagline(p.textes.tagline);
         setSignature(p.textes.signature);
         setAbsence(p.textes.messageAbsence);
+        // La base fait foi. Si ce navigateur détient encore d'anciens
+        // réglages locaux, on les remonte UNE fois — c'est ainsi que le
+        // 23 % d'URSSAF resté figé ici retrouve le chemin du serveur —
+        // puis on efface la copie locale pour qu'elle ne dérive plus.
+        setReglages(p.reglages);
+        const locaux = lireReglagesLocaux();
+        if (locaux) {
+          enregistrerReglages(locaux)
+            .then(setReglages)
+            .catch(() => {})
+            .finally(oublierReglagesLocaux);
+        }
       })
       .catch(() => setAccesRefuse(true))
       .finally(() => setLoading(false));
   }, []);
 
+  // Les réglages partent au serveur : ils doivent suivre Elena d'un
+  // navigateur à l'autre, pas rester dans le cache d'une machine.
   function majReglage<K extends keyof Reglages>(cle: K, v: Reglages[K]) {
-    setReglages(enregistrerReglages({ [cle]: v } as Partial<Reglages>));
+    setReglages({ ...reglages, [cle]: v }); // réponse immédiate à l'écran
+    setReglagesErr("");
+    enregistrerReglages({ [cle]: v })
+      .then(setReglages)
+      .catch(() =>
+        setReglagesErr("Réglage non enregistré — vérifiez votre connexion.")
+      );
+  }
+
+  // Les tarifs enregistrés, pour savoir ce qui a bougé et pouvoir annuler.
+  const initial = profil?.tarifs;
+  const modifie =
+    !!initial &&
+    (prixMinute !== initial.prixMinute ||
+      creditMin !== initial.creditMinimumMinutes ||
+      maxMinutes !== initial.recharge.maxMinutes ||
+      JSON.stringify(paliers) !== JSON.stringify(initial.recharge.suggestionsMinutes) ||
+      JSON.stringify(forfaits) !== JSON.stringify(initial.forfaits));
+
+  function annulerTarifs() {
+    if (!initial) return;
+    setPrixMinute(initial.prixMinute);
+    setCreditMin(initial.creditMinimumMinutes);
+    setMaxMinutes(initial.recharge.maxMinutes);
+    setPaliers(initial.recharge.suggestionsMinutes);
+    setForfaits(initial.forfaits);
+    setTarifsErr("");
+    setTarifsMsg("");
+  }
+
+  // Blocages durs — miroir de backend/src/utils/tarifs.js, qui reste
+  // l'autorité. Ici ils servent à expliquer AVANT d'essayer d'enregistrer.
+  const blocages: string[] = [];
+  if (paliers.length === 0) {
+    blocages.push("Aucun palier de recharge coché : vos clientes n'auraient rien à choisir.");
+  }
+  for (const f of forfaits) {
+    if (!f.nom.trim()) {
+      blocages.push("Un forfait n'a pas de nom.");
+      continue;
+    }
+    const parMinute = f.minutes > 0 ? f.prix / f.minutes : 0;
+    if (parMinute < prixMinute * RATIO_FORFAIT_MIN) {
+      blocages.push(
+        `« ${f.nom} » revient à ${euros(parMinute)}/min, moins de la moitié de votre tarif — vérifiez : ${f.prix} € pour ${f.minutes} min.`
+      );
+    }
   }
 
   async function enregistrerTarifs(e: React.FormEvent) {
@@ -181,16 +266,30 @@ export default function ProfilPraticiennePage() {
     setTarifsErr("");
     setTarifsEnCours(true);
     try {
-      const suggestions = paliers
-        .split(",")
-        .map((x) => Number(x.trim()))
-        .filter((x) => Number.isFinite(x) && x > 0);
       await api.adminPatchTarifs({
         prixMinute,
         creditMinimumMinutes: creditMin,
         forfaits,
-        recharge: { suggestionsMinutes: suggestions, maxMinutes },
+        recharge: { suggestionsMinutes: [...paliers].sort((a, b) => a - b), maxMinutes },
       });
+      // Nouvelle référence : le récapitulatif se referme, et « Annuler »
+      // revient désormais à ces valeurs-ci.
+      const suivants = [...paliers].sort((a, b) => a - b);
+      setPaliers(suivants);
+      setProfil((p) =>
+        p
+          ? {
+              ...p,
+              tarifs: {
+                ...p.tarifs,
+                prixMinute,
+                creditMinimumMinutes: creditMin,
+                forfaits,
+                recharge: { ...p.tarifs.recharge, suggestionsMinutes: suivants, maxMinutes },
+              },
+            }
+          : p
+      );
       setTarifsMsg("Tarifs enregistrés — ils s'appliquent immédiatement.");
     } catch (err) {
       setTarifsErr(err instanceof Error ? err.message : "Erreur");
@@ -358,15 +457,17 @@ export default function ProfilPraticiennePage() {
               <span className="mb-1 block text-sm font-medium text-aubergine">
                 Prix à la minute (€)
               </span>
-              <input
-                type="number"
-                step={0.1}
-                min={0.5}
-                max={50}
+              <select
                 value={prixMinute}
                 onChange={(e) => setPrixMinute(Number(e.target.value))}
                 className={champ}
-              />
+              >
+                {PRIX_MINUTE_POSSIBLES.map((p) => (
+                  <option key={p} value={p}>
+                    {euros(p)}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-aubergine">
@@ -396,64 +497,120 @@ export default function ProfilPraticiennePage() {
             </label>
           </div>
 
-          <label className="block">
+          <div>
             <span className="mb-1 block text-sm font-medium text-aubergine">
-              Paliers de recharge proposés (minutes, séparées par des virgules)
+              Paliers de recharge proposés
             </span>
-            <input
-              type="text"
-              value={paliers}
-              onChange={(e) => setPaliers(e.target.value)}
-              placeholder="10, 20, 30"
-              className={champ}
-            />
-          </label>
+            <p className="mb-2 text-xs text-mention">
+              Cochez les durées que vous proposez. Le prix se calcule tout seul.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {PALIERS_POSSIBLES.map((m) => {
+                const coche = paliers.includes(m);
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    aria-pressed={coche}
+                    onClick={() =>
+                      setPaliers((p) =>
+                        p.includes(m) ? p.filter((x) => x !== m) : [...p, m].sort((a, b) => a - b)
+                      )
+                    }
+                    className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                      coche
+                        ? "border-aubergine bg-aubergine text-cream"
+                        : "border-greige/60 bg-white text-mention hover:border-aubergine/40 hover:text-aubergine"
+                    }`}
+                  >
+                    {m} min
+                    <span className="ml-1.5 text-xs opacity-70">
+                      {(m * prixMinute).toFixed(2).replace(".", ",")} €
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {paliers.length === 0 && (
+              <p className="mt-2 text-xs text-red-600">
+                Cochez au moins une durée, sinon vos clientes n'auront rien à choisir.
+              </p>
+            )}
+          </div>
 
           <div>
             <p className="mb-2 text-sm font-medium text-aubergine">Mes forfaits</p>
+            {/* Une ligne par forfait, unités dans les champs. Le prix/minute
+                implicite s'affiche à droite : c'est lui qui rend une faute
+                de frappe évidente (12 € pour 45 min → 0,27 €/min). */}
             <div className="space-y-2">
-              {forfaits.map((f, i) => (
-                <div key={f.code} className="flex flex-wrap items-center gap-2">
-                  <input
-                    type="text"
-                    value={f.nom}
-                    onChange={(e) => {
-                      const s = [...forfaits];
-                      s[i] = { ...f, nom: e.target.value };
-                      setForfaits(s);
-                    }}
-                    className={`${champ} min-w-48 flex-1`}
-                  />
-                  <input
-                    type="number"
-                    min={5}
-                    max={240}
-                    value={f.minutes}
-                    onChange={(e) => {
-                      const s = [...forfaits];
-                      s[i] = { ...f, minutes: Number(e.target.value) };
-                      setForfaits(s);
-                    }}
-                    className={`${champ} w-24`}
-                    aria-label="Durée en minutes"
-                  />
-                  <span className="text-sm text-mention">min</span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={2000}
-                    value={f.prix}
-                    onChange={(e) => {
-                      const s = [...forfaits];
-                      s[i] = { ...f, prix: Number(e.target.value) };
-                      setForfaits(s);
-                    }}
-                    className={`${champ} w-24`}
-                    aria-label="Prix en euros"
-                  />
-                  <span className="text-sm text-mention">€</span>
-                </div>
-              ))}
+              {forfaits.map((f, i) => {
+                const parMinute = f.minutes > 0 ? f.prix / f.minutes : 0;
+                const suspect = parMinute < prixMinute * RATIO_FORFAIT_MIN;
+                return (
+                  <div
+                    key={f.code}
+                    className={`flex flex-wrap items-center gap-2 rounded-2xl border p-2 ${
+                      suspect ? "border-red-300 bg-red-50/50" : "border-transparent"
+                    }`}
+                  >
+                    <input
+                      type="text"
+                      value={f.nom}
+                      onChange={(e) => {
+                        const s = [...forfaits];
+                        s[i] = { ...f, nom: e.target.value };
+                        setForfaits(s);
+                      }}
+                      className={`${champ} min-w-40 flex-1`}
+                      aria-label="Nom du forfait"
+                    />
+                    <select
+                      value={f.minutes}
+                      onChange={(e) => {
+                        const s = [...forfaits];
+                        s[i] = { ...f, minutes: Number(e.target.value) };
+                        setForfaits(s);
+                      }}
+                      className={`${champ} w-28`}
+                      aria-label="Durée du forfait"
+                    >
+                      {[...new Set([...DUREES_FORFAIT, f.minutes])]
+                        .sort((a, b) => a - b)
+                        .map((m) => (
+                          <option key={m} value={m}>
+                            {m} min
+                          </option>
+                        ))}
+                    </select>
+                    <select
+                      value={f.prix}
+                      onChange={(e) => {
+                        const s = [...forfaits];
+                        s[i] = { ...f, prix: Number(e.target.value) };
+                        setForfaits(s);
+                      }}
+                      className={`${champ} w-28`}
+                      aria-label="Prix du forfait"
+                    >
+                      {[...new Set([...PRIX_FORFAIT_POSSIBLES, f.prix])]
+                        .sort((a, b) => a - b)
+                        .map((p) => (
+                          <option key={p} value={p}>
+                            {p} €
+                          </option>
+                        ))}
+                    </select>
+                    <span
+                      className={`w-24 text-right text-xs tabular-nums ${
+                        suspect ? "font-bold text-red-600" : "text-mention"
+                      }`}
+                    >
+                      {euros(parMinute)}/min
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -463,9 +620,72 @@ export default function ProfilPraticiennePage() {
           {tarifsErr && (
             <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{tarifsErr}</p>
           )}
-          <button type="submit" disabled={tarifsEnCours} className={bouton}>
-            {tarifsEnCours ? "Enregistrement…" : "Enregistrer mes tarifs"}
-          </button>
+
+          {/* RÉCAPITULATIF DE CONTRÔLE — n'apparaît qu'après modification.
+              Il énonce ce que les clientes verront, en toutes lettres : c'est
+              le dernier moment où une erreur se rattrape sans coûter. */}
+          {modifie && (
+            <div className="rounded-2xl border border-gold/50 bg-gold/5 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-gold-dark">
+                ✦ Vos clientes verront
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-ink">
+                <strong>{euros(prixMinute)}/min</strong> · recharge minimum{" "}
+                {creditMin} min = <strong>{euros(creditMin * prixMinute)}</strong> ·
+                maximum {maxMinutes} min ={" "}
+                <strong>{euros(maxMinutes * prixMinute)}</strong>.
+              </p>
+              {forfaits.length > 0 && (
+                <p className="mt-1 text-sm leading-relaxed text-ink">
+                  {forfaits.map((f, i) => (
+                    <span key={f.code}>
+                      {i > 0 && " "}
+                      {f.nom} {f.minutes} min = <strong>{euros(f.prix)}</strong> (
+                      {euros(f.minutes > 0 ? f.prix / f.minutes : 0)}/min).
+                    </span>
+                  ))}
+                </p>
+              )}
+              {paliers.length > 0 && (
+                <p className="mt-1 text-xs text-mention">
+                  Paliers proposés : {paliers.map((m) => `${m} min`).join(" · ")}
+                </p>
+              )}
+
+              {blocages.length > 0 ? (
+                <ul className="mt-3 space-y-1 border-t border-gold/30 pt-3">
+                  {blocages.map((b) => (
+                    <li key={b} className="text-sm font-medium text-red-600">
+                      ✗ {b}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={annulerTarifs}
+                  className="rounded-full border border-greige/60 bg-white px-5 py-2 text-sm font-medium text-mention transition hover:text-aubergine"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={tarifsEnCours || blocages.length > 0}
+                  className={`${bouton} disabled:cursor-not-allowed disabled:opacity-40`}
+                >
+                  {tarifsEnCours ? "Enregistrement…" : "Confirmer ces tarifs"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!modifie && (
+            <p className="text-sm text-mention">
+              Modifiez un tarif pour voir ce que vos clientes verront.
+            </p>
+          )}
         </form>
       </Section>
 
