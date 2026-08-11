@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { useElenaStatus, type ElenaStatus } from "@/components/useElenaStatus";
+import {
+  useElenaPresence,
+  heureRetour,
+  type ElenaStatus,
+} from "@/components/useElenaStatus";
 
 // Hero de l'espace cliente : LE geste le plus direct.
 // Statut d'Elena + crédit + gros bouton d'appel + recharge express en
@@ -37,8 +41,10 @@ export default function HeroConsultation({
   pasMinutes = 5,
   statutDemo,
 }: Props) {
-  const statutReel = useElenaStatus();
-  const statut = statutDemo ?? statutReel;
+  const presence = useElenaPresence();
+  const statut = statutDemo ?? presence.statut;
+  // « De retour vers 15 h » — porte qui dit quand elle rouvre
+  const retour = heureRetour(presence.retourPrevu);
 
   const [appelEnCours, setAppelEnCours] = useState(false);
   const [rechargeEnCours, setRechargeEnCours] = useState<number | null>(null);
@@ -130,12 +136,20 @@ export default function HeroConsultation({
             <span className="inline-flex items-center gap-2 text-xs font-semibold text-amber-700">
               <span className="h-2 w-2 rounded-full bg-amber-500" />
               Elena est en consultation
+              {retour ? ` — de retour vers ${retour}` : ""}
             </span>
           )}
           {statut === "hors_ligne" && (
-            <span className="inline-flex items-center gap-2 text-xs font-medium text-mention">
-              <span className="h-2 w-2 rounded-full bg-statut-offline" />
-              Elena n&apos;est pas en ligne
+            <span className="inline-flex flex-col gap-0.5">
+              <span className="inline-flex items-center gap-2 text-xs font-medium text-mention">
+                <span className="h-2 w-2 rounded-full bg-statut-offline" />
+                Elena n&apos;est pas en ligne
+              </span>
+              {presence.heuresIndicatives && (
+                <span className="pl-4 text-xs italic text-mention/80">
+                  {presence.heuresIndicatives}
+                </span>
+              )}
             </span>
           )}
         </div>

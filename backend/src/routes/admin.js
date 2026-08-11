@@ -1434,6 +1434,7 @@ router.get('/profil', async (req, res) => {
         tagline: b.tagline || '',
         signature: b.signature || '',
         messageAbsence: b.message_absence || '',
+        heuresIndicatives: b.heures_indicatives || '',
       },
       messagesVocaux: p.messages_vocaux || {},
       autoOffHeures: p.auto_off_heures ?? 4,
@@ -1923,6 +1924,13 @@ router.patch('/textes', async (req, res) => {
       const v = texte(req.body.messageAbsence, 300);
       if (v === null) return res.status(400).json({ error: "Message d'absence invalide." });
       b.message_absence = v;
+    }
+    if ('heuresIndicatives' in req.body) {
+      // « Je suis généralement en ligne en soirée » — un texte libre, pas
+      // un planning : affiché aux clientes quand Elena est hors ligne.
+      const v = texte(req.body.heuresIndicatives, 160);
+      if (v === null) return res.status(400).json({ error: 'Heures indicatives invalides.' });
+      b.heures_indicatives = v;
     }
 
     const { error } = await supabase

@@ -59,7 +59,12 @@ interface Profil {
       maxMinutes: number;
     };
   };
-  textes: { tagline: string; signature: string; messageAbsence: string };
+  textes: {
+    tagline: string;
+    signature: string;
+    messageAbsence: string;
+    heuresIndicatives?: string;
+  };
   autoOffHeures: number;
   reglages: Reglages;
 }
@@ -112,6 +117,7 @@ export default function ProfilPraticiennePage() {
   const [tagline, setTagline] = useState("");
   const [signature, setSignature] = useState("");
   const [absence, setAbsence] = useState("");
+  const [heuresIndicatives, setHeuresIndicatives] = useState("");
   const [textesMsg, setTextesMsg] = useState("");
   const [textesEnCours, setTextesEnCours] = useState(false);
 
@@ -191,6 +197,7 @@ export default function ProfilPraticiennePage() {
         setTagline(p.textes.tagline);
         setSignature(p.textes.signature);
         setAbsence(p.textes.messageAbsence);
+        setHeuresIndicatives(p.textes.heuresIndicatives || "");
         // La base fait foi. Si ce navigateur détient encore d'anciens
         // réglages locaux, on les remonte UNE fois — c'est ainsi que le
         // 23 % d'URSSAF resté figé ici retrouve le chemin du serveur —
@@ -310,6 +317,7 @@ export default function ProfilPraticiennePage() {
         tagline,
         signature,
         messageAbsence: absence,
+        heuresIndicatives,
       });
       setTextesMsg("Textes enregistrés.");
     } catch (err) {
@@ -775,6 +783,24 @@ export default function ProfilPraticiennePage() {
             />
             <span className="mt-1 block text-xs text-mention">
               Laissez vide pour le message générique.
+            </span>
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-aubergine">
+              Mes heures habituelles
+            </span>
+            <input
+              type="text"
+              maxLength={160}
+              value={heuresIndicatives}
+              onChange={(e) => setHeuresIndicatives(e.target.value)}
+              placeholder="Je suis généralement en ligne en soirée, du mardi au samedi"
+              className={champ}
+            />
+            <span className="mt-1 block text-xs text-mention">
+              Une indication, pas un planning — affichée à vos clientes quand
+              vous êtes hors ligne, pour éviter les appels espérés à 8 h du
+              matin.
             </span>
           </label>
 

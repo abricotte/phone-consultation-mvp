@@ -187,7 +187,8 @@ export default function ProfilPage() {
         </span>
         <p className="text-sm text-ink">
           <strong className="font-semibold text-aubergine">Strictement privé</strong>{" "}
-          — visible uniquement par vous et par Elena.
+          — Elena voit votre prénom, votre date de naissance et vos proches.
+          Personne d&apos;autre.
         </p>
       </div>
 

@@ -55,10 +55,34 @@ router.post('/visite', async (req, res) => {
 });
 
 // GET /api/config/statut - Statut public (indicateur temps réel, 3 états)
+//
+// retourPrevu : « Elena est en consultation — de retour vers 15 h ».
+// La différence entre une porte close et une porte qui dit quand elle
+// rouvre — c'est cette information qui déclenche le bon appel au bon
+// moment. Donnée non sensible : c'est l'heure de fin maximale de la
+// consultation en cours, jamais rien sur la cliente concernée.
+//
+// heuresIndicatives : « Je suis généralement en ligne en soirée » —
+// texte réglé par la praticienne dans son profil, affiché quand elle
+// est hors ligne pour éviter les appels espérés à 8 h du matin.
 router.get('/statut', async (req, res) => {
   try {
-    const { statut, enLigne } = await getStatutEnLigne();
-    res.json({ statut, enLigne }); // enLigne conservé pour compatibilité
+    const { statut, enLigne, retourPrevu } = await getStatutEnLigne();
+
+    let heuresIndicatives = null;
+    try {
+      const p = await getPraticienne();
+      heuresIndicatives = p.config_branding?.heures_indicatives || null;
+    } catch {
+      /* le statut doit répondre même si la fiche praticienne échoue */
+    }
+
+    res.json({
+      statut,
+      enLigne, // conservé pour compatibilité
+      retourPrevu: statut === 'en_consultation' ? retourPrevu : null,
+      heuresIndicatives,
+    });
   } catch (err) {
     console.error('Erreur statut public:', err);
     res.status(500).json({ error: 'Erreur serveur' });

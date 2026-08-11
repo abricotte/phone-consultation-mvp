@@ -139,6 +139,20 @@ export default function DashboardPage() {
   // l'intendance, elles vivent dans l'onglet Compte.
   const consultationsPassees = transactions.filter((tx) => tx.type === "debit");
 
+  // « Votre dernière consultation : il y a 12 jours » — une existence
+  // douce du temps qui passe, sans injonction. Prépare les jalons
+  // (« notre 12e consultation ensemble ») sans les précéder.
+  function depuisDerniere(): string | null {
+    if (consultationsPassees.length === 0) return null;
+    const jours = Math.floor(
+      (Date.now() - new Date(consultationsPassees[0].createdAt).getTime()) /
+        86_400_000
+    );
+    if (jours <= 0) return "aujourd'hui";
+    if (jours === 1) return "hier";
+    return `il y a ${jours} jours`;
+  }
+
   // « 20 minutes avec Elena » plutôt que « −5,80 € » : la monnaie de cet
   // espace est le temps passé ensemble, pas l'euro.
   function minutesDeConsultation(description: string): string {
@@ -249,6 +263,9 @@ export default function DashboardPage() {
           </ul>
         )}
         <p className="mt-4 text-xs text-mention">
+          {depuisDerniere() && (
+            <>Votre dernière consultation : {depuisDerniere()} · </>
+          )}
           Le détail de vos recharges et débits se trouve dans{" "}
           <a href="/compte" className="underline hover:text-aubergine">
             Mon compte
