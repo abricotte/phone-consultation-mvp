@@ -278,15 +278,20 @@ export default function HeroConsultation({
           })}
         </div>
 
-        {/* Autre durée — replié, dans le même bloc */}
-        <div className="mt-3 text-center">
+        {/* CHOISIR SA DURÉE — un bouton, plus un lien discret.
+            Les trois raccourcis sont un confort ; ils ne doivent pas
+            faire croire que le choix se limite à eux. Le but est
+            justement d'appeler librement, pour la durée qu'on veut :
+            cette porte-là doit se voir autant que les raccourcis. */}
+        <div className="mt-3">
           {!autreOuvert ? (
             <button
               type="button"
               onClick={() => setAutreOuvert(true)}
-              className="text-sm font-medium text-prix transition-colors hover:text-cta"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-cta/45 bg-cream/40 px-5 py-3.5 text-base font-semibold text-prix transition hover:border-cta hover:bg-ivory"
             >
-              Autre durée
+              Choisir une autre durée
+              <span aria-hidden className="text-lg leading-none">›</span>
             </button>
           ) : (
             <div className="space-y-3">
@@ -318,6 +323,15 @@ export default function HeroConsultation({
                 {rechargeEnCours === autreMinutes
                   ? "…"
                   : `Recharger ${autreMinutes} min — ${prixDe(autreMinutes, prixMinuteCents)}`}
+              </button>
+              {/* Une porte qui s'ouvre doit pouvoir se refermer : sans
+                  cela, il fallait recharger la page pour revenir. */}
+              <button
+                type="button"
+                onClick={() => setAutreOuvert(false)}
+                className="mx-auto block text-xs text-mention transition hover:text-aubergine"
+              >
+                Retour aux durées rapides
               </button>
             </div>
           )}
