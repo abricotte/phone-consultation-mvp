@@ -19,6 +19,12 @@ const {
   estMobileFrancais: estNumeroFrValide,
 } = require('../utils/telephone');
 
+// Réglages de pilotage — bornés côté serveur (cf. utils/reglages.js)
+const { borner: bornerReglages } = require('../utils/reglages');
+
+// Garde-fous tarifaires — le serveur fait foi (cf. utils/tarifs.js)
+const { verifierPrixMinute, verifierForfait } = require('../utils/tarifs');
+
 // Réservé à la praticienne (rôle consultant) et aux admins
 function adminOnly(req, res, next) {
   if (req.user.role !== 'admin' && req.user.role !== 'consultant') {
@@ -1382,6 +1388,10 @@ router.get('/profil', async (req, res) => {
       numeroLigne: process.env.TWILIO_PHONE_NUMBER || null,
       tarifs: {
         prixMinute: t.prix_minute ?? 2.9,
+        // Les prix affichés sont-ils TTC (ce que la cliente paie) ou HT ?
+        // Par défaut TTC : c'est le comportement historique du calcul de
+        // revenus, et le prix annoncé sur le site est celui qui est débité.
+        prixTTC: t.prix_ttc !== false,
         creditMinimumMinutes: t.credit_minimum_minutes ?? 5,
         bipAvantFinSecondes: t.bip_avant_fin_secondes ?? 120,
         forfaits: t.forfaits ?? [],
@@ -1400,6 +1410,8 @@ router.get('/profil', async (req, res) => {
       },
       messagesVocaux: p.messages_vocaux || {},
       autoOffHeures: p.auto_off_heures ?? 4,
+      // Réglages de pilotage : en base désormais, plus dans le navigateur.
+      reglages: bornerReglages(t.reglages),
     });
   } catch (err) {
     console.error('Erreur profil praticienne:', err);
@@ -1592,10 +1604,18 @@ router.patch('/tarifs', async (req, res) => {
       return Number.isFinite(n) && n >= min && n <= max ? n : null;
     };
 
+    // Garde-fous tarifaires : cf. utils/tarifs.js
     if ('prixMinute' in req.body) {
-      const v = nombre(req.body.prixMinute, 0.5, 50);
-      if (v === null) return res.status(400).json({ error: 'Prix à la minute invalide (0,50 € à 50 €).' });
-      suivant.prix_minute = v;
+      const erreur = verifierPrixMinute(req.body.prixMinute);
+      if (erreur) return res.status(400).json({ error: erreur });
+      suivant.prix_minute = Number(req.body.prixMinute);
+    }
+
+    if ('prixTTC' in req.body) {
+      if (typeof req.body.prixTTC !== 'boolean') {
+        return res.status(400).json({ error: 'Le choix TTC/HT doit être vrai ou faux.' });
+      }
+      suivant.prix_ttc = req.body.prixTTC;
     }
     if ('creditMinimumMinutes' in req.body) {
       const v = nombre(req.body.creditMinimumMinutes, 1, 60);
@@ -1609,6 +1629,11 @@ router.patch('/tarifs', async (req, res) => {
     }
 
     if (Array.isArray(req.body.forfaits)) {
+      // Tarif à la minute effectif APRÈS cette requête : un forfait doit être
+      // jugé à l'aune du prix qu'il aura, pas de celui qu'il avait.
+      const prixMinuteEffectif =
+        suivant.prix_minute ?? actuel.prix_minute ?? 2.9;
+
       const forfaits = [];
       for (const f of req.body.forfaits) {
         const minutes = nombre(f.minutes, 5, 240);
@@ -1618,6 +1643,10 @@ router.patch('/tarifs', async (req, res) => {
         if (!code || !nom || minutes === null || prix === null) {
           return res.status(400).json({ error: 'Forfait invalide (code, nom, durée 5-240 min, prix).' });
         }
+
+        const incoherent = verifierForfait({ nom, minutes, prix }, prixMinuteEffectif);
+        if (incoherent) return res.status(400).json({ error: incoherent });
+
         forfaits.push({ code, nom, minutes: Math.round(minutes), prix });
       }
       suivant.forfaits = forfaits;
@@ -1660,6 +1689,37 @@ router.patch('/tarifs', async (req, res) => {
     res.json({ message: 'Tarifs mis à jour.' });
   } catch (err) {
     console.error('Erreur mise à jour tarifs:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PATCH /api/admin/reglages - Taux fiscaux et seuils de pilotage
+//
+// Ils vivaient dans le localStorage. Un navigateur changé, un cache vidé,
+// et les taux repartaient au défaut sans prévenir — ou pire, restaient
+// figés sur une ancienne valeur pendant que le code évoluait.
+router.patch('/reglages', async (req, res) => {
+  try {
+    const p = await getPraticienne();
+    const actuel = p.config_tarifs || {};
+
+    // borner() applique les mêmes plafonds que le navigateur, mais ici
+    // rien ne peut les contourner.
+    const reglages = bornerReglages({
+      ...bornerReglages(actuel.reglages),
+      ...req.body,
+    });
+
+    const { error } = await supabase
+      .from('praticiennes')
+      .update({ config_tarifs: { ...actuel, reglages } })
+      .eq('id', p.id);
+    if (error) throw error;
+
+    clearCache();
+    res.json({ reglages, message: 'Réglages enregistrés.' });
+  } catch (err) {
+    console.error('Erreur mise à jour réglages:', err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
