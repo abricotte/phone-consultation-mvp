@@ -36,6 +36,21 @@ if (-not $jeton -or -not $cle) {
 
 $entetes = @{ Authorization = "Bearer $jeton" }
 
+# Diagnostic SANS exposer le secret : sa longueur et son debut suffisent
+# a savoir s'il a ete colle en entier. Un jeton Calendly est un JWT de
+# plusieurs centaines de caracteres commencant par "eyJ" ; un terminal
+# qui tronque un collage long est une cause frequente de 401.
+Write-Host ""
+Write-Host ("  Jeton recu : " + $jeton.Length + " caracteres, commence par '" + $jeton.Substring(0, [Math]::Min(3, $jeton.Length)) + "'") -ForegroundColor Gray
+Write-Host ("  Cle recue  : " + $cle.Length + " caracteres") -ForegroundColor Gray
+if ($jeton.Length -lt 100) {
+  Write-Host "  ATTENTION : ce jeton parait trop court pour un jeton Calendly." -ForegroundColor Yellow
+}
+if (-not $jeton.StartsWith("eyJ")) {
+  Write-Host "  ATTENTION : un jeton d'acces personnel Calendly commence par 'eyJ'." -ForegroundColor Yellow
+  Write-Host "              Ce n'est peut-etre pas le bon element copie." -ForegroundColor Yellow
+}
+
 # --- 2. Qui es-tu pour Calendly ? -----------------------------
 Write-Host ""
 Write-Host "Interrogation de Calendly..." -ForegroundColor Gray
@@ -43,7 +58,24 @@ try {
   $moi = (Invoke-RestMethod -Uri "https://api.calendly.com/users/me" -Headers $entetes).resource
 } catch {
   Write-Host ""
-  Write-Host "Calendly refuse ce jeton (401 ?). Verifie qu'il est colle en entier." -ForegroundColor Red
+  # Ce que Calendly repond VRAIMENT, plutot qu'une supposition
+  $code = $null
+  try { $code = [int]$_.Exception.Response.StatusCode } catch {}
+  Write-Host ("Calendly a refuse. Code HTTP : " + $(if ($code) { $code } else { "inconnu" })) -ForegroundColor Red
+  try {
+    $flux = $_.Exception.Response.GetResponseStream()
+    $lecteur = New-Object System.IO.StreamReader($flux)
+    $detail = $lecteur.ReadToEnd()
+    if ($detail) { Write-Host ("Reponse de Calendly : " + $detail) -ForegroundColor Red }
+  } catch {}
+  Write-Host ""
+  if ($code -eq 401) {
+    Write-Host "401 = jeton invalide, expire, ou incomplet." -ForegroundColor Yellow
+    Write-Host "  Regenere-en un : calendly.com > Integrations > API and webhooks" -ForegroundColor Yellow
+    Write-Host "  > Personal access tokens > Generate new token" -ForegroundColor Yellow
+  } elseif ($code -eq 403) {
+    Write-Host "403 = le jeton est valide mais n'a pas les droits necessaires." -ForegroundColor Yellow
+  }
   exit 1
 }
 
