@@ -1776,6 +1776,29 @@ router.get('/rendez-vous', async (req, res) => {
       .order('debut', { ascending: false })
       .limit(20);
 
+    // « Ce qu'elle veut aborder » : porté par le prochain rendez-vous,
+    // c'est la rencontre des deux fonctionnalités — Elena sait avant de
+    // décrocher ce que la cliente vient chercher.
+    const idsClientes = [
+      ...new Set(
+        [...(data || []), ...(retard || [])]
+          .filter((r) => r.statut === 'prevu' && r.client_id)
+          .map((r) => r.client_id)
+      ),
+    ];
+    const aAborderParId = {};
+    if (idsClientes.length > 0) {
+      const { data: fiches } = await supabase
+        .from('users')
+        .select('id, a_aborder, a_aborder_maj_le')
+        .in('id', idsClientes);
+      for (const f of fiches || []) {
+        if (f.a_aborder) {
+          aAborderParId[f.id] = { texte: f.a_aborder, majLe: f.a_aborder_maj_le };
+        }
+      }
+    }
+
     const maintenant = Date.now();
     const enrichir = (r) => ({
       ...r,
@@ -1783,6 +1806,7 @@ router.get('/rendez-vous', async (req, res) => {
       // « À rattraper » se DÉDUIT — pas de statut stocké, donc rien qui
       // sorte de la liste sans qu'Elena l'ait décidé.
       aRattraper: r.statut === 'prevu' && new Date(r.debut).getTime() < maintenant,
+      aAborder: (r.client_id && aAborderParId[r.client_id]?.texte) || null,
     });
 
     res.json({

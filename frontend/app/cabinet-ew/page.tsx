@@ -312,55 +312,33 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* 2 bis. MES RENDEZ-VOUS DU JOUR — juste sous le statut : c'est
-             l'écran depuis lequel Elena pilote sa journée, à la place de
-             sa boîte mail. S'efface de lui-même s'il n'y a rien. */}
+      {/* 2 bis. MA JOURNÉE — juste sous le statut : le poste de pilotage,
+             à la place de la boîte mail. Toujours visible — une journée
+             libre se lit, elle ne se devine pas. */}
       <RendezVousDuJour />
 
-      {/* 3. AUJOURD'HUI — ce que je veux voir en arrivant */}
-      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {[
-          {
-            valeur: `${jour?.consultationsAbouties ?? 0}`,
-            label: "consultation" + ((jour?.consultationsAbouties ?? 0) > 1 ? "s" : "") + " aboutie" + ((jour?.consultationsAbouties ?? 0) > 1 ? "s" : ""),
-            accent: true,
-          },
-          {
-            valeur: `${jour?.tentativesSansReponse ?? 0}`,
-            label:
-              "tentative" +
-              ((jour?.tentativesSansReponse ?? 0) > 1 ? "s" : "") +
-              " sans réponse",
-            accent: false,
-          },
-          {
-            valeur: `${jour?.dureeTotaleMinutes ?? 0} min`,
-            label: "d'écoute",
-            accent: false,
-          },
-          {
-            valeur: euros(jour?.revenusJour ?? 0),
-            label: "encaissés",
-            accent: true,
-          },
-        ].map((carte) => (
-          <div
-            key={carte.label}
-            className="rounded-2xl border border-greige/60 bg-ivory px-4 py-3.5 text-center"
-          >
-            <p
-              className={`text-2xl font-bold tabular-nums tracking-tight sm:text-3xl ${
-                carte.accent ? "text-prix" : "text-mention"
-              }`}
-            >
-              {carte.valeur}
-            </p>
-            <p className="mt-0.5 text-xs leading-tight text-mention">
-              {carte.label}
-            </p>
-          </div>
-        ))}
-      </div>
+      {/* 3. LES CHIFFRES DU JOUR — une seule ligne dense, sous « Ma
+             journée ». Ils racontent ce qui est FAIT ; ce qui VIENT est
+             au-dessus. Les quatre vignettes occupaient la place du
+             pilotage pour dire la même chose. */}
+      <p className="mt-3 text-sm text-mention">
+        <span className="font-bold tabular-nums text-prix">
+          {jour?.consultationsAbouties ?? 0}
+        </span>{" "}
+        aboutie{(jour?.consultationsAbouties ?? 0) > 1 ? "s" : ""} ·{" "}
+        <span className="font-bold tabular-nums text-ink">
+          {jour?.tentativesSansReponse ?? 0}
+        </span>{" "}
+        sans réponse ·{" "}
+        <span className="font-bold tabular-nums text-ink">
+          {jour?.dureeTotaleMinutes ?? 0} min
+        </span>{" "}
+        d&apos;écoute ·{" "}
+        <span className="font-bold tabular-nums text-prix">
+          {euros(jour?.revenusJour ?? 0)}
+        </span>{" "}
+        encaissés
+      </p>
 
       {jour && jour.appelsActifs > 0 && (
         <p className="mt-3 text-sm font-medium text-green-700">
