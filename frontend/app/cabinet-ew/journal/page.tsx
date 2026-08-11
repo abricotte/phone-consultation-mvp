@@ -5,6 +5,15 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
+import BoutonBloquer from "@/components/BoutonBloquer";
+import { memeNumero } from "@/lib/format";
+
+interface NumeroBloque {
+  id: string;
+  telephone: string;
+  motif: string | null;
+  bloque_le: string;
+}
 
 interface Appel {
   id: string;
@@ -109,6 +118,16 @@ export default function JournalPage() {
   // Trois moments d'usage : après une permanence (aujourd'hui), le
   // lendemain matin (hier), la fin de mois (mois).
   const [periode, setPeriode] = useState<"jour" | "hier" | "mois">("mois");
+
+  // Numéros bloqués — comparés sur les chiffres seuls, comme le serveur.
+  const [bloques, setBloques] = useState<NumeroBloque[]>([]);
+  function chargerBlocages() {
+    api
+      .adminGetNumerosBloques()
+      .then((n: NumeroBloque[]) => setBloques(n))
+      .catch(() => setBloques([]));
+  }
+  useEffect(chargerBlocages, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -429,6 +448,18 @@ export default function JournalPage() {
                     >
                       ☎ {formatTel(a.cliente.telephone)}
                     </a>
+                  )}
+                  {a.cliente.telephone && (
+                    <BoutonBloquer
+                      telephone={a.cliente.telephone}
+                      nom={a.cliente.prenom}
+                      bloqueId={
+                        bloques.find((b) => memeNumero(b.telephone, a.cliente.telephone))?.id ??
+                        null
+                      }
+                      onChange={chargerBlocages}
+                      discret
+                    />
                   )}
                 </li>
               ))}

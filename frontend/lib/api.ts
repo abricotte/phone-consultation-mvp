@@ -148,6 +148,15 @@ export const api = {
   // Réglages de pilotage — en base, plus dans le navigateur
   adminPatchReglages: (body: Record<string, unknown>) =>
     request("/admin/reglages", { method: "PATCH", body: JSON.stringify(body) }),
+  // Numéros bloqués
+  adminGetNumerosBloques: () => request("/admin/numeros-bloques"),
+  adminBloquerNumero: (telephone: string, motif?: string) =>
+    request("/admin/numeros-bloques", {
+      method: "POST",
+      body: JSON.stringify({ telephone, motif }),
+    }),
+  adminDebloquerNumero: (id: string) =>
+    request(`/admin/numeros-bloques/${id}`, { method: "DELETE" }),
   // Changement de numéro, avec appel de vérification préalable
   adminDemanderVerifTel: (telephone: string) =>
     request("/admin/telephone/demander", {

@@ -17,7 +17,11 @@ const router = express.Router();
 const {
   normaliser: normalizePhone,
   estMobileFrancais: estNumeroFrValide,
+  memeNumero,
 } = require('../utils/telephone');
+
+// Numéros bloqués (cf. utils/blocage.js)
+const { preparerBlocage } = require('../utils/blocage');
 
 // Réglages de pilotage — bornés côté serveur (cf. utils/reglages.js)
 const { borner: bornerReglages } = require('../utils/reglages');
@@ -1689,6 +1693,87 @@ router.patch('/tarifs', async (req, res) => {
     res.json({ message: 'Tarifs mis à jour.' });
   } catch (err) {
     console.error('Erreur mise à jour tarifs:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ------------------------------------------------------------------
+// NUMÉROS BLOQUÉS
+//
+// Un numéro bloqué ne peut plus lancer de consultation depuis le site, et
+// son appel entrant est raccroché sans qu'Elena en soit informée. Le motif
+// est pour SA mémoire — il n'est jamais montré à personne d'autre.
+// ------------------------------------------------------------------
+
+// GET /api/admin/numeros-bloques
+router.get('/numeros-bloques', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('numeros_bloques')
+      .select('id, telephone, motif, bloque_le')
+      .order('bloque_le', { ascending: false });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('Erreur liste numéros bloqués:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/admin/numeros-bloques
+router.post('/numeros-bloques', async (req, res) => {
+  try {
+    const prepare = preparerBlocage(req.body.telephone, req.body.motif);
+    if (!prepare) {
+      return res.status(400).json({ error: 'Numéro invalide.' });
+    }
+
+    // Se bloquer soi-même couperait la ligne : Twilio ne pourrait plus
+    // joindre Elena, et plus aucune consultation n'aboutirait.
+    const { data: consultant } = await supabase
+      .from('consultants')
+      .select('user_id')
+      .limit(1)
+      .maybeSingle();
+    if (consultant?.user_id) {
+      const { data: u } = await supabase
+        .from('users')
+        .select('phone')
+        .eq('id', consultant.user_id)
+        .maybeSingle();
+      if (u?.phone && memeNumero(u.phone, prepare.telephone)) {
+        return res.status(400).json({
+          error:
+            'Ce numéro est le vôtre : le bloquer rendrait toute consultation impossible.',
+        });
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('numeros_bloques')
+      .upsert(prepare, { onConflict: 'chiffres' })
+      .select('id, telephone, motif, bloque_le')
+      .single();
+    if (error) throw error;
+
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Erreur blocage numéro:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// DELETE /api/admin/numeros-bloques/:id
+router.delete('/numeros-bloques/:id', async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('numeros_bloques')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.status(204).end();
+  } catch (err) {
+    console.error('Erreur déblocage numéro:', err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });

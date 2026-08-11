@@ -2,6 +2,26 @@
 // prénom s'affiche partout de la même façon.
 
 /** « vigo » → « Vigo » · « marie-claire » → « Marie-Claire » */
+/**
+ * Deux numéros désignent-ils la même ligne ? Compare les chiffres seuls,
+ * comme backend/src/utils/telephone.js : +33612345678, 0612345678 et
+ * 0033612345678 sont le même numéro, et un blocage qui l'ignorerait ne
+ * vaudrait rien face à quelqu'un de déterminé.
+ */
+export function memeNumero(
+  a: string | null | undefined,
+  b: string | null | undefined
+): boolean {
+  if (!a || !b) return false;
+  const chiffres = (s: string) => s.replace(/\D/g, "").replace(/^(00|0)/, "");
+  const ca = chiffres(a);
+  const cb = chiffres(b);
+  if (!ca || !cb) return false;
+  // Un numéro français peut être rangé avec ou sans son indicatif : on
+  // compare donc aussi par la fin (les 9 chiffres significatifs).
+  return ca === cb || ca.endsWith(cb) || cb.endsWith(ca);
+}
+
 export function capitaliser(nom: string | null | undefined): string {
   if (!nom) return "";
   return nom

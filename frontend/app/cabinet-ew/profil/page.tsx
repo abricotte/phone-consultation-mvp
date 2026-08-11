@@ -195,7 +195,10 @@ export default function ProfilPraticiennePage() {
         // réglages locaux, on les remonte UNE fois — c'est ainsi que le
         // 23 % d'URSSAF resté figé ici retrouve le chemin du serveur —
         // puis on efface la copie locale pour qu'elle ne dérive plus.
-        setReglages(p.reglages);
+        // Le serveur peut être d'une version antérieure (le frontend et le
+        // backend ne se déploient jamais à la même seconde) : sans ce repli,
+        // la page planterait sur des réglages absents.
+        setReglages(p.reglages ?? REGLAGES_DEFAUT);
         const locaux = lireReglagesLocaux();
         if (locaux) {
           enregistrerReglages(locaux)
@@ -760,31 +763,84 @@ export default function ProfilPraticiennePage() {
             Je suis assujettie à la TVA
           </label>
 
+          {/* Chaque réglage dit ce qu'il déclenche. « Alerte solde ligne
+              (sous) » ne voulait rien dire pour qui ne connaît pas Twilio —
+              et c'est pourtant le réglage qui empêche la ligne de tomber. */}
           {(
             [
-              { cle: "tvaTaux", label: "Taux de TVA (%)", max: 30 },
-              { cle: "urssaf", label: "URSSAF (% du HT)", max: 60 },
-              { cle: "impot", label: "Impôt (% du HT)", max: 60 },
-              { cle: "coutsFixes", label: "Coûts fixes (€/mois)", max: 100000 },
-              { cle: "seuilTwilio", label: "Alerte solde ligne (sous)", max: 1000 },
-              { cle: "seuilHabituee", label: "« Habituée » à partir de", max: 100 },
+              {
+                cle: "tvaTaux",
+                label: "Taux de TVA",
+                unite: "%",
+                max: 30,
+                aide: "Retirée de vos encaissements avant tout le reste : elle ne vous appartient pas.",
+              },
+              {
+                cle: "urssaf",
+                label: "Cotisations URSSAF",
+                unite: "% du chiffre d'affaires HT",
+                max: 60,
+                aide: "25,6 % de cotisations + CFP. Provisionné sur chaque encaissement.",
+              },
+              {
+                cle: "impot",
+                label: "Impôt sur le revenu",
+                unite: "% du chiffre d'affaires HT",
+                max: 60,
+                aide: "Provision volontairement un peu haute, par prudence.",
+              },
+              {
+                cle: "coutsFixes",
+                label: "Mes abonnements mensuels",
+                unite: "€ par mois",
+                max: 100000,
+                aide: "Hébergement, nom de domaine… Déduits de votre net mensuel.",
+              },
+              {
+                cle: "seuilTwilio",
+                label: "M'alerter quand mon crédit d'appel passe sous",
+                unite: "€",
+                max: 1000,
+                aide:
+                  "Ce crédit paie vos appels. S'il tombe à zéro, vos clientes ne peuvent plus vous joindre — sans que rien ne vous prévienne.",
+              },
+              {
+                cle: "seuilHabituee",
+                label: "Une cliente est « habituée » à partir de",
+                unite: "consultations",
+                max: 100,
+                aide:
+                  "Sert uniquement à filtrer votre liste de clientes. Invisible pour elles, et sans effet sur les tarifs.",
+              },
             ] as const
           ).map((r) => (
-            <label key={r.cle} className="block">
-              <span className="mb-1 block text-sm font-medium text-aubergine">
-                {r.label}
-              </span>
-              <input
-                type="number"
-                min={0}
-                max={r.max}
-                step={r.cle === "coutsFixes" || r.cle === "seuilHabituee" ? 1 : 0.1}
-                value={reglages[r.cle] as number}
-                onChange={(e) => majReglage(r.cle, Number(e.target.value) as never)}
-                className={champ}
-              />
-            </label>
+            <div key={r.cle}>
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium text-aubergine">
+                  {r.label}
+                </span>
+                <span className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={r.max}
+                    step={r.cle === "coutsFixes" || r.cle === "seuilHabituee" ? 1 : 0.1}
+                    value={reglages[r.cle] as number}
+                    onChange={(e) => majReglage(r.cle, Number(e.target.value) as never)}
+                    className={`${champ} w-28`}
+                  />
+                  <span className="text-sm text-mention">{r.unite}</span>
+                </span>
+              </label>
+              <p className="mt-1 text-xs leading-relaxed text-mention">{r.aide}</p>
+            </div>
           ))}
+
+          {reglagesErr && (
+            <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {reglagesErr}
+            </p>
+          )}
         </div>
       </Section>
 

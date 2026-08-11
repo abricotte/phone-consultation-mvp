@@ -8,7 +8,21 @@ import CabinetShell from "@/components/CabinetShell";
 import FilChronologique, {
   type EvenementFil,
 } from "@/components/FilChronologique";
-import { capitaliser, depuisQuand, comparerEcheances, echeanceProche } from "@/lib/format";
+import BoutonBloquer from "@/components/BoutonBloquer";
+import {
+  capitaliser,
+  depuisQuand,
+  comparerEcheances,
+  echeanceProche,
+  memeNumero,
+} from "@/lib/format";
+
+interface NumeroBloque {
+  id: string;
+  telephone: string;
+  motif: string | null;
+  bloque_le: string;
+}
 import {
   signeAstrologique,
   formatDateNaissance,
@@ -124,6 +138,19 @@ function formatTel(t: string | null): string {
 export default function FicheClientePage() {
   const params = useParams<{ id: string }>();
   const [fiche, setFiche] = useState<Fiche | null>(null);
+
+  // Numéros bloqués — comparés sur les chiffres seuls, comme le serveur :
+  // un même numéro peut être rangé en +33… et affiché en 06…
+  const [bloques, setBloques] = useState<NumeroBloque[]>([]);
+  function chargerBlocages() {
+    api
+      .adminGetNumerosBloques()
+      .then((n: NumeroBloque[]) => setBloques(n))
+      .catch(() => setBloques([]));
+  }
+  useEffect(chargerBlocages, []);
+  const blocageId =
+    bloques.find((b) => memeNumero(b.telephone, fiche?.telephone))?.id ?? null;
   const [loading, setLoading] = useState(true);
   const [accesRefuse, setAccesRefuse] = useState(false);
 
@@ -398,6 +425,17 @@ export default function FicheClientePage() {
                 <span className="text-mention">—</span>
               )}
             </p>
+            {fiche.telephone && (
+              <div className="pt-1">
+                <BoutonBloquer
+                  telephone={fiche.telephone}
+                  nom={fiche.prenom}
+                  bloqueId={blocageId}
+                  onChange={chargerBlocages}
+                  discret
+                />
+              </div>
+            )}
             <p className="truncate">
               <span className="text-mention">Email : </span>
               {fiche.email ? (

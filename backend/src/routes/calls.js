@@ -7,6 +7,8 @@ const { verrouillerConsultation, libererConsultation, getPraticienne } = require
 const { VoiceResponse } = require('twilio').twiml;
 // Source unique de normalisation (cf. utils/telephone.js)
 const { normaliser: normalizePhone, masquer: masquerNumeroTel } = require('../utils/telephone');
+// Numéros bloqués (cf. utils/blocage.js)
+const { estBloque } = require('../utils/blocage');
 
 const router = express.Router();
 
@@ -151,6 +153,18 @@ router.post('/initiate', authMiddleware, async (req, res) => {
       return res.status(400).json({
         error:
           'Votre numéro est identique à celui de la praticienne : la mise en relation est impossible.',
+      });
+    }
+
+    // NUMÉRO BLOQUÉ : refus AVANT le verrou et avant tout appel Twilio.
+    // Le message reste neutre — inutile d'informer un harceleur qu'il a
+    // été identifié comme tel, et une erreur de blocage ne doit pas
+    // humilier une cliente légitime.
+    if ((await estBloque(clientPhone)).bloque) {
+      console.log(`Appel refusé : numéro bloqué ${masquerNumeroTel(clientPhone)}`);
+      return res.status(403).json({
+        error:
+          "La mise en relation n'est pas possible depuis ce numéro. Contactez Elena par écrit si vous pensez qu'il s'agit d'une erreur.",
       });
     }
 
@@ -830,6 +844,17 @@ router.post('/twiml/inbound', twilioSignature, async (req, res) => {
   const response = new VoiceResponse();
 
   try {
+    // NUMÉRO BLOQUÉ : raccrochage immédiat et silencieux. Pas de message
+    // qui apprendrait au harceleur qu'il a été repéré — et surtout, rien
+    // qui remonte jusqu'à Elena. Placé en tête pour qu'aucune évolution
+    // ultérieure de cette route (fiche express) ne s'exécute pour lui.
+    if ((await estBloque(req.body.From)).bloque) {
+      console.log(`Appel entrant bloqué : ${masquerNumeroTel(req.body.From)}`);
+      response.reject({ reason: 'busy' });
+      res.type('text/xml');
+      return res.send(response.toString());
+    }
+
     const p = await getPraticienne();
     const audioUrl = p.messages_vocaux?.inbound;
 
