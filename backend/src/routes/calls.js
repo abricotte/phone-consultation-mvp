@@ -647,16 +647,29 @@ async function finalizeSession(sessionId) {
 
   if (!session) return;
 
-  // Déjà traité → on s'arrête (Twilio peut renvoyer l'événement plusieurs fois)
+  // Pré-vérification bon marché : évite de travailler pour rien. Elle ne
+  // SUFFIT PAS à empêcher un double débit — cf. la prise atomique plus bas.
   if (session.status === 'completed' || session.status === 'cancelled') return;
+
+  // Statuts depuis lesquels une session peut encore être clôturée. Sert de
+  // condition à la prise atomique : la base n'accepte la transition qu'une
+  // seule fois, quel que soit le nombre de notifications reçues.
+  const STATUTS_OUVERTS = ['pending', 'active'];
 
   // Les deux participants ne se sont jamais connectés → aucune facturation
   if (!session.started_at) {
-    await supabase
+    const { data: annulees } = await supabase
       .from('sessions')
       .update({ status: 'cancelled' })
-      .eq('id', sessionId);
+      .eq('id', sessionId)
+      .in('status', STATUTS_OUVERTS)
+      .select('id');
+
+    // Une autre notification a déjà annulé : elle libère le verrou, pas nous.
+    if (!annulees || annulees.length === 0) return;
+
     await libererConsultation();
+    consultantCallSids.delete(sessionId);
     return;
   }
 
@@ -690,8 +703,22 @@ async function finalizeSession(sessionId) {
   // La facturation ne doit JAMAIS empêcher la libération du verrou : si une
   // erreur survient ici, le finally garantit quand même le retour à
   // "disponible" (sinon la praticienne resterait bloquée en consultation).
+  // Vrai si la base nous a explicitement répondu « quelqu'un d'autre a déjà
+  // clôturé ». Dans ce seul cas nous ne libérons pas le verrou : le gagnant
+  // s'en charge. En cas d'erreur, on libère quand même — mieux vaut un
+  // verrou relâché deux fois qu'une praticienne bloquée en consultation.
+  let perdu = false;
+
   try {
-    await supabase
+    // PRISE ATOMIQUE — la seule protection réelle contre le double débit.
+    // Twilio notifie la fin de l'appel pour CHAQUE jambe (cliente et
+    // praticienne), et la conférence notifie de son côté : finalizeSession
+    // peut donc s'exécuter trois fois en parallèle. Une simple lecture du
+    // statut suivie d'une écriture ne protège de rien — les trois lisent
+    // « active » avant que la première n'écrive, et les trois débitent.
+    // Ici la condition de statut fait partie de l'UPDATE : PostgreSQL
+    // verrouille la ligne, et les perdants ne modifient aucune ligne.
+    const { data: gagnees } = await supabase
       .from('sessions')
       .update({
         status: 'completed',
@@ -699,7 +726,17 @@ async function finalizeSession(sessionId) {
         duration_seconds: durationSeconds,
         total_cost: totalCost,
       })
-      .eq('id', sessionId);
+      .eq('id', sessionId)
+      .in('status', STATUTS_OUVERTS)
+      .select('id');
+
+    if (!gagnees || gagnees.length === 0) {
+      perdu = true;
+      console.log(
+        `Session ${sessionId} : déjà clôturée par une autre notification Twilio — aucun débit`
+      );
+      return;
+    }
 
     // Débit du wallet : uniquement pour la consultation à la minute,
     // et seulement s'il y a quelque chose à débiter (franchise = 0 €,
@@ -736,8 +773,10 @@ async function finalizeSession(sessionId) {
     console.error(`finalizeSession : erreur de clôture/facturation (verrou libéré quand même) : ${err.message}`);
   } finally {
     // Retour au statut antérieur du toggle (en_consultation → disponible/hors_ligne)
-    await libererConsultation();
-    consultantCallSids.delete(sessionId);
+    if (!perdu) {
+      await libererConsultation();
+      consultantCallSids.delete(sessionId);
+    }
   }
 }
 
@@ -816,3 +855,7 @@ router.post('/twiml/inbound', twilioSignature, async (req, res) => {
 });
 
 module.exports = router;
+
+// Exposé UNIQUEMENT pour les tests (cf. calls.race.test.js) : la protection
+// contre le double débit doit pouvoir être vérifiée sans passer par Twilio.
+module.exports.__test__ = { finalizeSession };
