@@ -115,7 +115,7 @@ export default function ProfilPage() {
       setAAborderEnregistre(aAborder);
       setAAborderMsg(
         aAborder.trim()
-          ? "C'est noté. Elena le lira avant votre consultation."
+          ? "C'est noté pour votre prochaine consultation."
           : "Vos notes ont été effacées."
       );
     } catch (err) {
@@ -230,10 +230,12 @@ export default function ProfilPage() {
         <h2 className="font-serif text-2xl font-semibold text-aubergine">
           Ce que je veux aborder
         </h2>
+        {/* Formulation voulue par Elena : douce, sans « Elena le lit ».
+            Le mot « aborder » porte l'essentiel — ces notes préparent la
+            consultation, donc leur destination reste claire en creux. */}
         <p className="mt-2 text-sm leading-relaxed text-ink/80">
-          Notez ici vos questions, ce qui a bougé depuis la dernière fois, ce
-          qui vous pèse. <strong>Elena le lit avant de vous appeler</strong> —
-          vous n&apos;aurez pas à chercher vos mots au téléphone.
+          Si vous souhaitez aborder des questions précises lors de votre
+          prochaine consultation, vous pouvez les noter ici.
         </p>
 
         <form onSubmit={enregistrerAAborder} className="mt-4">
