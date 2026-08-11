@@ -70,8 +70,12 @@ export const api = {
 
   // Profil cliente (date de naissance + "personnes qui comptent")
   getProfil: () => request("/profil"),
-  updateProfil: (body: { dateNaissance?: string | null; ascendant?: string | null }) =>
-    request("/profil", { method: "PATCH", body: JSON.stringify(body) }),
+  updateProfil: (body: {
+    dateNaissance?: string | null;
+    ascendant?: string | null;
+    /** « Ce que je veux aborder » — écrit par la cliente, lu par Elena */
+    aAborder?: string;
+  }) => request("/profil", { method: "PATCH", body: JSON.stringify(body) }),
   addProche: (body: {
     prenom: string;
     dateNaissance: string | null;

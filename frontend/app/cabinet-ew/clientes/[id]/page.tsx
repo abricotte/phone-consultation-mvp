@@ -87,6 +87,9 @@ interface Fiche {
   inscriteLe: string;
   dateNaissance: string | null;
   ascendant: string | null;
+  /** Écrit par la cliente pour être lu — l'inverse du carnet privé */
+  aAborder: string | null;
+  aAborderMajLe: string | null;
   solde: number;
   totalDepense: number;
   proches: ProcheFiche[];
@@ -408,6 +411,34 @@ export default function FicheClientePage() {
             </p>
           </div>
         </div>
+
+        {/* CE QU'ELLE VEUT ABORDER — écrit par elle, pour être lu. À ne
+            pas confondre avec le carnet, qui reste strictement privé :
+            ici, elle SAIT qu'Elena la lit, et l'attend. */}
+        {fiche.aAborder && (
+          <div className="mt-5 rounded-2xl border border-gold/50 bg-gold/5 px-4 py-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-gold-dark">
+              ✦ Ce qu&apos;elle veut aborder
+              {fiche.aAborderMajLe && (
+                <span className="ml-2 font-normal normal-case tracking-normal text-mention">
+                  écrit {depuisQuand(fiche.aAborderMajLe)}
+                </span>
+              )}
+            </p>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink">
+              {fiche.aAborder}
+            </p>
+            {/* Un mot antérieur à la dernière consultation a sans doute
+                déjà été traité — le signaler évite de le resservir. */}
+            {fiche.consultations?.[0] &&
+              fiche.aAborderMajLe &&
+              new Date(fiche.aAborderMajLe) < new Date(fiche.consultations[0].date) && (
+                <p className="mt-2 text-xs italic text-mention">
+                  Écrit avant votre dernière consultation — peut-être déjà abordé.
+                </p>
+              )}
+          </div>
+        )}
 
         {/* Contact + chiffres clés */}
         <div className="mt-5 grid gap-4 border-t border-greige/50 pt-4 sm:grid-cols-2">

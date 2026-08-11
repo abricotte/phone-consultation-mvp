@@ -53,6 +53,14 @@ export default function ProfilPage() {
   // Ascendant de la cliente (saisi si elle le connaît — non calculable
   // sans l'heure et le lieu de naissance)
   const [ascendant, setAscendant] = useState<string>("");
+
+  // « Ce que je veux aborder » — écrit par elle, lu par Elena avant
+  // l'appel. On garde la version enregistrée pour n'afficher le bouton
+  // que si quelque chose a changé.
+  const [aAborder, setAAborder] = useState<string>("");
+  const [aAborderEnregistre, setAAborderEnregistre] = useState<string>("");
+  const [aAborderEnCours, setAAborderEnCours] = useState(false);
+  const [aAborderMsg, setAAborderMsg] = useState("");
   const [ascEnCours, setAscEnCours] = useState(false);
 
   // Formulaire d'ajout de proche
@@ -77,12 +85,15 @@ export default function ProfilPage() {
           prenom: string | null;
           dateNaissance: string | null;
           ascendant: string | null;
+          aAborder?: string;
           proches: Proche[];
         }) => {
           setPrenom(data.prenom);
           setDateNaissance(data.dateNaissance || "");
           setDateEnregistree(data.dateNaissance);
           setAscendant(data.ascendant || "");
+          setAAborder(data.aAborder || "");
+          setAAborderEnregistre(data.aAborder || "");
           setProches(data.proches || []);
         }
       )
@@ -94,6 +105,25 @@ export default function ProfilPage() {
       })
       .finally(() => setChargement(false));
   }, []);
+
+  async function enregistrerAAborder(e: React.FormEvent) {
+    e.preventDefault();
+    setAAborderEnCours(true);
+    setAAborderMsg("");
+    try {
+      await api.updateProfil({ aAborder });
+      setAAborderEnregistre(aAborder);
+      setAAborderMsg(
+        aAborder.trim()
+          ? "C'est noté. Elena le lira avant votre consultation."
+          : "Vos notes ont été effacées."
+      );
+    } catch (err) {
+      setAAborderMsg(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setAAborderEnCours(false);
+    }
+  }
 
   async function handleDateSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -191,6 +221,51 @@ export default function ProfilPage() {
           Personne d&apos;autre.
         </p>
       </div>
+
+      {/* CE QUE JE VEUX ABORDER
+          Le seul champ de cet espace qu'Elena est censée lire : le ton
+          doit le dire sans ambiguïté, sinon la cliente ne saurait pas si
+          elle écrit pour elle-même ou pour être entendue. */}
+      <section className="mt-6 rounded-3xl border border-gold/40 bg-gold/5 p-7 shadow-soft">
+        <h2 className="font-serif text-2xl font-semibold text-aubergine">
+          Ce que je veux aborder
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink/80">
+          Notez ici vos questions, ce qui a bougé depuis la dernière fois, ce
+          qui vous pèse. <strong>Elena le lit avant de vous appeler</strong> —
+          vous n&apos;aurez pas à chercher vos mots au téléphone.
+        </p>
+
+        <form onSubmit={enregistrerAAborder} className="mt-4">
+          <textarea
+            rows={5}
+            maxLength={2000}
+            value={aAborder}
+            onChange={(e) => setAAborder(e.target.value)}
+            placeholder="Ce dont j'aimerais parler…"
+            className="w-full rounded-2xl border border-greige/60 bg-white px-4 py-3 text-sm leading-relaxed text-ink placeholder:text-mention/60 focus:border-gold focus:outline-none"
+          />
+
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs text-mention">
+              Vous pouvez le modifier ou l&apos;effacer à tout moment.
+            </span>
+            {aAborder !== aAborderEnregistre && (
+              <button
+                type="submit"
+                disabled={aAborderEnCours}
+                className="rounded-full bg-cta px-5 py-2 text-sm font-medium text-cta-text transition hover:opacity-90 disabled:opacity-50"
+              >
+                {aAborderEnCours ? "Enregistrement…" : "Enregistrer"}
+              </button>
+            )}
+          </div>
+
+          {aAborderMsg && (
+            <p className="mt-2 text-sm text-green-700">{aAborderMsg}</p>
+          )}
+        </form>
+      </section>
 
       {/* Votre ciel — médaillon signe astro */}
       <section className="relative mt-6 overflow-hidden rounded-3xl border border-greige/60 bg-gradient-to-br from-blush via-cream to-cream p-7 shadow-soft">

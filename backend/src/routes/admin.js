@@ -645,7 +645,7 @@ router.get('/clientes/:id', async (req, res) => {
 
     const { data: cliente, error } = await supabase
       .from('users')
-      .select('id, first_name, last_name, email, phone, date_naissance, ascendant, created_at, role')
+      .select('id, first_name, last_name, email, phone, date_naissance, ascendant, a_aborder, a_aborder_maj_le, created_at, role')
       .eq('id', req.params.id)
       .eq('role', 'client')
       .maybeSingle();
@@ -754,6 +754,11 @@ router.get('/clientes/:id', async (req, res) => {
       inscriteLe: cliente.created_at,
       dateNaissance: cliente.date_naissance || null,
       ascendant: cliente.ascendant || null,
+      // Écrit par la cliente POUR être lu : l'inverse exact du carnet.
+      // La date compte autant que le texte — un mot vieux de six mois ne
+      // dit pas ce qu'on vient chercher aujourd'hui.
+      aAborder: cliente.a_aborder || null,
+      aAborderMajLe: cliente.a_aborder_maj_le || null,
       solde: wallet ? parseFloat(wallet.balance || 0) : 0,
       totalDepense: Math.round(totalDepense * 100) / 100,
       recharges,

@@ -67,7 +67,7 @@ router.get('/', authMiddleware, async (req, res) => {
       await Promise.all([
         supabase
           .from('users')
-          .select('first_name, date_naissance, ascendant')
+          .select('first_name, date_naissance, ascendant, a_aborder, a_aborder_maj_le')
           .eq('id', req.user.id)
           .single(),
         supabase
@@ -84,6 +84,9 @@ router.get('/', authMiddleware, async (req, res) => {
       prenom: user?.first_name || null,
       dateNaissance: user?.date_naissance || null,
       ascendant: user?.ascendant || null,
+      // Écrit par la cliente POUR Elena — l'inverse du carnet privé.
+      aAborder: user?.a_aborder || '',
+      aAborderMajLe: user?.a_aborder_maj_le || null,
       proches: (proches || []).map(serialiserProche),
     });
   } catch (err) {
@@ -114,6 +117,19 @@ router.patch('/', authMiddleware, async (req, res) => {
       maj.ascendant = value;
     }
 
+    if (Object.prototype.hasOwnProperty.call(req.body, 'aAborder')) {
+      const brut = req.body.aAborder;
+      if (typeof brut !== 'string') {
+        return res.status(400).json({ error: 'Texte invalide.' });
+      }
+      // 2000 caractères : de quoi préparer une consultation sans en faire
+      // un journal. Le vider est un geste légitime (« c'est réglé »), on
+      // range alors null plutôt qu'une chaîne vide.
+      const texte = brut.trim().slice(0, 2000);
+      maj.a_aborder = texte || null;
+      maj.a_aborder_maj_le = texte ? new Date().toISOString() : null;
+    }
+
     if (Object.keys(maj).length === 0) {
       return res.status(400).json({ error: 'Aucun champ à mettre à jour.' });
     }
@@ -128,6 +144,8 @@ router.patch('/', authMiddleware, async (req, res) => {
     res.json({
       dateNaissance: 'date_naissance' in maj ? maj.date_naissance : undefined,
       ascendant: 'ascendant' in maj ? maj.ascendant : undefined,
+      aAborder: 'a_aborder' in maj ? maj.a_aborder || '' : undefined,
+      aAborderMajLe: 'a_aborder_maj_le' in maj ? maj.a_aborder_maj_le : undefined,
       message: 'Profil mis à jour.',
     });
   } catch (err) {
