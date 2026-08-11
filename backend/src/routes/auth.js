@@ -20,6 +20,7 @@ function motDePasseInvalide(pwd) {
 const {
   normaliser: normalizePhone,
   estNumeroFrancais,
+  memeNumero,
 } = require('../utils/telephone');
 
 // POST /api/auth/register - Inscription
@@ -36,18 +37,93 @@ router.post('/register', registerLimiter, async (req, res) => {
       return res.status(400).json({ error: erreurMdp });
     }
 
-    // Vérifier si l'email existe déjà
-    const { data: existing } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .single();
+    const passwordHash = await bcrypt.hash(password, 10);
+    const telNormalise = normalizePhone(phone);
 
-    if (existing) {
+    // ----------------------------------------------------------------
+    // REPRISE D'UNE FICHE CRÉÉE PAR CALENDLY
+    //
+    // Une réservation Calendly crée une fiche pour quelqu'un qui n'a rien
+    // demandé, afin que son historique et ses notes existent. Si cette
+    // personne s'inscrit ensuite, elle ne doit PAS obtenir un second
+    // compte : son historique serait coupé en deux, et l'ancienne
+    // réponse « Cet email est déjà utilisé » l'aurait purement et
+    // simplement bloquée.
+    //
+    // On reprend par email, puis par numéro — mais JAMAIS une fiche
+    // issue d'une vraie inscription : celle-là appartient à quelqu'un.
+    // ----------------------------------------------------------------
+    const { data: parEmail } = await supabase
+      .from('users')
+      .select('id, origine')
+      .ilike('email', email)
+      .maybeSingle();
+
+    let aReprendre = parEmail?.origine === 'calendly' ? parEmail : null;
+
+    if (parEmail && !aReprendre) {
       return res.status(409).json({ error: 'Cet email est déjà utilisé' });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    if (!aReprendre && telNormalise) {
+      const { data: candidats } = await supabase
+        .from('users')
+        .select('id, phone, origine')
+        .eq('origine', 'calendly');
+      const trouvee = (candidats || []).find((u) => memeNumero(u.phone, telNormalise));
+      if (trouvee) aReprendre = trouvee;
+    }
+
+    if (aReprendre) {
+      const { data: reprise, error: erreurReprise } = await supabase
+        .from('users')
+        .update({
+          email,
+          password_hash: passwordHash,
+          first_name: firstName,
+          last_name: lastName,
+          phone: telNormalise || null,
+          origine: 'inscription',
+        })
+        .eq('id', aReprendre.id)
+        .eq('origine', 'calendly') // garde-fou : ne jamais écraser un vrai compte
+        .select('id, email, first_name, last_name, role')
+        .maybeSingle();
+
+      if (erreurReprise) throw erreurReprise;
+
+      if (reprise) {
+        console.log(`Inscription : fiche Calendly ${reprise.id} reprise, historique conservé`);
+
+        // Le portefeuille existe déjà (créé avec la fiche) — on ne le
+        // recrée pas, au risque d'en avoir deux et de perdre un solde.
+        const { data: portefeuille } = await supabase
+          .from('wallets')
+          .select('id')
+          .eq('user_id', reprise.id)
+          .maybeSingle();
+        if (!portefeuille) {
+          await supabase.from('wallets').insert({ user_id: reprise.id });
+        }
+
+        const token = jwt.sign(
+          { id: reprise.id, email: reprise.email, role: reprise.role },
+          process.env.JWT_SECRET,
+          { expiresIn: '7d' }
+        );
+
+        return res.status(201).json({
+          token,
+          user: {
+            id: reprise.id,
+            email: reprise.email,
+            firstName: reprise.first_name,
+            lastName: reprise.last_name,
+            role: reprise.role,
+          },
+        });
+      }
+    }
     // L'inscription publique ne crée QUE des clientes. Les rôles
     // consultant/admin sont attribués manuellement en base.
     const userRole = 'client';
@@ -60,7 +136,9 @@ router.post('/register', registerLimiter, async (req, res) => {
         password_hash: passwordHash,
         first_name: firstName,
         last_name: lastName,
-        phone: phone || null,
+        // Normalisé dès l'inscription : sans cela, la même personne
+        // n'est pas reconnue selon le format qu'elle a tapé.
+        phone: telNormalise || null,
         role: userRole,
       })
       .select()

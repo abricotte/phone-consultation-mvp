@@ -782,6 +782,18 @@ async function finalizeSession(sessionId) {
       }
     }
 
+    // RENDEZ-VOUS CALENDLY — « honoré » seulement si la consultation a
+    // VRAIMENT eu lieu. Sous la franchise, les deux ne se sont pas
+    // réellement parlé : le rendez-vous reste « prévu » et continue
+    // d'apparaître dans la liste du jour, avec sa tentative enregistrée.
+    if (!sousFranchise) {
+      await supabase
+        .from('rendez_vous')
+        .update({ statut: 'honore', maj_le: endedAt.toISOString() })
+        .eq('session_id', sessionId)
+        .eq('statut', 'prevu');
+    }
+
     console.log(`Appel terminé : session ${sessionId} (${session.type}), ${durationMinutes} min, ${totalCost}€`);
   } catch (err) {
     console.error(`finalizeSession : erreur de clôture/facturation (verrou libéré quand même) : ${err.message}`);

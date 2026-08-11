@@ -383,6 +383,29 @@ router.post('/consultation-minutee', async (req, res) => {
       .update({ twilio_call_sid: elenaCall.sid, status: 'active' })
       .eq('id', session.id);
 
+    // RENDEZ-VOUS CALENDLY — on enregistre la TENTATIVE, pas la réussite.
+    // Marquer « honoré » ici ferait disparaître de la liste du jour un
+    // rendez-vous dont l'appel peut encore échouer (personne ne décroche,
+    // cliente injoignable) : Elena l'oublierait. Le passage en « honoré »
+    // a lieu à la clôture, et seulement si les deux se sont parlé.
+    if (req.body.rendezVousId) {
+      const { data: rdv } = await supabase
+        .from('rendez_vous')
+        .select('tentatives')
+        .eq('id', req.body.rendezVousId)
+        .maybeSingle();
+
+      await supabase
+        .from('rendez_vous')
+        .update({
+          session_id: session.id,
+          tentatives: (rdv?.tentatives ?? 0) + 1,
+          derniere_tentative: new Date().toISOString(),
+          maj_le: new Date().toISOString(),
+        })
+        .eq('id', req.body.rendezVousId);
+    }
+
     // Purge RGPD au passage (paresseuse, sans impact sur la réponse)
     purgerTelephones();
 
@@ -1696,6 +1719,74 @@ router.patch('/tarifs', async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+
+// ------------------------------------------------------------------
+// MES RENDEZ-VOUS DU JOUR
+//
+// ~5 forfaits par jour : piloter sa journée depuis un seul écran plutôt
+// que depuis sa boîte mail. Les rendez-vous passés restés « prévu » ne
+// disparaissent JAMAIS tout seuls — ils remontent en « à rattraper ».
+// ------------------------------------------------------------------
+
+// GET /api/admin/rendez-vous?jour=YYYY-MM-DD
+router.get('/rendez-vous', async (req, res) => {
+  try {
+    // Le jour est calculé en heure de Paris : un rendez-vous à 23 h ne
+    // doit pas basculer au lendemain à cause du fuseau du serveur.
+    const jour = /^\d{4}-\d{2}-\d{2}$/.test(req.query.jour || '')
+      ? req.query.jour
+      : new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+
+    const debutJour = new Date(`${jour}T00:00:00+02:00`).toISOString();
+    const finJour = new Date(`${jour}T23:59:59+02:00`).toISOString();
+
+    const { data, error } = await supabase
+      .from('rendez_vous')
+      .select(
+        'id, client_id, telephone, nom, email, formule, forfait_code, minutes, debut, fin, statut, montant_paye, tentatives, derniere_tentative, session_id'
+      )
+      .gte('debut', debutJour)
+      .lte('debut', finJour)
+      .order('debut', { ascending: true });
+    if (error) throw error;
+
+    // Les rendez-vous passés d'un jour ANTÉRIEUR restés « prévu » : un
+    // empêchement, un oubli. Ils remontent pour être rattrapés, jamais
+    // effacés en silence.
+    const { data: retard } = await supabase
+      .from('rendez_vous')
+      .select(
+        'id, client_id, telephone, nom, email, formule, forfait_code, minutes, debut, fin, statut, montant_paye, tentatives, derniere_tentative, session_id'
+      )
+      .eq('statut', 'prevu')
+      .lt('debut', debutJour)
+      .order('debut', { ascending: false })
+      .limit(20);
+
+    const maintenant = Date.now();
+    const enrichir = (r) => ({
+      ...r,
+      prenom: capitaliserPrenom(r.nom),
+      // « À rattraper » se DÉDUIT — pas de statut stocké, donc rien qui
+      // sorte de la liste sans qu'Elena l'ait décidé.
+      aRattraper: r.statut === 'prevu' && new Date(r.debut).getTime() < maintenant,
+    });
+
+    res.json({
+      jour,
+      duJour: (data || []).map(enrichir),
+      enRetard: (retard || []).map(enrichir),
+    });
+  } catch (err) {
+    console.error('Erreur rendez-vous du jour:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+function capitaliserPrenom(nom) {
+  const p = String(nom || '').trim().split(/\s+/)[0] || '';
+  return p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : 'Cliente';
+}
 
 // ------------------------------------------------------------------
 // NUMÉROS BLOQUÉS

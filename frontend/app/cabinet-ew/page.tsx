@@ -9,6 +9,7 @@ import BandeauAppelEnCours, {
   type AppelEnCours,
 } from "@/components/BandeauAppelEnCours";
 import SanteLigne from "@/components/SanteLigne";
+import RendezVousDuJour from "@/components/RendezVousDuJour";
 
 interface Forfait {
   code: string;
@@ -296,6 +297,11 @@ export default function AdminPage() {
           </button>
         </div>
       </div>
+
+      {/* 2 bis. MES RENDEZ-VOUS DU JOUR — juste sous le statut : c'est
+             l'écran depuis lequel Elena pilote sa journée, à la place de
+             sa boîte mail. S'efface de lui-même s'il n'y a rien. */}
+      <RendezVousDuJour />
 
       {/* 3. AUJOURD'HUI — ce que je veux voir en arrivant */}
       <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">

@@ -170,6 +170,9 @@ export const api = {
   // Réglages de pilotage — en base, plus dans le navigateur
   adminPatchReglages: (body: Record<string, unknown>) =>
     request("/admin/reglages", { method: "PATCH", body: JSON.stringify(body) }),
+  // Rendez-vous Calendly
+  adminGetRendezVous: (jour?: string) =>
+    request(`/admin/rendez-vous${jour ? `?jour=${jour}` : ""}`),
   // Numéros bloqués
   adminGetNumerosBloques: () => request("/admin/numeros-bloques"),
   adminBloquerNumero: (telephone: string, motif?: string) =>
@@ -199,6 +202,17 @@ export const api = {
     request("/admin/consultation-minutee", {
       method: "POST",
       body: JSON.stringify({ telephone, forfaitCode }),
+    }),
+  // Même route, depuis un rendez-vous Calendly : `rendezVousId` fait
+  // enregistrer la TENTATIVE (pas la réussite — cf. finalizeSession).
+  adminLancerForfait: (body: {
+    telephone: string;
+    forfaitCode: string | null;
+    rendezVousId: string;
+  }) =>
+    request("/admin/consultation-minutee", {
+      method: "POST",
+      body: JSON.stringify(body),
     }),
 
   // Sessions (mono-praticienne : le consultant est résolu côté backend)
