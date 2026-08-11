@@ -25,6 +25,38 @@ function formatDuree(secondes: number | null): string {
   return sec > 0 ? `${min} min ${sec.toString().padStart(2, "0")}` : `${min} min`;
 }
 
+const euros = (n: number) => n.toFixed(2).replace(".", ",") + " €";
+
+/**
+ * Explique le montant d'une consultation à la minute : « 9 min 49 »
+ * facturé 29 € semble faux tant qu'on ne dit pas que la dixième minute
+ * était entamée. La règle est annoncée avant l'appel, mais c'est ici
+ * qu'elle est mise en doute — donc c'est ici qu'elle doit se relire.
+ *
+ * Le tarif est recalculé depuis le montant réellement débité, jamais
+ * depuis le tarif actuel : une consultation ancienne doit continuer de
+ * s'expliquer même si les prix ont changé depuis.
+ *
+ * @returns null pour les forfaits (montant fixe, rien à expliquer) et
+ *          les consultations non facturées.
+ */
+function detailFacturation(c: Consultation): string | null {
+  if (!c.montant || c.montant <= 0) return null;
+  if (c.type !== "minute") return null;
+  if (!c.durationSeconds || c.durationSeconds <= 0) return null;
+
+  const facturees = Math.ceil(c.durationSeconds / 60);
+  const reelles = c.durationSeconds / 60;
+  const tarif = c.montant / facturees;
+
+  // Durée pile ronde : la mention n'apporterait rien.
+  if (Math.abs(facturees - reelles) < 0.017) {
+    return `${facturees} min à ${euros(tarif)}/min`;
+  }
+
+  return `${facturees} minutes entamées × ${euros(tarif)} — toute minute commencée est due`;
+}
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("fr-FR", {
     day: "numeric",
@@ -129,6 +161,17 @@ export default function ConsultationsPage() {
                 <p className="mt-1 text-sm text-ink">
                   Durée : {formatDuree(c.durationSeconds)}
                 </p>
+                {/* TRANSPARENCE DU CALCUL — sans cette ligne, une cliente
+                    lit « 9 min 49 » puis « 29,00 € » et conclut à une
+                    erreur : 29 € pour dix minutes, alors qu'elle n'a pas
+                    parlé dix minutes. La règle de la minute entamée est
+                    annoncée avant l'appel ; elle doit être rappelée là où
+                    le montant apparaît, pas seulement en amont. */}
+                {detailFacturation(c) && (
+                  <p className="mt-0.5 text-xs text-mention">
+                    {detailFacturation(c)}
+                  </p>
+                )}
               </div>
               <div className="shrink-0 text-right">
                 {c.montant === 0 ? (
@@ -143,7 +186,7 @@ export default function ConsultationsPage() {
                   </>
                 ) : (
                   <span className="font-serif text-xl font-semibold text-prix">
-                    {c.montant != null ? `${c.montant.toFixed(2)}€` : "—"}
+                    {c.montant != null ? euros(c.montant) : "—"}
                   </span>
                 )}
               </div>

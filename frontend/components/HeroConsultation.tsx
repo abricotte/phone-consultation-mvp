@@ -110,70 +110,87 @@ export default function HeroConsultation({
 
   return (
     <section className="relative overflow-hidden rounded-3xl border border-greige/40 bg-ivory p-6 shadow-soft sm:p-8">
-      <span aria-hidden className="pointer-events-none absolute right-8 top-5 text-lg text-gold/50">✦</span>
-      <span aria-hidden className="pointer-events-none absolute right-20 top-12 text-xs text-coral/40">✦</span>
-      <span aria-hidden className="pointer-events-none absolute right-32 top-6 text-[0.6rem] text-gold/40">✦</span>
+      {/* Étoiles décoratives — descendues sous la bannière de statut,
+          qui occupe désormais le haut de la carte : elles tombaient
+          dessus et ressemblaient à une maladresse plutôt qu'à un ornement. */}
+      <span aria-hidden className="pointer-events-none absolute right-8 top-28 text-lg text-gold/50">✦</span>
+      <span aria-hidden className="pointer-events-none absolute right-20 top-36 text-xs text-coral/40">✦</span>
+      <span aria-hidden className="pointer-events-none absolute right-32 top-32 text-[0.6rem] text-gold/40">✦</span>
 
-      {/* STATUT + CRÉDIT
-          Le statut est la première chose que la cliente cherche en
-          arrivant : elle veut savoir si elle peut appeler MAINTENANT.
-          Il était en 11 px, plus discret que le texte courant — il passe
-          au corps du titre, avec sa pastille agrandie en proportion. */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          {statut === "chargement" && (
-            <span className="inline-flex items-center gap-2 text-sm font-medium text-mention sm:text-base">
-              <span className="h-2.5 w-2.5 rounded-full bg-greige" />
-              Vérification…
-            </span>
-          )}
-          {statut === "disponible" && (
-            <span className="inline-flex items-center gap-2.5 text-base font-bold text-statut-online sm:text-lg">
-              <span className="relative flex h-3 w-3">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-statut-online opacity-60" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-statut-online" />
-              </span>
-              Elena est en ligne
-            </span>
-          )}
-          {statut === "en_consultation" && (
-            <span className="inline-flex flex-wrap items-center gap-2.5 text-base font-bold text-amber-700 sm:text-lg">
-              <span className="h-3 w-3 shrink-0 rounded-full bg-amber-500" />
-              Elena est en consultation
-              {retour && (
-                // L'heure de retour en corps normal : elle informe, elle
-                // ne crie pas — c'est le statut qui doit sauter aux yeux.
-                <span className="text-sm font-medium text-amber-700/80">
-                  de retour vers {retour}
-                </span>
-              )}
-            </span>
-          )}
-          {statut === "hors_ligne" && (
-            <span className="inline-flex flex-col gap-1">
-              <span className="inline-flex items-center gap-2.5 text-base font-bold text-mention sm:text-lg">
-                <span className="h-3 w-3 rounded-full bg-statut-offline" />
-                Elena n&apos;est pas en ligne
-              </span>
-              {/* Le message d'absence prime sur les heures habituelles :
-                  « en repos jusqu'au 15 » rend caduc « en ligne le soir ». */}
-              {presence.messageAbsence ? (
-                <span className="pl-5 text-sm italic text-mention/80">
-                  {presence.messageAbsence}
-                </span>
-              ) : (
-                presence.heuresIndicatives && (
-                  <span className="pl-5 text-sm italic text-mention/80">
-                    {presence.heuresIndicatives}
-                  </span>
-                )
-              )}
+      {/* BANNIÈRE DE STATUT — pleine largeur.
+          C'est la première chose que la cliente cherche en arrivant :
+          peut-elle appeler MAINTENANT ? Elle tenait en 11 px, plus
+          discrète que le texte qui l'entourait.
+          Le ton reste une INVITATION, jamais une pression : pas de
+          compte à rebours, pas d'urgence fabriquée. « Elle est là »
+          suffit — c'est l'information qui manquait, pas l'insistance. */}
+      {statut === "disponible" && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-statut-online/10 px-5 py-4 ring-1 ring-statut-online/25">
+          <span className="relative flex h-3.5 w-3.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-statut-online opacity-60" />
+            <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-statut-online" />
+          </span>
+          <span className="text-xl font-bold text-statut-online sm:text-2xl">
+            Elena est en ligne
+          </span>
+          <span className="text-sm text-ink/70">
+            — vous pouvez l&apos;appeler maintenant
+          </span>
+        </div>
+      )}
+
+      {statut === "en_consultation" && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-amber-50 px-5 py-4 ring-1 ring-amber-200">
+          <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-amber-500" />
+          <span className="text-xl font-bold text-amber-700 sm:text-2xl">
+            Elena est en consultation
+          </span>
+          {retour && (
+            // L'heure de retour informe, elle ne crie pas — c'est le
+            // statut qui doit sauter aux yeux.
+            <span className="text-sm font-medium text-amber-700/80">
+              de retour vers {retour}
             </span>
           )}
         </div>
+      )}
 
-        {/* « n'expire jamais » accolé au solde : c'est LA différence avec
-            les plateformes, elle se lit en même temps que le chiffre. */}
+      {statut === "hors_ligne" && (
+        <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
+          <span className="flex flex-wrap items-center gap-3">
+            <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-statut-offline" />
+            <span className="text-xl font-bold text-mention sm:text-2xl">
+              Elena n&apos;est pas en ligne
+            </span>
+          </span>
+          {/* Le message d'absence prime sur les heures habituelles :
+              « en repos jusqu'au 15 » rend caduc « en ligne le soir ». */}
+          {presence.messageAbsence ? (
+            <p className="mt-1 pl-6 text-sm italic text-mention/80">
+              {presence.messageAbsence}
+            </p>
+          ) : (
+            presence.heuresIndicatives && (
+              <p className="mt-1 pl-6 text-sm italic text-mention/80">
+                {presence.heuresIndicatives}
+              </p>
+            )
+          )}
+        </div>
+      )}
+
+      {statut === "chargement" && (
+        <div className="mb-4 rounded-2xl bg-greige/20 px-5 py-4">
+          <span className="inline-flex items-center gap-3 text-base text-mention">
+            <span className="h-3.5 w-3.5 rounded-full bg-greige" />
+            Vérification…
+          </span>
+        </div>
+      )}
+
+      {/* « n'expire jamais » accolé au solde : c'est LA différence avec
+          les plateformes, elle se lit en même temps que le chiffre. */}
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-blush px-3.5 py-1.5 text-sm text-aubergine">
           <span aria-hidden className="text-gold">☾</span>
           <span className="font-semibold">{soldeMinutes} min</span>
