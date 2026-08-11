@@ -43,6 +43,11 @@ $entetes = @{ Authorization = "Bearer $jeton" }
 Write-Host ""
 Write-Host ("  Jeton recu : " + $jeton.Length + " caracteres, commence par '" + $jeton.Substring(0, [Math]::Min(3, $jeton.Length)) + "'") -ForegroundColor Gray
 Write-Host ("  Cle recue  : " + $cle.Length + " caracteres") -ForegroundColor Gray
+if ($cle.Length -ne 64) {
+  Write-Host "  ATTENTION : la cle generee fait 64 caracteres. Celle-ci n'en a pas." -ForegroundColor Yellow
+  Write-Host "              Collage tronque, ou mauvaise valeur." -ForegroundColor Yellow
+  Write-Host "              Elle DOIT etre identique a celle posee dans Railway." -ForegroundColor Yellow
+}
 if ($jeton.Length -lt 100) {
   Write-Host "  ATTENTION : ce jeton parait trop court pour un jeton Calendly." -ForegroundColor Yellow
 }
@@ -86,14 +91,22 @@ Write-Host ("  Organisation : " + $moi.current_organization)
 # --- 3. L'abonnement existe-t-il deja ? -----------------------
 $URL_WEBHOOK = "https://phone-consultation-mvp-production.up.railway.app/api/calendly/webhook"
 
+# Verification facultative : elle demande la permission webhooks:read,
+# qui n'est pas indispensable a la creation. Si elle manque, on continue
+# plutot que d'echouer - la seule consequence serait un doublon, que la
+# creation refusera d'elle-meme.
 $urlListe = "https://api.calendly.com/webhook_subscriptions?organization=" + $moi.current_organization + "`&scope=user`&user=" + $moi.uri
-$existants = Invoke-RestMethod -Uri $urlListe -Headers $entetes
-$deja = $existants.collection | Where-Object { $_.callback_url -eq $URL_WEBHOOK -and $_.state -eq "active" }
-if ($deja) {
-  Write-Host ""
-  Write-Host "Un abonnement ACTIF existe deja vers cette adresse - rien a creer." -ForegroundColor Yellow
-  Write-Host ("  " + $deja.uri)
-  exit 0
+try {
+  $existants = Invoke-RestMethod -Uri $urlListe -Headers $entetes
+  $deja = $existants.collection | Where-Object { $_.callback_url -eq $URL_WEBHOOK -and $_.state -eq "active" }
+  if ($deja) {
+    Write-Host ""
+    Write-Host "Un abonnement ACTIF existe deja vers cette adresse - rien a creer." -ForegroundColor Yellow
+    Write-Host ("  " + $deja.uri)
+    exit 0
+  }
+} catch {
+  Write-Host "  (verification des abonnements existants impossible - on continue)" -ForegroundColor Gray
 }
 
 # --- 4. Creation ----------------------------------------------
