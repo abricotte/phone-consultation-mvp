@@ -114,46 +114,56 @@ export default function HeroConsultation({
       <span aria-hidden className="pointer-events-none absolute right-20 top-12 text-xs text-coral/40">✦</span>
       <span aria-hidden className="pointer-events-none absolute right-32 top-6 text-[0.6rem] text-gold/40">✦</span>
 
-      {/* Statut + crédit */}
+      {/* STATUT + CRÉDIT
+          Le statut est la première chose que la cliente cherche en
+          arrivant : elle veut savoir si elle peut appeler MAINTENANT.
+          Il était en 11 px, plus discret que le texte courant — il passe
+          au corps du titre, avec sa pastille agrandie en proportion. */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           {statut === "chargement" && (
-            <span className="inline-flex items-center gap-2 text-xs font-medium text-mention">
-              <span className="h-2 w-2 rounded-full bg-greige" />
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-mention sm:text-base">
+              <span className="h-2.5 w-2.5 rounded-full bg-greige" />
               Vérification…
             </span>
           )}
           {statut === "disponible" && (
-            <span className="inline-flex items-center gap-2 text-xs font-semibold text-statut-online">
-              <span className="relative flex h-2 w-2">
+            <span className="inline-flex items-center gap-2.5 text-base font-bold text-statut-online sm:text-lg">
+              <span className="relative flex h-3 w-3">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-statut-online opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-statut-online" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-statut-online" />
               </span>
               Elena est en ligne
             </span>
           )}
           {statut === "en_consultation" && (
-            <span className="inline-flex items-center gap-2 text-xs font-semibold text-amber-700">
-              <span className="h-2 w-2 rounded-full bg-amber-500" />
+            <span className="inline-flex flex-wrap items-center gap-2.5 text-base font-bold text-amber-700 sm:text-lg">
+              <span className="h-3 w-3 shrink-0 rounded-full bg-amber-500" />
               Elena est en consultation
-              {retour ? ` — de retour vers ${retour}` : ""}
+              {retour && (
+                // L'heure de retour en corps normal : elle informe, elle
+                // ne crie pas — c'est le statut qui doit sauter aux yeux.
+                <span className="text-sm font-medium text-amber-700/80">
+                  de retour vers {retour}
+                </span>
+              )}
             </span>
           )}
           {statut === "hors_ligne" && (
-            <span className="inline-flex flex-col gap-0.5">
-              <span className="inline-flex items-center gap-2 text-xs font-medium text-mention">
-                <span className="h-2 w-2 rounded-full bg-statut-offline" />
+            <span className="inline-flex flex-col gap-1">
+              <span className="inline-flex items-center gap-2.5 text-base font-bold text-mention sm:text-lg">
+                <span className="h-3 w-3 rounded-full bg-statut-offline" />
                 Elena n&apos;est pas en ligne
               </span>
               {/* Le message d'absence prime sur les heures habituelles :
                   « en repos jusqu'au 15 » rend caduc « en ligne le soir ». */}
               {presence.messageAbsence ? (
-                <span className="pl-4 text-xs italic text-mention/80">
+                <span className="pl-5 text-sm italic text-mention/80">
                   {presence.messageAbsence}
                 </span>
               ) : (
                 presence.heuresIndicatives && (
-                  <span className="pl-4 text-xs italic text-mention/80">
+                  <span className="pl-5 text-sm italic text-mention/80">
                     {presence.heuresIndicatives}
                   </span>
                 )

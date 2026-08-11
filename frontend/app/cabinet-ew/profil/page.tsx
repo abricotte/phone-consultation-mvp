@@ -897,7 +897,7 @@ export default function ProfilPraticiennePage() {
       {/* Réglages de calcul */}
       <Section
         titre="Mes réglages de calcul"
-        sous="Utilisés dans l'onglet Revenus. Conservés sur cet appareil."
+        sous="Utilisés dans l'onglet Revenus. Enregistrés dans votre compte : ils vous suivent d'un appareil à l'autre."
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex items-center gap-2 text-sm text-ink sm:col-span-2">
