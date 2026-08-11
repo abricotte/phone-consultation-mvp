@@ -55,6 +55,17 @@ export default function HeroConsultation({
   const [autreOuvert, setAutreOuvert] = useState(false);
   const [autreMinutes, setAutreMinutes] = useState(maxMinutes >= 45 ? 45 : maxMinutes);
 
+  // Colonnes de la grille de recharge, selon le nombre de paliers cochés
+  // dans le profil. Les classes sont écrites en toutes lettres : Tailwind
+  // ne compile que ce qu'il lit dans le source, une classe construite par
+  // concaténation n'existerait pas dans la feuille de style finale.
+  const grilleRecharge =
+    suggestionsMinutes.length <= 2
+      ? "grid-cols-2"
+      : suggestionsMinutes.length === 3
+        ? "grid-cols-3"
+        : "grid-cols-2 sm:grid-cols-4";
+
   const enLigne = statut === "disponible";
   const creditSuffisant = soldeMinutes >= minimumMinutes;
 
@@ -252,7 +263,10 @@ export default function HeroConsultation({
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
           Recharge express
         </p>
-        <div className="mt-3 grid grid-cols-3 gap-2.5">
+        {/* La grille suit le nombre de paliers choisis dans le profil :
+            figée à trois colonnes, un quatrième palier se retrouvait seul
+            sur sa ligne, comme un oubli. */}
+        <div className={`mt-3 grid gap-2.5 ${grilleRecharge}`}>
           {suggestionsMinutes.map((m) => {
             const chargement = rechargeEnCours === m;
             const primaire = !creditSuffisant;
