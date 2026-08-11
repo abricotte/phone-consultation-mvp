@@ -8,6 +8,10 @@ import { usePathname } from "next/navigation";
 const ONGLETS = [
   { href: "/dashboard", label: "Mon espace", icone: "✦" },
   { href: "/consultations", label: "Consultations", icone: "☾" },
+  // L'argent a son propre onglet : il quitte « Compte », où il était
+  // noyé entre l'adresse email et le mot de passe, et cesse d'encombrer
+  // le chemin de consultations. Chacun sa page, chacun son registre.
+  { href: "/credit", label: "Mon crédit", icone: "◈" },
   { href: "/profil", label: "Profil", icone: "✧" },
   { href: "/compte", label: "Compte", icone: "⚙" },
 ];
