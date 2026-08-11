@@ -449,6 +449,46 @@ export default function ProfilPraticiennePage() {
         </div>
       </Section>
 
+      {/* Mot de passe — juste après les coordonnées : ce sont les deux
+          seules choses qui la concernent ELLE, pas son activité. */}
+      <Section titre="Mon mot de passe">
+        <form onSubmit={changerMdp} className="max-w-sm space-y-3">
+          <input
+            type="password"
+            value={mdpActuel}
+            onChange={(e) => setMdpActuel(e.target.value)}
+            placeholder="Mot de passe actuel"
+            autoComplete="current-password"
+            required
+            className={champ}
+          />
+          <input
+            type="password"
+            value={mdpNouveau}
+            onChange={(e) => setMdpNouveau(e.target.value)}
+            placeholder="Nouveau mot de passe (8 caractères min.)"
+            autoComplete="new-password"
+            required
+            className={champ}
+          />
+          {mdpMsg && (
+            <p className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{mdpMsg}</p>
+          )}
+          {mdpErr && (
+            <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{mdpErr}</p>
+          )}
+          <button type="submit" disabled={mdpEnCours} className={bouton}>
+            {mdpEnCours ? "Modification…" : "Changer mon mot de passe"}
+          </button>
+        </form>
+      </Section>
+
+      {/* Charnière : ce qui précède la concerne elle, ce qui suit
+          concerne ce que ses clientes voient. */}
+      <h2 className="mt-8 font-jakarta text-sm font-bold uppercase tracking-wider text-mention">
+        Tout ce que je peux modifier
+      </h2>
+
       {/* Tarifs */}
       <Section
         titre="Mes tarifs et durées"
@@ -842,39 +882,6 @@ export default function ProfilPraticiennePage() {
             </p>
           )}
         </div>
-      </Section>
-
-      {/* Mot de passe */}
-      <Section titre="Mon mot de passe">
-        <form onSubmit={changerMdp} className="max-w-sm space-y-3">
-          <input
-            type="password"
-            value={mdpActuel}
-            onChange={(e) => setMdpActuel(e.target.value)}
-            placeholder="Mot de passe actuel"
-            autoComplete="current-password"
-            required
-            className={champ}
-          />
-          <input
-            type="password"
-            value={mdpNouveau}
-            onChange={(e) => setMdpNouveau(e.target.value)}
-            placeholder="Nouveau mot de passe (8 caractères min.)"
-            autoComplete="new-password"
-            required
-            className={champ}
-          />
-          {mdpMsg && (
-            <p className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{mdpMsg}</p>
-          )}
-          {mdpErr && (
-            <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{mdpErr}</p>
-          )}
-          <button type="submit" disabled={mdpEnCours} className={bouton}>
-            {mdpEnCours ? "Modification…" : "Changer mon mot de passe"}
-          </button>
-        </form>
       </Section>
 
       {/* À venir */}

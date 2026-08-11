@@ -13,16 +13,38 @@ async function request(endpoint: string, options: RequestInit = {}) {
     },
   });
 
-  // 204 (ou corps vide) : rien à décoder — res.json() lèverait ici
+  // 204 : rien à décoder par définition
   if (res.status === 204) {
     if (!res.ok) throw new Error("Une erreur est survenue");
     return null;
   }
 
-  const data = await res.json();
+  // Toute réponse n'est pas du JSON : une passerelle en erreur renvoie
+  // une page HTML, un 502 pendant un redéploiement renvoie un corps vide.
+  // res.json() y répondait « Unexpected end of JSON input » — un message
+  // qui n'apprend rien à personne et masque la vraie panne.
+  const texte = await res.text();
+  // `any` assumé : chaque appelant connaît la forme qu'il attend et la
+  // déclare de son côté. Typer ici obligerait à caster partout.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let data: any = null;
+  if (texte) {
+    try {
+      data = JSON.parse(texte);
+    } catch {
+      /* réponse non-JSON : on retombe sur un message parlant ci-dessous */
+    }
+  }
 
   if (!res.ok) {
-    throw new Error(data.error || "Une erreur est survenue");
+    if (data?.error) throw new Error(data.error);
+    // Le serveur n'a rien dit d'intelligible : on nomme au moins la panne.
+    if (res.status >= 500) {
+      throw new Error(
+        "Le serveur est momentanément indisponible. Réessayez dans un instant."
+      );
+    }
+    throw new Error(`Une erreur est survenue (${res.status}).`);
   }
 
   return data;

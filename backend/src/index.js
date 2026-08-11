@@ -8,6 +8,7 @@ const consultantRoutes = require('./routes/consultants');
 const walletRoutes = require('./routes/wallets');
 const sessionRoutes = require('./routes/sessions');
 const webhookRoutes = require('./routes/webhook');
+const calendlyRoutes = require('./routes/calendly');
 const callRoutes = require('./routes/calls');
 const configRoutes = require('./routes/config');
 const adminRoutes = require('./routes/admin');
@@ -27,6 +28,10 @@ app.use(cors());
 
 // Le webhook Stripe a besoin du body brut, il doit être monté AVANT express.json()
 app.use('/api/webhook', webhookRoutes);
+
+// Même raison pour Calendly : sa signature se calcule sur les octets
+// exacts reçus, qu'un JSON re-sérialisé ne redonne pas.
+app.use('/api/calendly', calendlyRoutes);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Pour les callbacks Twilio
