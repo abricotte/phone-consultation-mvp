@@ -12,9 +12,25 @@ interface User {
   role?: string;
 }
 
+interface Transaction {
+  id: string;
+  type: "credit" | "debit";
+  amount: number;
+  description: string;
+  createdAt: string;
+}
+
+const euros = (n: number) =>
+  Number(n).toFixed(2).replace(".", ",") + " €";
+
 export default function ComptePage() {
   const [user, setUser] = useState<User | null>(null);
   const [chargement, setChargement] = useState(true);
+
+  // L'historique en euros vit ICI, pas sur l'accueil : sur l'accueil,
+  // une consultation est un moment (« 20 minutes avec Elena ») ; c'est
+  // dans Mon compte que l'argent a sa place.
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -46,6 +62,10 @@ export default function ComptePage() {
         }
         setUser(u);
         setPhone(u.phone || "");
+        api
+          .getTransactions()
+          .then((t: Transaction[]) => setTransactions(t || []))
+          .catch(() => setTransactions([]));
       })
       .catch(() => {
         localStorage.removeItem("token");
@@ -256,6 +276,53 @@ export default function ComptePage() {
           </button>
         </form>
       </div>
+
+      {/* Recharges & débits — déplacés depuis l'accueil : l'argent est de
+          l'intendance, il se consulte ici quand on en a besoin. */}
+      {transactions.length > 0 && (
+        <div className="mt-6 rounded-2xl border border-greige/60 bg-ivory p-6 shadow-soft">
+          <h2 className="font-serif text-xl font-semibold text-aubergine">
+            Recharges &amp; débits
+          </h2>
+          <ul className="mt-4">
+            {transactions.map((tx) => {
+              const credit = tx.type === "credit";
+              return (
+                <li
+                  key={tx.id}
+                  className="flex items-center gap-3 border-b border-greige/40 py-3 last:border-0"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-ink">
+                      {tx.description}
+                    </p>
+                    <p className="text-xs text-mention">
+                      {new Date(tx.createdAt).toLocaleDateString("fr-FR", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 text-sm font-bold tabular-nums ${
+                      credit ? "text-statut-online" : "text-aubergine"
+                    }`}
+                  >
+                    {credit ? "+" : "−"}
+                    {euros(tx.amount)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-3 text-xs text-mention">
+            Votre crédit n&apos;expire jamais.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

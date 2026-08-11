@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { capitaliser } from "@/lib/format";
 import HeroConsultation from "@/components/HeroConsultation";
 import EspaceNav from "@/components/EspaceNav";
 
@@ -39,11 +40,6 @@ const PENSEES = [
 function jourDeLAnnee(d: Date): number {
   const debut = new Date(d.getFullYear(), 0, 0);
   return Math.floor((d.getTime() - debut.getTime()) / 86400000);
-}
-
-// "58,00 €" à la française
-function euros(n: number): string {
-  return `${n.toFixed(2).replace(".", ",")} €`;
 }
 
 export default function DashboardPage() {
@@ -139,6 +135,21 @@ export default function DashboardPage() {
   const balance = wallet?.balance ?? 0;
   const minutesRestantes = Math.floor((balance * 100) / prixMinuteCents);
 
+  // Le chemin ne montre que les consultations — les recharges sont de
+  // l'intendance, elles vivent dans l'onglet Compte.
+  const consultationsPassees = transactions.filter((tx) => tx.type === "debit");
+
+  // « 20 minutes avec Elena » plutôt que « −5,80 € » : la monnaie de cet
+  // espace est le temps passé ensemble, pas l'euro.
+  function minutesDeConsultation(description: string): string {
+    const m = description.match(/(\d+)\s*min/);
+    if (m) {
+      const n = Number(m[1]);
+      return `${n} minute${n > 1 ? "s" : ""} avec Elena`;
+    }
+    return description;
+  }
+
   if (loading)
     return <div className="mt-16 text-center text-mention">Chargement…</div>;
   if (error && !user)
@@ -159,7 +170,7 @@ export default function DashboardPage() {
           </p>
         )}
         <h1 className="mt-1.5 font-serif text-4xl font-semibold text-aubergine sm:text-5xl">
-          Bonjour {user?.firstName}
+          Bonjour {capitaliser(user?.firstName)}
         </h1>
         {pensee && (
           <p className="mt-2 font-serif text-lg italic text-mention/90">
@@ -193,64 +204,57 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Historique des transactions */}
+      {/* MON CHEMIN AVEC ELENA — le renversement voulu par Elena :
+          « l'argent en coulisse, le cheminement en scène ». Ici, une
+          consultation est un moment passé ensemble, pas une dépense. Les
+          montants en euros vivent dans l'onglet Compte, à leur place. */}
       <section className="rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft sm:p-8">
         <h2 className="font-serif text-2xl font-semibold text-aubergine">
-          Recharges &amp; débits
+          Mon chemin avec Elena
         </h2>
-        {transactions.length === 0 ? (
+        {consultationsPassees.length === 0 ? (
           <div className="mt-5 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-8 text-center">
             <p className="text-3xl">✦</p>
             <p className="mt-2 text-sm text-mention">
-              Aucune transaction pour le moment.
+              Votre chemin commencera à votre première consultation.
             </p>
           </div>
         ) : (
           <ul className="mt-4">
-            {transactions.map((tx) => {
-              const credit = tx.type === "credit";
-              return (
-                <li
-                  key={tx.id}
-                  className="flex items-center gap-3.5 border-b border-greige/40 py-3.5 last:border-0"
+            {consultationsPassees.map((tx) => (
+              <li
+                key={tx.id}
+                className="flex items-center gap-3.5 border-b border-greige/40 py-3.5 last:border-0"
+              >
+                <span
+                  aria-hidden
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blush text-lg font-medium text-prix"
                 >
-                  <span
-                    aria-hidden
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-medium ${
-                      credit
-                        ? "bg-green-50 text-statut-online"
-                        : "bg-blush text-prix"
-                    }`}
-                  >
-                    {credit ? "＋" : "☾"}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-ink">
-                      {tx.description}
-                    </p>
-                    <p className="text-xs text-mention">
-                      {new Date(tx.createdAt).toLocaleDateString("fr-FR", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                  <span
-                    className={`shrink-0 text-base font-bold tabular-nums tracking-tight ${
-                      credit ? "text-statut-online" : "text-aubergine"
-                    }`}
-                  >
-                    {credit ? "+" : "−"}
-                    {euros(tx.amount)}
-                  </span>
-                </li>
-              );
-            })}
+                  ☾
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-ink">
+                    {minutesDeConsultation(tx.description)}
+                  </p>
+                  <p className="text-xs text-mention">
+                    {new Date(tx.createdAt).toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+              </li>
+            ))}
           </ul>
         )}
+        <p className="mt-4 text-xs text-mention">
+          Le détail de vos recharges et débits se trouve dans{" "}
+          <a href="/compte" className="underline hover:text-aubergine">
+            Mon compte
+          </a>
+          .
+        </p>
       </section>
     </div>
   );

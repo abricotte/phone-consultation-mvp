@@ -140,10 +140,12 @@ export default function HeroConsultation({
           )}
         </div>
 
+        {/* « n'expire jamais » accolé au solde : c'est LA différence avec
+            les plateformes, elle se lit en même temps que le chiffre. */}
         <span className="inline-flex items-center gap-1.5 rounded-full bg-blush px-3.5 py-1.5 text-sm text-aubergine">
           <span aria-hidden className="text-gold">☾</span>
           <span className="font-semibold">{soldeMinutes} min</span>
-          <span className="text-mention">de crédit</span>
+          <span className="text-mention">de crédit · n&apos;expire jamais</span>
         </span>
       </div>
 
