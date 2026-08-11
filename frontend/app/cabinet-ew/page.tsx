@@ -39,6 +39,20 @@ interface Jour {
   revenusJour: number;
   soldesClientsTotal: number;
   nombreWallets: number;
+  dernierAppel: {
+    clienteId: string | null;
+    prenom: string;
+    fini: string;
+    minutes: number;
+  } | null;
+}
+
+function heureCourte(iso: string) {
+  return new Date(iso).toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Paris",
+  });
 }
 
 function euros(n: number) {
@@ -354,8 +368,39 @@ export default function AdminPage() {
         </p>
       )}
 
+      {/* Dernier appel — le geste le plus fréquent après une consultation
+          est d'ouvrir la fiche de celle qu'on vient de quitter. */}
+      {jour?.dernierAppel && (
+        <p className="mt-2 text-xs text-mention">
+          Dernier appel :{" "}
+          <span className="font-semibold text-ink">
+            {jour.dernierAppel.prenom}
+          </span>
+          , {heureCourte(jour.dernierAppel.fini)}, {jour.dernierAppel.minutes} min
+          {jour.dernierAppel.clienteId && (
+            <>
+              {" · "}
+              <a
+                href={`/cabinet-ew/clientes/${jour.dernierAppel.clienteId}`}
+                className="text-prix hover:underline"
+              >
+                voir sa fiche
+              </a>
+            </>
+          )}
+        </p>
+      )}
+
       <p className="mt-2 text-xs text-mention">
-        Crédit détenu par vos clientes :{" "}
+        {/* Cet argent est encaissé mais dû en prestation : il compte pour
+            la TVA et la trésorerie, pas comme un revenu acquis. */}
+        <span
+          className="cursor-help border-b border-dotted border-mention/50"
+          title="Déjà encaissé, à honorer en consultations. Cet argent est sur votre compte mais vous le devez encore en prestations."
+        >
+          Crédit détenu par vos clientes
+        </span>{" "}
+        :{" "}
         <span className="font-semibold text-ink">
           {euros(jour?.soldesClientsTotal ?? 0)}
         </span>{" "}

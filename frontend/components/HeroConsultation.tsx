@@ -145,10 +145,18 @@ export default function HeroConsultation({
                 <span className="h-2 w-2 rounded-full bg-statut-offline" />
                 Elena n&apos;est pas en ligne
               </span>
-              {presence.heuresIndicatives && (
+              {/* Le message d'absence prime sur les heures habituelles :
+                  « en repos jusqu'au 15 » rend caduc « en ligne le soir ». */}
+              {presence.messageAbsence ? (
                 <span className="pl-4 text-xs italic text-mention/80">
-                  {presence.heuresIndicatives}
+                  {presence.messageAbsence}
                 </span>
+              ) : (
+                presence.heuresIndicatives && (
+                  <span className="pl-4 text-xs italic text-mention/80">
+                    {presence.heuresIndicatives}
+                  </span>
+                )
               )}
             </span>
           )}

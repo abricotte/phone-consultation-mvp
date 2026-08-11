@@ -589,6 +589,48 @@ async function playWarning(conferenceSid) {
   }
 }
 
+// GET /api/calls/twiml/essai - « Vérifier ma ligne ».
+//
+// Rejoue à Elena EXACTEMENT ce qu'entend une cliente qui compose son
+// numéro : même source (messages_vocaux.inbound), même repli. Un test
+// qui jouerait un message différent ne prouverait rien de ce qui compte.
+router.get('/twiml/essai', twilioSignature, async (req, res) => {
+  const response = new VoiceResponse();
+
+  response.pause({ length: 1 });
+  response.say(
+    { language: 'fr-FR' },
+    "Test de votre ligne. Voici ce qu'entend une cliente qui appelle votre numéro."
+  );
+  response.pause({ length: 1 });
+
+  try {
+    const p = await getPraticienne();
+    const audioUrl = p.messages_vocaux?.inbound;
+    if (audioUrl) {
+      response.play({}, audioUrl);
+    } else {
+      response.say(
+        { language: 'fr-FR' },
+        "Bonjour, vous êtes bien sur la ligne d'Elena Wolska. Pour réserver ou lancer une consultation, rendez-vous sur elena-wolska.com. Merci et à très bientôt."
+      );
+    }
+  } catch (err) {
+    console.error('Erreur TwiML essai:', err);
+    response.say({ language: 'fr-FR' }, 'Message indisponible.');
+  }
+
+  response.pause({ length: 1 });
+  response.say(
+    { language: 'fr-FR' },
+    'Votre ligne fonctionne. Fin du test.'
+  );
+  response.hangup();
+
+  res.type('text/xml');
+  res.send(response.toString());
+});
+
 // GET /api/calls/twiml/verification - Énonce le code de vérification du
 // nouveau numéro de la praticienne. Le code est lu en base à partir de
 // l'identifiant de vérification : il ne transite jamais dans l'URL.

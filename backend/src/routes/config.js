@@ -70,9 +70,25 @@ router.get('/statut', async (req, res) => {
     const { statut, enLigne, retourPrevu } = await getStatutEnLigne();
 
     let heuresIndicatives = null;
+    let messageAbsence = null;
     try {
       const p = await getPraticienne();
-      heuresIndicatives = p.config_branding?.heures_indicatives || null;
+      const b = p.config_branding || {};
+      heuresIndicatives = b.heures_indicatives || null;
+
+      // ABSENCE PROGRAMMÉE — le message ne s'affiche QUE dans sa fenêtre.
+      // Calculé à chaque lecture plutôt que posé par une tâche de fond :
+      // rien à déclencher, rien à oublier de retirer au retour. Une date
+      // seule vaut aussi : début sans fin = « à partir du », fin sans
+      // début = « jusqu'au ».
+      const aujourdhui = new Date().toLocaleDateString('sv-SE', {
+        timeZone: 'Europe/Paris',
+      });
+      const commence = !b.absence_debut || b.absence_debut <= aujourdhui;
+      const pasFini = !b.absence_fin || b.absence_fin >= aujourdhui;
+      if (b.message_absence && commence && pasFini) {
+        messageAbsence = b.message_absence;
+      }
     } catch {
       /* le statut doit répondre même si la fiche praticienne échoue */
     }
@@ -82,6 +98,7 @@ router.get('/statut', async (req, res) => {
       enLigne, // conservé pour compatibilité
       retourPrevu: statut === 'en_consultation' ? retourPrevu : null,
       heuresIndicatives,
+      messageAbsence,
     });
   } catch (err) {
     console.error('Erreur statut public:', err);

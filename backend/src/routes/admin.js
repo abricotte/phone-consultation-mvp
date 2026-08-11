@@ -430,7 +430,7 @@ router.get('/jour', async (req, res) => {
 
     const { data: sessions, error: sessionsError } = await supabase
       .from('sessions')
-      .select('id, type, status, duration_seconds, total_cost, created_at')
+      .select('id, type, status, duration_seconds, total_cost, created_at, ended_at, client_id')
       .eq('praticienne_id', p.id)
       .gte('created_at', debutJour.toISOString());
 
@@ -472,6 +472,11 @@ router.get('/jour', async (req, res) => {
       revenusJour: Math.round(revenus * 100) / 100,
       soldesClientsTotal: Math.round(soldesClients * 100) / 100,
       nombreWallets: wallets.length,
+      // « Dernier appel : Claire, 08:12, 2 min » — le geste le plus
+      // fréquent après une consultation est d'ouvrir la fiche de celle
+      // qu'on vient de quitter. Autant l'avoir sous la main plutôt que
+      // de passer par le Journal.
+      dernierAppel: await dernierAppelDuJour(terminees),
     });
   } catch (err) {
     console.error('Erreur vue du jour:', err);
@@ -1440,6 +1445,8 @@ router.get('/profil', async (req, res) => {
         signature: b.signature || '',
         messageAbsence: b.message_absence || '',
         heuresIndicatives: b.heures_indicatives || '',
+        absenceDebut: b.absence_debut || '',
+        absenceFin: b.absence_fin || '',
       },
       messagesVocaux: p.messages_vocaux || {},
       autoOffHeures: p.auto_off_heures ?? 4,
@@ -1789,6 +1796,38 @@ router.get('/rendez-vous', async (req, res) => {
   }
 });
 
+/**
+ * La dernière consultation aboutie du jour, avec le prénom de la cliente.
+ * @returns {Promise<object|null>} null s'il n'y en a aucune
+ */
+async function dernierAppelDuJour(terminees) {
+  if (!terminees || terminees.length === 0) return null;
+
+  const dernier = [...terminees].sort(
+    (a, b) =>
+      new Date(b.ended_at || b.created_at) - new Date(a.ended_at || a.created_at)
+  )[0];
+
+  let prenom = 'Cliente';
+  if (dernier.client_id) {
+    const { data } = await supabase
+      .from('users')
+      .select('first_name')
+      .eq('id', dernier.client_id)
+      .maybeSingle();
+    if (data?.first_name) prenom = capitaliserPrenom(data.first_name);
+  } else if (dernier.type === 'forfait_manuel') {
+    prenom = 'Rendez-vous';
+  }
+
+  return {
+    clienteId: dernier.client_id,
+    prenom,
+    fini: dernier.ended_at || dernier.created_at,
+    minutes: Math.round((dernier.duration_seconds || 0) / 60),
+  };
+}
+
 function capitaliserPrenom(nom) {
   const p = String(nom || '').trim().split(/\s+/)[0] || '';
   return p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : 'Cliente';
@@ -1930,6 +1969,30 @@ router.patch('/textes', async (req, res) => {
       if (v === null) return res.status(400).json({ error: "Message d'absence invalide." });
       b.message_absence = v;
     }
+    // ABSENCE PROGRAMMÉE — deux dates, et le message normal revient tout
+    // seul après. Sans elles, il faut penser à le retirer au retour : on
+    // l'oublie, et les clientes lisent « je reviens jeudi » en novembre.
+    for (const [cle, champ] of [
+      ['absenceDebut', 'absence_debut'],
+      ['absenceFin', 'absence_fin'],
+    ]) {
+      if (cle in req.body) {
+        const v = req.body[cle];
+        if (v === null || v === '') {
+          b[champ] = null;
+        } else if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+          b[champ] = v;
+        } else {
+          return res.status(400).json({ error: `Date invalide pour ${cle}.` });
+        }
+      }
+    }
+    if (b.absence_debut && b.absence_fin && b.absence_fin < b.absence_debut) {
+      return res.status(400).json({
+        error: 'La date de retour précède la date de départ.',
+      });
+    }
+
     if ('heuresIndicatives' in req.body) {
       // « Je suis généralement en ligne en soirée » — un texte libre, pas
       // un planning : affiché aux clientes quand Elena est hors ligne.
@@ -1996,6 +2059,59 @@ router.get('/ligne', async (req, res) => {
   } catch (err) {
     console.error('Erreur solde ligne:', err);
     res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/admin/essai-ligne - « Vérifier ma ligne » : un VRAI appel.
+//
+// L'autotest ci-dessous vérifie la configuration ; il ne fait pas sonner
+// le téléphone. Or c'est le seul moyen de savoir que tout fonctionne
+// sans attendre une vraie cliente — et de découvrir, par exemple, qu'un
+// opérateur bloque les appels ou que le numéro enregistré est faux.
+router.post('/essai-ligne', async (req, res) => {
+  try {
+    if (!twilio) {
+      return res.status(503).json({ error: 'Twilio non configuré.' });
+    }
+
+    const p = await getPraticienne();
+    const utilisateur = await utilisateurPraticienne(p.id);
+    const numero = normalizePhone(utilisateur?.phone);
+    if (!numero) {
+      return res.status(400).json({
+        error: "Aucun numéro personnel enregistré. Renseignez-le d'abord ci-dessus.",
+      });
+    }
+
+    // Se prémunir du cas où son numéro personnel serait celui de la
+    // ligne : Twilio refuse d'appeler un numéro depuis lui-même, et
+    // l'échec serait silencieux.
+    if (memeNumero(numero, process.env.TWILIO_PHONE_NUMBER)) {
+      return res.status(400).json({
+        error:
+          "Votre numéro personnel est identique à celui de la ligne : l'appel ne peut pas aboutir.",
+      });
+    }
+
+    const backendUrl = (
+      process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`
+    ).replace(/\/+$/, '');
+
+    await twilio.calls.create({
+      to: numero,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      url: `${backendUrl}/api/calls/twiml/essai`,
+      method: 'GET', // /twiml/essai est une route GET (défaut Twilio = POST)
+      timeLimit: 120, // filet : un test ne doit jamais consommer plus
+    });
+
+    res.json({
+      message:
+        'Votre téléphone va sonner. Décrochez : vous entendrez ce que vos clientes entendent.',
+    });
+  } catch (err) {
+    console.error('Erreur essai de ligne:', err);
+    res.status(500).json({ error: err.message || "L'appel de test n'a pas pu partir." });
   }
 });
 

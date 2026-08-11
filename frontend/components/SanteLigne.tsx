@@ -59,6 +59,25 @@ export default function SanteLigne({
       .catch(() => setLigne(null));
   }, []);
 
+  const [essaiEnCours, setEssaiEnCours] = useState(false);
+  const [essaiMsg, setEssaiMsg] = useState("");
+  const [essaiErreur, setEssaiErreur] = useState(false);
+
+  async function lancerEssai() {
+    setEssaiEnCours(true);
+    setEssaiMsg("");
+    setEssaiErreur(false);
+    try {
+      const r = await api.adminEssaiLigne();
+      setEssaiMsg(r?.message || "Votre téléphone va sonner.");
+    } catch (e) {
+      setEssaiErreur(true);
+      setEssaiMsg(e instanceof Error ? e.message : "Erreur");
+    } finally {
+      setEssaiEnCours(false);
+    }
+  }
+
   async function lancerTest() {
     setTestEnCours(true);
     setOuvert(true);
@@ -122,14 +141,37 @@ export default function SanteLigne({
           )}
         </p>
 
-        <button
-          onClick={lancerTest}
-          disabled={testEnCours}
-          className="text-sm font-medium text-prix underline-offset-2 transition hover:underline disabled:opacity-50"
-        >
-          {testEnCours ? "Vérification…" : "Suis-je joignable ?"}
-        </button>
+        <span className="flex flex-wrap items-center gap-4">
+          <button
+            onClick={lancerTest}
+            disabled={testEnCours}
+            className="text-sm font-medium text-prix underline-offset-2 transition hover:underline disabled:opacity-50"
+          >
+            {testEnCours ? "Vérification…" : "Suis-je joignable ?"}
+          </button>
+
+          {/* Le contrôle ci-dessus lit la configuration ; celui-ci fait
+              vraiment sonner le téléphone. C'est le seul moyen de savoir
+              que tout marche sans attendre une vraie cliente. */}
+          <button
+            onClick={lancerEssai}
+            disabled={essaiEnCours}
+            className="text-sm font-medium text-prix underline-offset-2 transition hover:underline disabled:opacity-50"
+          >
+            {essaiEnCours ? "Appel en cours…" : "M'appeler pour vérifier"}
+          </button>
+        </span>
       </div>
+
+      {essaiMsg && (
+        <p
+          className={`mt-2 text-sm ${
+            essaiErreur ? "text-red-600" : "text-green-700"
+          }`}
+        >
+          {essaiMsg}
+        </p>
+      )}
 
       {ouvert && test && (
         <div className="mt-3 rounded-2xl border border-greige/50 bg-ivory p-4">

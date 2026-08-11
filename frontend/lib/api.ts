@@ -202,6 +202,9 @@ export const api = {
   // Santé de la ligne téléphonique
   adminGetLigne: () => request("/admin/ligne"),
   adminAutotest: () => request("/admin/autotest"),
+  // Fait VRAIMENT sonner le téléphone d'Elena et lui joue le message
+  // que ses clientes entendent (l'autotest ne lit que la configuration).
+  adminEssaiLigne: () => request("/admin/essai-ligne", { method: "POST" }),
   adminLancerConsultation: (telephone: string, forfaitCode: string) =>
     request("/admin/consultation-minutee", {
       method: "POST",

@@ -39,6 +39,16 @@ const RATIO_FORFAIT_MIN = 0.5;
 
 const euros = (n: number) => n.toFixed(2).replace(".", ",") + " €";
 
+// Le message d'absence est-il dans sa fenêtre aujourd'hui ? Miroir exact
+// du calcul serveur (routes/config.js), en heure de Paris : une date
+// seule vaut aussi — début sans fin = « à partir du », et inversement.
+function periodeAbsenceActive(debut: string, fin: string): boolean {
+  const aujourdhui = new Date().toLocaleDateString("sv-SE", {
+    timeZone: "Europe/Paris",
+  });
+  return (!debut || debut <= aujourdhui) && (!fin || fin >= aujourdhui);
+}
+
 interface Profil {
   nomPublic: string;
   telephone: string | null;
@@ -64,6 +74,8 @@ interface Profil {
     signature: string;
     messageAbsence: string;
     heuresIndicatives?: string;
+    absenceDebut?: string;
+    absenceFin?: string;
   };
   autoOffHeures: number;
   reglages: Reglages;
@@ -118,6 +130,8 @@ export default function ProfilPraticiennePage() {
   const [signature, setSignature] = useState("");
   const [absence, setAbsence] = useState("");
   const [heuresIndicatives, setHeuresIndicatives] = useState("");
+  const [absenceDebut, setAbsenceDebut] = useState("");
+  const [absenceFin, setAbsenceFin] = useState("");
   const [textesMsg, setTextesMsg] = useState("");
   const [textesEnCours, setTextesEnCours] = useState(false);
 
@@ -198,6 +212,8 @@ export default function ProfilPraticiennePage() {
         setSignature(p.textes.signature);
         setAbsence(p.textes.messageAbsence);
         setHeuresIndicatives(p.textes.heuresIndicatives || "");
+        setAbsenceDebut(p.textes.absenceDebut || "");
+        setAbsenceFin(p.textes.absenceFin || "");
         // La base fait foi. Si ce navigateur détient encore d'anciens
         // réglages locaux, on les remonte UNE fois — c'est ainsi que le
         // 23 % d'URSSAF resté figé ici retrouve le chemin du serveur —
@@ -318,6 +334,8 @@ export default function ProfilPraticiennePage() {
         signature,
         messageAbsence: absence,
         heuresIndicatives,
+        absenceDebut: absenceDebut || null,
+        absenceFin: absenceFin || null,
       });
       setTextesMsg("Textes enregistrés.");
     } catch (err) {
@@ -493,9 +511,22 @@ export default function ProfilPraticiennePage() {
 
       {/* Charnière : ce qui précède la concerne elle, ce qui suit
           concerne ce que ses clientes voient. */}
-      <h2 className="mt-8 font-jakarta text-sm font-bold uppercase tracking-wider text-mention">
-        Tout ce que je peux modifier
-      </h2>
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-jakarta text-sm font-bold uppercase tracking-wider text-mention">
+          Tout ce que je peux modifier
+        </h2>
+        {/* Vérifié : la page d'accueil ne lit jamais le jeton de session,
+            elle s'affiche donc à l'identique pour une visiteuse. Un simple
+            lien suffit — aucun artifice de déconnexion nécessaire. */}
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full border border-greige/60 bg-white px-4 py-2 text-xs font-medium text-mention transition hover:border-aubergine/40 hover:text-aubergine"
+        >
+          Voir mon site comme une cliente ↗
+        </a>
+      </div>
 
       {/* Tarifs */}
       <Section
@@ -785,6 +816,56 @@ export default function ProfilPraticiennePage() {
               Laissez vide pour le message générique.
             </span>
           </label>
+
+          {/* Absence programmée : le message normal revient tout seul.
+              Sans ces dates, il faut penser à le retirer au retour — on
+              l'oublie, et les clientes lisent « je reviens jeudi » en
+              novembre. */}
+          <div className="rounded-2xl border border-greige/50 bg-white/60 p-4">
+            <p className="text-sm font-medium text-aubergine">
+              Afficher ce message seulement pendant une période
+            </p>
+            <p className="mt-1 text-xs text-mention">
+              Pour des vacances : passé la date de retour, il disparaît de
+              lui-même. Laissez vide pour l&apos;afficher en permanence.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-4">
+              <label className="block">
+                <span className="mb-1 block text-xs text-mention">
+                  À partir du
+                </span>
+                <input
+                  type="date"
+                  value={absenceDebut}
+                  onChange={(e) => setAbsenceDebut(e.target.value)}
+                  className={champ}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs text-mention">
+                  Jusqu&apos;au (inclus)
+                </span>
+                <input
+                  type="date"
+                  value={absenceFin}
+                  onChange={(e) => setAbsenceFin(e.target.value)}
+                  className={champ}
+                />
+              </label>
+            </div>
+            {(absenceDebut || absenceFin) && absence.trim() && (
+              <p className="mt-3 text-xs text-ink">
+                {periodeAbsenceActive(absenceDebut, absenceFin)
+                  ? "✦ Ce message s'affiche en ce moment sur votre site."
+                  : "Ce message ne s'affiche pas aujourd'hui — hors de la période."}
+              </p>
+            )}
+            {absenceDebut && absenceFin && absenceFin < absenceDebut && (
+              <p className="mt-2 text-xs text-red-600">
+                La date de retour précède la date de départ.
+              </p>
+            )}
+          </div>
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-aubergine">
               Mes heures habituelles

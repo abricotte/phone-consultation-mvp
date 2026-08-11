@@ -16,12 +16,15 @@ export interface ElenaPresence {
   retourPrevu: string | null;
   /** « Je suis généralement en ligne en soirée » — réglé dans le profil */
   heuresIndicatives: string | null;
+  /** Message d'absence, seulement pendant sa période de validité */
+  messageAbsence: string | null;
 }
 
 const INITIAL: ElenaPresence = {
   statut: "chargement",
   retourPrevu: null,
   heuresIndicatives: null,
+  messageAbsence: null,
 };
 
 // Présence d'Elena, rafraîchie par polling toutes les 30 s.
@@ -45,6 +48,7 @@ export function useElenaPresence(pollMs = 30_000): ElenaPresence {
           statut,
           retourPrevu: r.retourPrevu ?? null,
           heuresIndicatives: r.heuresIndicatives ?? null,
+          messageAbsence: r.messageAbsence ?? null,
         });
       } catch {
         if (active) setPresence({ ...INITIAL, statut: "hors_ligne" });
