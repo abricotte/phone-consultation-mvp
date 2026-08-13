@@ -26,10 +26,15 @@ l'achat.
   appliquée, et aucun frais d'inactivité n'est prélevé.
 - Le crédit est **strictement personnel** et ne peut être cédé ni
   transféré à un tiers.
-- Le crédit **non consommé est remboursable** sur simple demande écrite
-  à elenawolska@gmail.com, sans avoir à motiver la demande. Le
-  remboursement est effectué sous 14 jours sur le moyen de paiement
+- **Rétractation.** Conformément à l'article L221-18 du Code de la
+  consommation, vous disposez de **14 jours** à compter de l'achat pour
+  demander le remboursement d'un crédit non utilisé, sans avoir à
+  motiver votre demande. Il suffit d'écrire à elenawolska@gmail.com. Le
+  remboursement intervient sous 14 jours sur le moyen de paiement
   d'origine.
+- **Au-delà de ce délai, le crédit n'est plus remboursable** — mais il
+  reste acquis sans aucune limite de durée. Vous n'en perdez donc
+  jamais la valeur : il vous attend aussi longtemps que nécessaire.
 - En cas de cessation d'activité de l'éditrice, **l'intégralité des
   crédits non consommés est remboursée** aux clientes concernées.
 
@@ -54,13 +59,13 @@ service, notamment en cas de comportement irrespectueux ou d'usage
 abusif, conformément à l'article relatif à la prévention de la
 dépendance.
 
-> **Point à faire valider par un professionnel** — le remboursement du
-> crédit non consommé. Le droit de rétractation de 14 jours (article
-> L221-18 du Code de la consommation) s'applique à un crédit acheté et
-> non utilisé. La rédaction ci-dessus va au-delà en le rendant
-> remboursable sans limite de temps : c'est plus généreux que la loi, et
-> cohérent avec la promesse « n'expire jamais ». À confirmer, mais c'est
-> une position sûre.
+> **Sur le remboursement.** Les 14 jours de rétractation ne sont pas
+> négociables : une clause qui les supprimerait serait réputée non
+> écrite, et affaiblirait la crédibilité de tout le document. Au-delà,
+> le refus de rembourser tient précisément **parce que** le crédit
+> n'expire jamais : la cliente ne perd aucune valeur, elle en diffère
+> l'usage. C'est l'articulation entre les deux qui rend la clause
+> défendable — retirer « n'expire jamais » la fragiliserait aussitôt.
 
 ---
 
@@ -138,12 +143,15 @@ une personne.
 Les transferts hors Union européenne sont encadrés par les clauses
 contractuelles types de la Commission européenne.
 
-> **Second point à faire valider** — les données de tiers. Vos clientes
-> saisissent des informations sur des personnes qui n'ont rien demandé
-> et ne sauront jamais qu'elles figurent quelque part. C'est la zone la
-> plus délicate du RGPD dans toute la plateforme. La rédaction ci-dessus
-> limite l'exposition (minimisation, droit de suppression), mais un
-> juriste dira si elle suffit.
+> **Sur les données de tiers.** Décision prise : on ne change rien au
+> fonctionnement. Le paragraphe ci-dessus est la seule mesure retenue,
+> et elle suffit très probablement — les données en jeu sont minimes
+> (un prénom, une date), saisies volontairement par la cliente pour son
+> propre tirage, jamais exploitées à d'autres fins. Le simple fait de
+> l'écrire, d'inviter à la minimisation et d'ouvrir un droit de
+> suppression place la plateforme du bon côté. **Ne pas retirer ce
+> paragraphe** : c'est lui qui fait toute la différence entre une
+> pratique assumée et un angle mort.
 
 ---
 
