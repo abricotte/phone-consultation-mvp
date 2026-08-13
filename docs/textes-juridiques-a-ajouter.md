@@ -26,15 +26,14 @@ l'achat.
   appliquée, et aucun frais d'inactivité n'est prélevé.
 - Le crédit est **strictement personnel** et ne peut être cédé ni
   transféré à un tiers.
-- **Rétractation.** Conformément à l'article L221-18 du Code de la
-  consommation, vous disposez de **14 jours** à compter de l'achat pour
-  demander le remboursement d'un crédit non utilisé, sans avoir à
-  motiver votre demande. Il suffit d'écrire à elenawolska@gmail.com. Le
-  remboursement intervient sous 14 jours sur le moyen de paiement
-  d'origine.
-- **Au-delà de ce délai, le crédit n'est plus remboursable** — mais il
-  reste acquis sans aucune limite de durée. Vous n'en perdez donc
-  jamais la valeur : il vous attend aussi longtemps que nécessaire.
+- Le crédit **reste acquis sans aucune limite de durée**. Il n'est pas
+  remboursable, sa valeur n'étant jamais perdue : il demeure disponible
+  aussi longtemps que nécessaire.
+- Conformément à l'article L221-18 du Code de la consommation, un
+  crédit **acheté depuis moins de quatorze jours et resté intégralement
+  inutilisé** peut faire l'objet d'une demande de rétractation à
+  l'adresse elenawolska@gmail.com. Toute utilisation, même partielle,
+  du crédit met fin à cette faculté.
 - En cas de cessation d'activité de l'éditrice, **l'intégralité des
   crédits non consommés est remboursée** aux clientes concernées.
 
@@ -59,13 +58,22 @@ service, notamment en cas de comportement irrespectueux ou d'usage
 abusif, conformément à l'article relatif à la prévention de la
 dépendance.
 
-> **Sur le remboursement.** Les 14 jours de rétractation ne sont pas
-> négociables : une clause qui les supprimerait serait réputée non
-> écrite, et affaiblirait la crédibilité de tout le document. Au-delà,
-> le refus de rembourser tient précisément **parce que** le crédit
-> n'expire jamais : la cliente ne perd aucune valeur, elle en diffère
-> l'usage. C'est l'articulation entre les deux qui rend la clause
-> défendable — retirer « n'expire jamais » la fragiliserait aussitôt.
+> **Sur le remboursement — rédaction volontairement sobre.** L'ordre des
+> deux phrases n'est pas neutre : la règle est « le crédit n'est pas
+> remboursable », la rétractation n'arrive qu'ensuite, comme l'exception
+> légale qu'elle est. Aucune formule du type « sans avoir à motiver
+> votre demande » : la loi est respectée à la lettre, sans que le texte
+> ressemble à une invitation.
+>
+> Les quatorze jours ne sont pas négociables — une clause qui les
+> supprimerait serait réputée non écrite, sans rien protéger, tout en
+> fragilisant le reste du document. Et le refus au-delà tient
+> précisément **parce que** le crédit n'expire jamais : retirer cette
+> promesse ferait tomber la clause avec elle.
+>
+> Portée réelle : seule une cliente qui a payé, n'a jamais appelé, et se
+> ravise en moins de deux semaines peut demander un remboursement. Toute
+> minute consommée y met fin.
 
 ---
 
