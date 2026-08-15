@@ -51,9 +51,16 @@ export default function HeroConsultation({
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
 
-  // Durée personnalisée (repliée par défaut)
-  const [autreOuvert, setAutreOuvert] = useState(false);
+  // Durée personnalisée, choisie au curseur — visible en permanence
   const [autreMinutes, setAutreMinutes] = useState(maxMinutes >= 45 ? 45 : maxMinutes);
+
+  // Remplissage du curseur : la piste est orange jusqu'au pouce.
+  // Bornes = celles de la recharge (minMinutes/maxMinutes), pas le
+  // minimum d'appel — ce sont deux notions distinctes.
+  const progression =
+    maxMinutes > minMinutes
+      ? Math.round(((autreMinutes - minMinutes) / (maxMinutes - minMinutes)) * 100)
+      : 0;
 
   // Colonnes de la grille de recharge, selon le nombre de paliers cochés
   // dans le profil. Les classes sont écrites en toutes lettres : Tailwind
@@ -69,11 +76,6 @@ export default function HeroConsultation({
   const enLigne = statut === "disponible";
   const creditSuffisant = soldeMinutes >= minimumMinutes;
 
-  // Liste des durées possibles pour "Autre durée"
-  const dureesPossibles: number[] = [];
-  for (let m = minMinutes; m <= maxMinutes; m += pasMinutes) {
-    dureesPossibles.push(m);
-  }
 
   async function handleAppel() {
     const token = localStorage.getItem("token");
@@ -292,63 +294,57 @@ export default function HeroConsultation({
           })}
         </div>
 
-        {/* CHOISIR SA DURÉE — un bouton, plus un lien discret.
-            Les trois raccourcis sont un confort ; ils ne doivent pas
-            faire croire que le choix se limite à eux. Le but est
-            justement d'appeler librement, pour la durée qu'on veut :
-            cette porte-là doit se voir autant que les raccourcis. */}
-        <div className="mt-3">
-          {!autreOuvert ? (
-            <button
-              type="button"
-              onClick={() => setAutreOuvert(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-cta/45 bg-cream/40 px-5 py-3.5 text-base font-semibold text-prix transition hover:border-cta hover:bg-ivory"
-            >
-              Choisir une autre durée
-              <span aria-hidden className="text-lg leading-none">›</span>
-            </button>
-          ) : (
-            <div className="space-y-3">
-              {/* La liste ne montre QUE les durées : le prix exact apparaît
-                  une seule fois, après sélection (et sur le bouton). */}
-              <div className="flex items-center justify-center gap-4">
-                <select
-                  value={autreMinutes}
-                  onChange={(e) => setAutreMinutes(Number(e.target.value))}
-                  aria-label="Choisir une durée"
-                  className="rounded-2xl border border-greige bg-cream/60 px-4 py-2.5 text-aubergine transition focus:border-cta-outline focus:outline-none"
-                >
-                  {dureesPossibles.map((m) => (
-                    <option key={m} value={m}>
-                      {m} min
-                    </option>
-                  ))}
-                </select>
-                <span className="font-serif text-2xl font-semibold text-prix">
-                  {prixDe(autreMinutes, prixMinuteCents)}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleRechargeExpress(autreMinutes)}
-                disabled={rechargeEnCours !== null}
-                className="w-full whitespace-nowrap rounded-2xl bg-cta px-5 py-3 font-semibold text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
-              >
-                {rechargeEnCours === autreMinutes
-                  ? "…"
-                  : `Recharger ${autreMinutes} min — ${prixDe(autreMinutes, prixMinuteCents)}`}
-              </button>
-              {/* Une porte qui s'ouvre doit pouvoir se refermer : sans
-                  cela, il fallait recharger la page pour revenir. */}
-              <button
-                type="button"
-                onClick={() => setAutreOuvert(false)}
-                className="mx-auto block text-xs text-mention transition hover:text-aubergine"
-              >
-                Retour aux durées rapides
-              </button>
-            </div>
-          )}
+        {/* CHOISIR SA DURÉE — ouvert d'emblée, avec un curseur.
+            Le menu déroulant repliée derrière un lien laissait croire que
+            le choix se limitait aux trois raccourcis. Or appeler pour la
+            durée qu'on veut est la raison d'être de cet espace : la porte
+            reste donc ouverte, et le prix suit le doigt. */}
+        <div className="mt-4 rounded-2xl border-2 border-dashed border-cta/45 bg-cream/40 p-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <span className="text-sm font-bold text-prix">
+              Ou choisissez votre durée, à la minute près
+            </span>
+            <span className="text-xs italic text-mention">
+              de {minMinutes} à {maxMinutes} min · {prixDe(1, prixMinuteCents)}/min
+            </span>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <input
+              type="range"
+              min={minMinutes}
+              max={maxMinutes}
+              step={pasMinutes}
+              value={autreMinutes}
+              onChange={(e) => setAutreMinutes(Number(e.target.value))}
+              aria-label="Choisir la durée en minutes"
+              className="h-1.5 min-w-[9rem] flex-1 cursor-pointer appearance-none rounded-full bg-greige accent-cta"
+              // #C24818 = couleur `cta` du theme (tailwind.config.ts) ;
+              // un degrade inline ne peut pas lire les classes Tailwind.
+              style={{
+                background: `linear-gradient(90deg, #C24818 ${progression}%, #EFE3D5 ${progression}%)`,
+              }}
+            />
+            <span className="rounded-2xl bg-aubergine px-4 py-2 text-center text-cream">
+              <span className="block font-serif text-lg font-semibold tabular-nums">
+                {autreMinutes} min
+              </span>
+              <span className="block text-xs text-cream/70 tabular-nums">
+                {prixDe(autreMinutes, prixMinuteCents)}
+              </span>
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleRechargeExpress(autreMinutes)}
+            disabled={rechargeEnCours !== null}
+            className="mt-4 w-full rounded-2xl bg-cta px-5 py-3.5 font-semibold text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
+          >
+            {rechargeEnCours === autreMinutes
+              ? "…"
+              : `Recharger ${autreMinutes} min — ${prixDe(autreMinutes, prixMinuteCents)}`}
+          </button>
         </div>
 
         <p className="mt-3 text-center text-xs leading-relaxed text-mention">

@@ -5,15 +5,15 @@ import { usePathname } from "next/navigation";
 
 // Navigation commune de l'espace cliente — présente sur chaque page de
 // l'espace pour circuler librement (remplace les liens "Retour").
+// Quatre entrées, pas six. « Profil » et « Compte » disaient la même
+// chose à la cliente — ses informations — et se distinguaient par une
+// nuance technique qui n'était que la nôtre. Ils fusionnent.
+// « Mon crédit » reste à part : l'argent est un registre différent.
 const ONGLETS = [
   { href: "/dashboard", label: "Mon espace", icone: "✦" },
   { href: "/consultations", label: "Consultations", icone: "☾" },
-  // L'argent a son propre onglet : il quitte « Compte », où il était
-  // noyé entre l'adresse email et le mot de passe, et cesse d'encombrer
-  // le chemin de consultations. Chacun sa page, chacun son registre.
   { href: "/credit", label: "Mon crédit", icone: "◈" },
-  { href: "/profil", label: "Profil", icone: "✧" },
-  { href: "/compte", label: "Compte", icone: "⚙" },
+  { href: "/compte", label: "Mon compte", icone: "⚙" },
 ];
 
 export default function EspaceNav() {

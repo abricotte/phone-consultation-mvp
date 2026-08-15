@@ -257,6 +257,28 @@ export default function ComptePage() {
         </form>
       </div>
 
+      {/* « Profil » a quitté la navigation : pour la cliente, « Profil »
+          et « Compte » désignaient la même chose — ses informations. La
+          distinction n'était que technique. Le lien reste ici, à sa
+          place logique, sans occuper une pastille de navigation. */}
+      <a
+        href="/profil"
+        className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-greige/60 bg-gradient-to-br from-blush via-cream to-cream p-6 shadow-soft transition hover:border-gold/50"
+      >
+        <span>
+          <span className="block font-serif text-xl font-semibold text-aubergine">
+            Mon ciel et mes proches
+          </span>
+          <span className="mt-1 block text-sm text-mention">
+            Date de naissance, ascendant, personnes qui comptent, et ce que
+            vous souhaitez aborder.
+          </span>
+        </span>
+        <span aria-hidden className="shrink-0 text-2xl text-gold">
+          →
+        </span>
+      </a>
+
       {/* L'historique des recharges et débits a quitté cette page pour
           « Mon crédit » : ici il était noyé entre l'adresse email et le
           mot de passe, et il n'avait rien à voir avec eux. On garde

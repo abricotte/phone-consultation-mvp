@@ -5,6 +5,10 @@
 @layer base {
   body {
     @apply bg-cream text-ink font-sans antialiased;
+    /* Chiffres alignés et de hauteur constante. Sans cela, Cormorant
+       rend des chiffres « à l'ancienne » — le 0 descend sous la ligne
+       et « 0 min » ressemble à une coquille plutôt qu'à un zéro. */
+    font-variant-numeric: lining-nums tabular-nums;
   }
   h1,
   h2,

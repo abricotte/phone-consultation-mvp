@@ -235,7 +235,10 @@ export default function DashboardPage() {
           </div>
         ) : (
           <ul className="mt-4">
-            {consultationsPassees.map((tx) => (
+            {/* Trois entrées seulement : l'accueil donne le fil, l'onglet
+                Consultations garde l'histoire complète. Deux listes
+                longues au même endroit se font concurrence. */}
+            {consultationsPassees.slice(0, 3).map((tx) => (
               <li
                 key={tx.id}
                 className="flex items-center gap-3.5 border-b border-greige/40 py-3.5 last:border-0"
@@ -262,13 +265,21 @@ export default function DashboardPage() {
             ))}
           </ul>
         )}
+        {consultationsPassees.length > 3 && (
+          <a
+            href="/consultations"
+            className="mt-3 inline-block text-sm font-bold text-prix hover:underline"
+          >
+            Voir toutes mes consultations →
+          </a>
+        )}
         <p className="mt-4 text-xs text-mention">
           {depuisDerniere() && (
             <>Votre dernière consultation : {depuisDerniere()} · </>
           )}
-          Le détail de vos recharges et débits se trouve dans{" "}
-          <a href="/compte" className="underline hover:text-aubergine">
-            Mon compte
+          Le détail de vos recharges se trouve dans{" "}
+          <a href="/credit" className="underline hover:text-aubergine">
+            Mon crédit
           </a>
           .
         </p>
