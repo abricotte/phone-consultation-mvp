@@ -10,6 +10,7 @@ import BandeauAppelEnCours, {
 } from "@/components/BandeauAppelEnCours";
 import SanteLigne from "@/components/SanteLigne";
 import RendezVousDuJour from "@/components/RendezVousDuJour";
+import PermanencesSemaine from "@/components/PermanencesSemaine";
 
 interface Forfait {
   code: string;
@@ -90,6 +91,7 @@ export default function AdminPage() {
   const [lancement, setLancement] = useState(false);
   const [messageAppel, setMessageAppel] = useState("");
   const [minuteeOuverte, setMinuteeOuverte] = useState(false);
+  const [permanencesOuvertes, setPermanencesOuvertes] = useState(false);
 
   async function recharger() {
     const [s, j] = await Promise.all([api.adminGetStatut(), api.adminGetJour()]);
@@ -412,6 +414,35 @@ export default function AdminPage() {
           voir le journal →
         </a>
       </p>
+
+      {/* 3 bis. MES PERMANENCES — repliées : on les pose une fois par
+             semaine. « Le calendrier annonce, le bouton fait foi » : ces
+             créneaux n'ouvrent jamais les appels, ils alimentent les
+             écriteaux du site et de l'espace cliente. */}
+      <div className="mt-5 rounded-2xl border border-greige/70 bg-ivory shadow-soft">
+        <button
+          onClick={() => setPermanencesOuvertes((v) => !v)}
+          aria-expanded={permanencesOuvertes}
+          className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
+        >
+          <span>
+            <span className="block font-bold text-aubergine">
+              Mes permanences
+            </span>
+            <span className="block text-xs text-mention">
+              Annoncer mes créneaux sur le site — sans jamais ouvrir les appels
+            </span>
+          </span>
+          <span aria-hidden className="shrink-0 text-mention">
+            {permanencesOuvertes ? "▲" : "▼"}
+          </span>
+        </button>
+        {permanencesOuvertes && (
+          <div className="border-t border-greige/40 px-5 py-4">
+            <PermanencesSemaine />
+          </div>
+        )}
+      </div>
 
       {/* 4. CONSULTATION MINUTÉE — repliée : usage occasionnel */}
       <div className="mt-5 rounded-2xl border border-greige/70 bg-ivory shadow-soft">

@@ -177,6 +177,21 @@ export const api = {
   // Rendez-vous Calendly
   adminGetRendezVous: (jour?: string) =>
     request(`/admin/rendez-vous${jour ? `?jour=${jour}` : ""}`),
+  // Permanences — le calendrier annonce, le bouton fait foi
+  adminGetPermanences: (semaine?: string) =>
+    request(`/admin/permanences${semaine ? `?semaine=${semaine}` : ""}`),
+  adminPoserPermanence: (debut: string, fin: string) =>
+    request("/admin/permanences", {
+      method: "POST",
+      body: JSON.stringify({ debut, fin }),
+    }),
+  adminRetirerPermanence: (id: string) =>
+    request(`/admin/permanences/${id}`, { method: "DELETE" }),
+  adminDupliquerPermanences: (semaine: string) =>
+    request("/admin/permanences/dupliquer", {
+      method: "POST",
+      body: JSON.stringify({ semaine }),
+    }),
   // Numéros bloqués
   adminGetNumerosBloques: () => request("/admin/numeros-bloques"),
   adminBloquerNumero: (telephone: string, motif?: string) =>

@@ -93,12 +93,49 @@ router.get('/statut', async (req, res) => {
       /* le statut doit répondre même si la fiche praticienne échoue */
     }
 
+    // PERMANENCES — les écriteaux automatiques. « Le calendrier annonce,
+    // le bouton fait foi » : ces données n'ouvrent jamais d'appel, elles
+    // disent seulement quand revenir. `enCours` porte le cas « bascule
+    // éteinte pendant un créneau » → « Elena arrive ».
+    let permanence = { enCours: null, prochaine: null, actives: false };
+    try {
+      const maintenant = new Date().toISOString();
+      const { data: creneaux } = await supabase
+        .from('permanences')
+        .select('debut, fin')
+        .gte('fin', maintenant)
+        .order('debut', { ascending: true })
+        .limit(10);
+
+      if (creneaux && creneaux.length > 0) {
+        permanence.actives = true;
+        const enCours = creneaux.find((c) => c.debut <= maintenant);
+        if (enCours) permanence.enCours = { debut: enCours.debut, fin: enCours.fin };
+        const prochaine = creneaux.find((c) => c.debut > maintenant);
+        if (prochaine) {
+          permanence.prochaine = { debut: prochaine.debut, fin: prochaine.fin };
+        }
+      } else {
+        // Rien à venir : Elena utilise-t-elle les permanences ? Si oui,
+        // l'écriteau « pas de permanence cette semaine » a un sens ; si
+        // elle n'en a jamais posé, on retombe sur les heures habituelles.
+        const { count } = await supabase
+          .from('permanences')
+          .select('id', { count: 'exact', head: true })
+          .gte('debut', new Date(Date.now() - 30 * 86_400_000).toISOString());
+        permanence.actives = (count || 0) > 0;
+      }
+    } catch {
+      /* les écriteaux sont un confort : le statut répond quand même */
+    }
+
     res.json({
       statut,
       enLigne, // conservé pour compatibilité
       retourPrevu: statut === 'en_consultation' ? retourPrevu : null,
       heuresIndicatives,
       messageAbsence,
+      permanence,
     });
   } catch (err) {
     console.error('Erreur statut public:', err);

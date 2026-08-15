@@ -18,13 +18,22 @@ export interface ElenaPresence {
   heuresIndicatives: string | null;
   /** Message d'absence, seulement pendant sa période de validité */
   messageAbsence: string | null;
+  /** Écriteaux de permanence — « le calendrier annonce, le bouton fait foi » */
+  permanence: {
+    enCours: { debut: string; fin: string } | null;
+    prochaine: { debut: string; fin: string } | null;
+    actives: boolean;
+  };
 }
+
+const AUCUNE_PERMANENCE = { enCours: null, prochaine: null, actives: false };
 
 const INITIAL: ElenaPresence = {
   statut: "chargement",
   retourPrevu: null,
   heuresIndicatives: null,
   messageAbsence: null,
+  permanence: AUCUNE_PERMANENCE,
 };
 
 // Présence d'Elena, rafraîchie par polling toutes les 30 s.
@@ -49,6 +58,7 @@ export function useElenaPresence(pollMs = 30_000): ElenaPresence {
           retourPrevu: r.retourPrevu ?? null,
           heuresIndicatives: r.heuresIndicatives ?? null,
           messageAbsence: r.messageAbsence ?? null,
+          permanence: r.permanence ?? AUCUNE_PERMANENCE,
         });
       } catch {
         if (active) setPresence({ ...INITIAL, statut: "hors_ligne" });
@@ -69,6 +79,34 @@ export function useElenaPresence(pollMs = 30_000): ElenaPresence {
 // Compatibilité : les composants qui ne veulent que le statut.
 export function useElenaStatus(pollMs = 30_000): ElenaStatus {
   return useElenaPresence(pollMs).statut;
+}
+
+/** « 16:00 » en heure de Paris */
+export function heureParis(iso: string): string {
+  return new Date(iso).toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Paris",
+  });
+}
+
+/** « mardi 16:00 – 19:00 » — ou « aujourd'hui 16:00 – 19:00 » */
+export function libellePermanence(c: { debut: string; fin: string }): string {
+  const jourISO = (d: Date) =>
+    d.toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });
+  const debut = new Date(c.debut);
+  const aujourdhui = jourISO(new Date()) === jourISO(debut);
+  const demain =
+    jourISO(new Date(Date.now() + 86_400_000)) === jourISO(debut);
+  const jour = aujourdhui
+    ? "aujourd'hui"
+    : demain
+      ? "demain"
+      : debut.toLocaleDateString("fr-FR", {
+          weekday: "long",
+          timeZone: "Europe/Paris",
+        });
+  return `${jour} ${heureParis(c.debut)} – ${heureParis(c.fin)}`;
 }
 
 /** « 15 h 05 » — ou null si l'heure est invalide ou déjà passée */

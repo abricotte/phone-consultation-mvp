@@ -5,6 +5,8 @@ import { api } from "@/lib/api";
 import {
   useElenaPresence,
   heureRetour,
+  heureParis,
+  libellePermanence,
   type ElenaStatus,
 } from "@/components/useElenaStatus";
 
@@ -174,29 +176,81 @@ export default function HeroConsultation({
         </div>
       )}
 
-      {statut === "hors_ligne" && (
-        <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
-          <span className="flex flex-wrap items-center gap-3">
-            <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-statut-offline" />
-            <span className="text-xl font-bold text-mention sm:text-2xl">
-              Elena n&apos;est pas en ligne
+      {/* HORS LIGNE — les écriteaux de permanence, par priorité :
+          absence > permanence en cours (« Elena arrive ») > prochaine
+          permanence > semaine sans permanence > heures habituelles.
+          « Le calendrier annonce, le bouton fait foi » : rien ici
+          n'ouvre un appel, tout dit seulement quand revenir. */}
+      {statut === "hors_ligne" &&
+        (presence.messageAbsence ? (
+          <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
+            <span className="flex flex-wrap items-center gap-3">
+              <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-statut-offline" />
+              <span className="text-xl font-bold text-mention sm:text-2xl">
+                Elena n&apos;est pas en ligne
+              </span>
             </span>
-          </span>
-          {/* Le message d'absence prime sur les heures habituelles :
-              « en repos jusqu'au 15 » rend caduc « en ligne le soir ». */}
-          {presence.messageAbsence ? (
             <p className="mt-1 pl-6 text-sm italic text-mention/80">
               {presence.messageAbsence}
             </p>
-          ) : (
-            presence.heuresIndicatives && (
+          </div>
+        ) : presence.permanence.enCours ? (
+          // Bascule éteinte pendant un créneau : le retard devient bénin.
+          <div className="mb-4 rounded-2xl bg-gold/10 px-5 py-4 ring-1 ring-gold/30">
+            <span className="flex flex-wrap items-center gap-3">
+              <span className="relative flex h-3.5 w-3.5 shrink-0">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold opacity-50" />
+                <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-gold" />
+              </span>
+              <span className="text-xl font-bold text-gold-dark sm:text-2xl">
+                Permanence en cours — Elena arrive
+              </span>
+            </span>
+            <p className="mt-1 pl-6 text-sm text-mention">
+              Prévue de {heureParis(presence.permanence.enCours.debut)} à{" "}
+              {heureParis(presence.permanence.enCours.fin)} · restez à proximité
+            </p>
+          </div>
+        ) : presence.permanence.prochaine ? (
+          <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
+            <span className="flex flex-wrap items-center gap-3">
+              <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-statut-offline" />
+              <span className="text-xl font-bold text-mention sm:text-2xl">
+                Prochaine permanence :{" "}
+                {libellePermanence(presence.permanence.prochaine)}
+              </span>
+            </span>
+            <p className="mt-1 pl-6 text-sm italic text-mention/80">
+              à la minute pendant la permanence — ou réservez un créneau
+            </p>
+          </div>
+        ) : presence.permanence.actives ? (
+          <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
+            <span className="flex flex-wrap items-center gap-3">
+              <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-statut-offline" />
+              <span className="text-xl font-bold text-mention sm:text-2xl">
+                Pas de permanence cette semaine
+              </span>
+            </span>
+            <p className="mt-1 pl-6 text-sm italic text-mention/80">
+              les consultations se font sur rendez-vous — Découverte ou Complète
+            </p>
+          </div>
+        ) : (
+          <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
+            <span className="flex flex-wrap items-center gap-3">
+              <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-statut-offline" />
+              <span className="text-xl font-bold text-mention sm:text-2xl">
+                Elena n&apos;est pas en ligne
+              </span>
+            </span>
+            {presence.heuresIndicatives && (
               <p className="mt-1 pl-6 text-sm italic text-mention/80">
                 {presence.heuresIndicatives}
               </p>
-            )
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        ))}
 
       {statut === "chargement" && (
         <div className="mb-4 rounded-2xl bg-greige/20 px-5 py-4">

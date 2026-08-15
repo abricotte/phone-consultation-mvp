@@ -1858,6 +1858,146 @@ function capitaliserPrenom(nom) {
 }
 
 // ------------------------------------------------------------------
+// PERMANENCES
+//
+// « Le calendrier annonce, le bouton fait foi » (Elena). Ces créneaux
+// n'ouvrent JAMAIS les appels — seule la bascule « en ligne » le fait.
+// Ils alimentent les écriteaux du site et de l'espace cliente.
+// ------------------------------------------------------------------
+
+// GET /api/admin/permanences?semaine=YYYY-MM-DD (un lundi ; défaut : semaine courante)
+router.get('/permanences', async (req, res) => {
+  try {
+    const lundi = lundiDeLaSemaine(req.query.semaine);
+    const finSemaine = new Date(lundi.getTime() + 7 * 86_400_000);
+
+    const { data, error } = await supabase
+      .from('permanences')
+      .select('id, debut, fin')
+      .gte('debut', lundi.toISOString())
+      .lt('debut', finSemaine.toISOString())
+      .order('debut', { ascending: true });
+    if (error) throw error;
+
+    res.json({ lundi: lundi.toISOString(), creneaux: data || [] });
+  } catch (err) {
+    console.error('Erreur permanences:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/admin/permanences { debut, fin } (ISO)
+router.post('/permanences', async (req, res) => {
+  try {
+    const debut = new Date(req.body.debut);
+    const fin = new Date(req.body.fin);
+    if (Number.isNaN(debut.getTime()) || Number.isNaN(fin.getTime())) {
+      return res.status(400).json({ error: 'Dates invalides.' });
+    }
+    if (fin <= debut) {
+      return res.status(400).json({ error: "L'heure de fin précède le début." });
+    }
+    // Un créneau qui enjambe minuit est presque toujours une erreur de
+    // saisie (fin « 01:00 » pensée pour le lendemain) : refus explicite.
+    if (fin.getTime() - debut.getTime() > 18 * 3600 * 1000) {
+      return res.status(400).json({ error: 'Créneau de plus de 18 h — vérifiez les heures.' });
+    }
+
+    const { data, error } = await supabase
+      .from('permanences')
+      .insert({ debut: debut.toISOString(), fin: fin.toISOString() })
+      .select('id, debut, fin')
+      .single();
+    if (error) throw error;
+
+    res.status(201).json(data);
+  } catch (err) {
+    console.error('Erreur création permanence:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// DELETE /api/admin/permanences/:id
+router.delete('/permanences/:id', async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('permanences')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.status(204).end();
+  } catch (err) {
+    console.error('Erreur suppression permanence:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/admin/permanences/dupliquer { semaine } — recopie les
+// créneaux de la semaine PRÉCÉDENTE sur celle demandée.
+router.post('/permanences/dupliquer', async (req, res) => {
+  try {
+    const lundi = lundiDeLaSemaine(req.body.semaine);
+    const lundiPrecedent = new Date(lundi.getTime() - 7 * 86_400_000);
+
+    const { data: modeles, error } = await supabase
+      .from('permanences')
+      .select('debut, fin')
+      .gte('debut', lundiPrecedent.toISOString())
+      .lt('debut', lundi.toISOString());
+    if (error) throw error;
+
+    if (!modeles || modeles.length === 0) {
+      return res.status(404).json({ error: 'Aucun créneau la semaine précédente.' });
+    }
+
+    // Idempotent : un double-clic ne double pas la semaine.
+    const { data: existants } = await supabase
+      .from('permanences')
+      .select('debut')
+      .gte('debut', lundi.toISOString())
+      .lt('debut', new Date(lundi.getTime() + 7 * 86_400_000).toISOString());
+    const dejaPoses = new Set((existants || []).map((e) => new Date(e.debut).getTime()));
+
+    const nouveaux = modeles
+      .map((m) => ({
+        debut: new Date(new Date(m.debut).getTime() + 7 * 86_400_000).toISOString(),
+        fin: new Date(new Date(m.fin).getTime() + 7 * 86_400_000).toISOString(),
+      }))
+      .filter((n) => !dejaPoses.has(new Date(n.debut).getTime()));
+
+    if (nouveaux.length > 0) {
+      const { error: errInsert } = await supabase.from('permanences').insert(nouveaux);
+      if (errInsert) throw errInsert;
+    }
+
+    res.json({ copies: nouveaux.length, ignores: modeles.length - nouveaux.length });
+  } catch (err) {
+    console.error('Erreur duplication permanences:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+/** Lundi 00:00 (heure de Paris) de la semaine contenant la date donnée. */
+function lundiDeLaSemaine(brut) {
+  const ref = /^\d{4}-\d{2}-\d{2}$/.test(brut || '')
+    ? new Date(`${brut}T00:00:00+02:00`)
+    : new Date();
+  // Jour de semaine en heure de Paris (0 = dimanche)
+  const jourParis = Number(
+    new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Paris', weekday: 'short' })
+      .format(ref) === 'Sun'
+      ? 0
+      : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(
+          new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Paris', weekday: 'short' }).format(ref)
+        ) + 1
+  );
+  const recul = jourParis === 0 ? 6 : jourParis - 1;
+  const jourISO = new Date(ref.getTime() - recul * 86_400_000)
+    .toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  return new Date(`${jourISO}T00:00:00+02:00`);
+}
+
+// ------------------------------------------------------------------
 // NUMÉROS BLOQUÉS
 //
 // Un numéro bloqué ne peut plus lancer de consultation depuis le site, et
