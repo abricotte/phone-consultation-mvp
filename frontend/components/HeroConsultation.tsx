@@ -54,6 +54,12 @@ export default function HeroConsultation({
   // Durée personnalisée, choisie au curseur — visible en permanence
   const [autreMinutes, setAutreMinutes] = useState(maxMinutes >= 45 ? 45 : maxMinutes);
 
+  // La recharge se déplie sur demande — ouverte d'office si le crédit ne
+  // permet pas d'appeler, car c'est alors la première chose à faire.
+  const [rechargeOuverte, setRechargeOuverte] = useState(
+    soldeMinutes < minimumMinutes
+  );
+
   // Remplissage du curseur : la piste est orange jusqu'au pouce.
   // Bornes = celles de la recharge (minMinutes/maxMinutes), pas le
   // minimum d'appel — ce sont deux notions distinctes.
@@ -203,65 +209,94 @@ export default function HeroConsultation({
 
       {/* « n'expire jamais » accolé au solde : c'est LA différence avec
           les plateformes, elle se lit en même temps que le chiffre. */}
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-blush px-3.5 py-1.5 text-sm text-aubergine">
-          <span aria-hidden className="text-gold">☾</span>
-          <span className="font-semibold">{soldeMinutes} min</span>
-          <span className="text-mention">de crédit · n&apos;expire jamais</span>
-        </span>
-      </div>
+      <p className="mt-1 text-center text-sm text-mention">
+        Votre crédit :{" "}
+        <span className="font-bold text-aubergine">{soldeMinutes} min</span> ·
+        n&apos;expire jamais
+      </p>
 
-      <h2 className="mt-4 font-serif text-3xl font-semibold text-aubergine sm:text-4xl">
-        Consultation Immédiate
-      </h2>
-
-      {/* Action principale — selon statut et crédit */}
-      <div className="mt-5">
-        {enLigne && creditSuffisant && (
+      {/* DEUX PORTES — le cœur de l'espace, dessiné par Elena.
+          Ses deux modèles de consultation deviennent deux boutons côte à
+          côte : appeler maintenant (à la minute) ou réserver un créneau
+          (forfaits Calendly). La porte PLEINE suit son statut — mettre en
+          avant un appel impossible serait une porte peinte sur un mur.
+          L'argent passe en coulisse : « Recharger mon crédit » n'est
+          qu'un lien, qui déplie la recharge en dessous. */}
+      <div className="mt-4 space-y-3">
+        {enLigne && creditSuffisant ? (
           <button
             onClick={handleAppel}
             disabled={appelEnCours}
-            className="w-full rounded-2xl bg-cta px-6 py-4 text-lg font-semibold text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
+            className="w-full rounded-2xl bg-cta px-6 py-4 text-center shadow-card transition hover:bg-cta-dark disabled:opacity-50"
           >
-            {appelEnCours ? "Connexion…" : "📞 J'appelle Elena maintenant"}
+            <span className="block text-lg font-semibold text-cta-text">
+              {appelEnCours ? "Connexion…" : "Appeler maintenant"}
+            </span>
+            <span className="block text-xs text-cta-text/80">
+              à la minute, pendant les permanences
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              if (enLigne) {
+                // En ligne mais crédit insuffisant : la porte mène à la
+                // recharge, avec l'explication du minimum.
+                setRechargeOuverte(true);
+                setErreur(
+                  `Il vous faut au moins ${minimumMinutes} min de crédit (${prixDe(minimumMinutes, prixMinuteCents)}) pour appeler.`
+                );
+              }
+            }}
+            className={`w-full rounded-2xl border border-greige/70 bg-cream/50 px-6 py-4 text-center transition ${
+              enLigne ? "hover:border-cta/50" : "cursor-default"
+            }`}
+          >
+            <span className="block text-lg font-semibold text-aubergine/70">
+              Appeler maintenant
+            </span>
+            <span className="block text-xs text-mention">
+              {enLigne
+                ? `dès ${minimumMinutes} min de crédit — rechargez ci-dessous`
+                : statut === "en_consultation"
+                  ? "dès qu'Elena se libère"
+                  : "à la minute, pendant les permanences"}
+            </span>
           </button>
         )}
 
-        {enLigne && !creditSuffisant && (
-          <p className="text-sm text-ink">
-            Il vous faut au moins{" "}
-            <strong className="text-aubergine">
-              {minimumMinutes} min de crédit (
-              {prixDe(minimumMinutes, prixMinuteCents)})
-            </strong>{" "}
-            pour appeler — rechargez en un geste ci-dessous.
-          </p>
-        )}
+        <a
+          href="https://elena-wolska.com/disponibilites"
+          className={`block w-full rounded-2xl px-6 py-4 text-center transition ${
+            enLigne && creditSuffisant
+              ? "border border-greige/70 bg-white text-aubergine hover:border-cta/50"
+              : "bg-cta text-cta-text shadow-card hover:bg-cta-dark"
+          }`}
+        >
+          <span className="block text-lg font-semibold">Réserver un créneau</span>
+          <span
+            className={`block text-xs ${
+              enLigne && creditSuffisant ? "text-mention" : "text-cta-text/80"
+            }`}
+          >
+            au calendrier · Découverte 20 min ou Complète 45 min
+          </span>
+        </a>
 
-        {statut === "en_consultation" && (
-          <p className="text-sm text-mention">
-            Elena est en consultation — revenez dans quelques instants, ou
-            préparez votre crédit dès maintenant.
-          </p>
-        )}
-
-        {statut === "hors_ligne" && (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <a
-              href="https://elena-wolska.com/disponibilites"
-              className="whitespace-nowrap rounded-2xl border border-cta-outline px-6 py-3 text-center font-medium text-prix transition hover:bg-cta hover:text-cta-text"
-            >
-              Voir les disponibilités →
-            </a>
-            <p className="text-sm text-mention">
-              Rechargez dès maintenant pour être prête dès son retour.
-            </p>
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={() => setRechargeOuverte(!rechargeOuverte)}
+          className="mx-auto block text-sm font-medium text-mention underline decoration-greige underline-offset-4 transition hover:text-aubergine"
+        >
+          Recharger mon crédit
+        </button>
       </div>
 
-      {/* Recharge express — tout centralisé : 1 clic = paiement */}
-      <div className="mt-6 border-t border-greige/40 pt-5">
+      {/* Recharge express — repliée derrière « Recharger mon crédit » :
+          l'accueil propose d'abord la consultation, l'argent vient quand
+          on le demande. Elle s'ouvre d'elle-même si le crédit ne suffit
+          pas pour appeler. */}
+      <div className={rechargeOuverte ? "mt-6 border-t border-greige/40 pt-5" : "hidden"}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
           Recharge express
         </p>

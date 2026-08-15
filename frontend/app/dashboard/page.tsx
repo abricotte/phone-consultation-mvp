@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { capitaliser } from "@/lib/format";
+import { signeAstrologique, signeParCode, type Signe } from "@/lib/astro";
 import HeroConsultation from "@/components/HeroConsultation";
 import EspaceNav from "@/components/EspaceNav";
 
@@ -60,6 +61,8 @@ export default function DashboardPage() {
   // Calculés après montage (pas de décalage d'hydratation)
   const [dateDuJour, setDateDuJour] = useState("");
   const [pensee, setPensee] = useState("");
+  const [signe, setSigne] = useState<Signe | null>(null);
+  const [ascendant, setAscendant] = useState<Signe | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -87,6 +90,15 @@ export default function DashboardPage() {
       setPaymentStatus("Paiement annulé.");
       window.history.replaceState({}, "", "/dashboard");
     }
+
+    // Signe et ascendant à côté du bonjour : l'espace la reconnaît.
+    api
+      .getProfil()
+      .then((p: { dateNaissance: string | null; ascendant: string | null }) => {
+        setSigne(signeAstrologique(p.dateNaissance));
+        setAscendant(signeParCode(p.ascendant));
+      })
+      .catch(() => {});
 
     api
       .getRechargeConfig()
@@ -183,9 +195,21 @@ export default function DashboardPage() {
             {dateDuJour}
           </p>
         )}
-        <h1 className="mt-1.5 font-serif text-4xl font-semibold text-aubergine sm:text-5xl">
-          Bonjour {capitaliser(user?.firstName)}
-        </h1>
+        <div className="mt-1.5 flex flex-wrap items-baseline gap-3">
+          <h1 className="font-serif text-4xl font-semibold text-aubergine sm:text-5xl">
+            Bonjour {capitaliser(user?.firstName)}
+          </h1>
+          {/* Son ciel à côté de son prénom : l'espace la reconnaît. */}
+          {signe && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blush px-3 py-1 text-sm text-aubergine">
+              <span aria-hidden>{signe.emoji}</span>
+              {signe.nom}
+              {ascendant && (
+                <span className="text-mention">· asc. {ascendant.nom}</span>
+              )}
+            </span>
+          )}
+        </div>
         {pensee && (
           <p className="mt-2 font-serif text-lg italic text-mention/90">
             « {pensee} »

@@ -1,7 +1,7 @@
 // Signe astrologique (zodiaque tropical) calculé depuis une date de
 // naissance. AFFICHAGE UNIQUEMENT — jamais stocké en base.
 
-interface Signe {
+export interface Signe {
   nom: string;
   emoji: string;
 }
