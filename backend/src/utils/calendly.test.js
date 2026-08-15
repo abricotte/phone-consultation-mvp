@@ -152,6 +152,93 @@ assert.strictEqual(sansTel.chiffres, null);
 assert.strictEqual(sansTel.calendly_event_uri, lu.calendly_event_uri, 'Le rendez-vous existe quand même');
 ok += 3;
 
+// ── Formulaire Calendly : numéro, naissance, question ──────────────────
+//
+// Elena rédige ses intitulés comme elle veut : l'extraction ne doit pas
+// dépendre d'une formulation exacte.
+
+const AVEC_FORMULAIRE = lireEvenement({
+  ...RESERVATION,
+  payload: {
+    ...RESERVATION.payload,
+    text_reminder_number: null,
+    questions_and_answers: [
+      { question: 'Votre numéro de téléphone', answer: '06 12 34 56 78' },
+      { question: 'Votre date de naissance', answer: '12/03/1985' },
+      {
+        question: 'Que souhaitez-vous aborder ?',
+        answer: 'Ma relation avec Marc, et un choix professionnel.',
+      },
+    ],
+  },
+});
+
+assert.strictEqual(AVEC_FORMULAIRE.telephone, '+33612345678');
+assert.strictEqual(AVEC_FORMULAIRE.date_naissance, '1985-03-12', 'Jour d\'abord, usage français');
+assert.strictEqual(
+  AVEC_FORMULAIRE.a_aborder,
+  'Ma relation avec Marc, et un choix professionnel.',
+  'La question doit être isolée du numéro et de la date'
+);
+ok += 3;
+
+// Intitulés imprévus : le numéro est reconnu à sa FORME, la question est
+// ce qui reste une fois numéro et date écartés.
+const INTITULES_LIBRES = lireEvenement({
+  ...RESERVATION,
+  payload: {
+    ...RESERVATION.payload,
+    text_reminder_number: null,
+    questions_and_answers: [
+      { question: 'Comment vous joindre ?', answer: '0033612345678' },
+      { question: 'Née le', answer: '1985-03-12' },
+      { question: 'Un mot pour moi', answer: 'Je tourne en rond depuis des mois.' },
+    ],
+  },
+});
+assert.strictEqual(INTITULES_LIBRES.telephone, '+33612345678', 'Numéro reconnu à sa forme');
+assert.strictEqual(INTITULES_LIBRES.date_naissance, '1985-03-12');
+assert.strictEqual(INTITULES_LIBRES.a_aborder, 'Je tourne en rond depuis des mois.');
+ok += 3;
+
+// Plusieurs questions libres : tout est conservé, dans l'ordre
+const PLUSIEURS = lireEvenement({
+  ...RESERVATION,
+  payload: {
+    ...RESERVATION.payload,
+    questions_and_answers: [
+      { question: 'Votre situation', answer: 'Séparation récente.' },
+      { question: 'Votre question', answer: 'Va-t-il revenir ?' },
+    ],
+  },
+});
+assert.strictEqual(PLUSIEURS.a_aborder, 'Séparation récente.\n\nVa-t-il revenir ?');
+ok++;
+
+// Dates aberrantes : mieux vaut aucune date qu'une fausse — elle
+// fausserait le signe astrologique affiché à Elena.
+for (const mauvaise of ['31/02/1985', '12/13/1985', '12/03/1850', '12/03/2099', 'demain', '']) {
+  const r = lireEvenement({
+    ...RESERVATION,
+    payload: {
+      ...RESERVATION.payload,
+      questions_and_answers: [{ question: 'Date de naissance', answer: mauvaise }],
+    },
+  });
+  assert.strictEqual(r.date_naissance, null, `Aurait dû être rejetée : ${mauvaise}`);
+  ok++;
+}
+
+// Un formulaire vide ne doit rien inventer
+const SANS_FORMULAIRE = lireEvenement({
+  ...RESERVATION,
+  payload: { ...RESERVATION.payload, questions_and_answers: [] },
+});
+assert.strictEqual(SANS_FORMULAIRE.date_naissance, null);
+assert.strictEqual(SANS_FORMULAIRE.a_aborder, null);
+assert.strictEqual(SANS_FORMULAIRE.telephone, '+33612345678', 'Le champ dédié reste prioritaire');
+ok += 3;
+
 // ── Rapprochement avec les forfaits configurés ─────────────────────────
 const FORFAITS = [
   { code: 'decouverte', nom: 'Découverte', minutes: 20, prix: 58 },

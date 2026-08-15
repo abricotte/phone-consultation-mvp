@@ -63,7 +63,7 @@ async function trouverCliente({ chiffres, email }) {
  * compris nous. Le marqueur `origine` permettra à l'inscription de
  * REPRENDRE cette fiche plutôt que d'en créer une seconde.
  */
-async function creerFiche({ nom, email, telephone }) {
+async function creerFiche({ nom, email, telephone, date_naissance }) {
   const morceaux = (nom || '').trim().split(/\s+/);
   const prenom = morceaux[0] || 'Cliente';
   const nomFamille = morceaux.slice(1).join(' ') || '—';
@@ -78,6 +78,7 @@ async function creerFiche({ nom, email, telephone }) {
       first_name: prenom,
       last_name: nomFamille,
       phone: telephone || null,
+      date_naissance: date_naissance || null,
       role: 'client',
       origine: 'calendly',
     })
@@ -149,6 +150,35 @@ router.post(
       let clientId = await trouverCliente(e);
       if (!clientId) {
         clientId = await creerFiche(e);
+      }
+
+      // Ce que la cliente a rempli sur Calendly enrichit sa fiche, mais
+      // ne l'écrase JAMAIS : ce qu'elle a saisi elle-même dans son
+      // espace est plus récent et plus délibéré qu'un formulaire de
+      // réservation. On ne comble que les vides.
+      if (clientId) {
+        const { data: fiche } = await supabase
+          .from('users')
+          .select('phone, date_naissance, a_aborder')
+          .eq('id', clientId)
+          .maybeSingle();
+
+        const complements = {};
+        if (e.telephone && !fiche?.phone) complements.phone = e.telephone;
+        if (e.date_naissance && !fiche?.date_naissance) {
+          complements.date_naissance = e.date_naissance;
+        }
+        if (e.a_aborder && !fiche?.a_aborder) {
+          complements.a_aborder = e.a_aborder;
+          complements.a_aborder_maj_le = e.paye_le || new Date().toISOString();
+        }
+
+        if (Object.keys(complements).length > 0) {
+          await supabase.from('users').update(complements).eq('id', clientId);
+          console.log(
+            `Fiche ${clientId} complétée depuis Calendly : ${Object.keys(complements).join(', ')}`
+          );
+        }
       }
 
       const tarifs = await getTarifs().catch(() => null);
