@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import EspaceNav from "@/components/EspaceNav";
+import BlocRecharge from "@/components/BlocRecharge";
 
 // MON CRÉDIT — l'argent a désormais sa page.
 //
@@ -58,9 +59,29 @@ export default function CreditPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [solde, setSolde] = useState<number | null>(null);
   const [prixMinute, setPrixMinute] = useState(2.9);
+
+  // La recharge vit ICI, et seulement ici. « L'accueil décide, l'écran
+  // suivant exécute » (Elena) : le tableau de bord n'a plus que le lien.
+  const [config, setConfig] = useState<{
+    prixMinuteCents: number;
+    creditMinimumMinutes: number;
+    suggestionsMinutes: number[];
+    minMinutes: number;
+    maxMinutes: number;
+    pasMinutes: number;
+  } | null>(null);
+
+  // « Appeler maintenant » avec un crédit insuffisant mène ici, avec la
+  // raison en toutes lettres — la cliente ne doit jamais se demander
+  // pourquoi elle a atterri sur une page d'argent.
+  const [pourAppeler, setPourAppeler] = useState(false);
   const [chargement, setChargement] = useState(true);
 
   useEffect(() => {
+    setPourAppeler(
+      new URLSearchParams(window.location.search).get("pour") === "appeler"
+    );
+
     const token = localStorage.getItem("token");
     if (!token) {
       window.location.href = "/login";
@@ -75,8 +96,27 @@ export default function CreditPage() {
       .then(([w, t, c]) => {
         setSolde((w as Wallet | null)?.balance ?? null);
         setTransactions((t as Transaction[]) || []);
-        const cents = (c as { prixMinuteCents?: number } | null)?.prixMinuteCents;
-        if (cents) setPrixMinute(cents / 100);
+        const cfg = c as {
+          prixMinuteCents?: number;
+          creditMinimumMinutes?: number;
+          suggestionsMinutes?: number[];
+          minMinutes?: number;
+          maxMinutes?: number;
+          pasMinutes?: number;
+        } | null;
+        if (cfg?.prixMinuteCents) {
+          setPrixMinute(cfg.prixMinuteCents / 100);
+          setConfig({
+            prixMinuteCents: cfg.prixMinuteCents,
+            creditMinimumMinutes: cfg.creditMinimumMinutes ?? 5,
+            suggestionsMinutes: cfg.suggestionsMinutes?.length
+              ? cfg.suggestionsMinutes
+              : [10, 20, 30],
+            minMinutes: cfg.minMinutes ?? 5,
+            maxMinutes: cfg.maxMinutes ?? 90,
+            pasMinutes: cfg.pasMinutes ?? 5,
+          });
+        }
       })
       .finally(() => setChargement(false));
   }, []);
@@ -141,13 +181,34 @@ export default function CreditPage() {
             </p>
           </>
         )}
-        <a
-          href="/dashboard"
-          className="mt-5 inline-block rounded-full bg-cta px-6 py-3 text-sm font-medium text-cta-text transition hover:bg-cta-dark"
-        >
-          Recharger mon crédit
-        </a>
       </div>
+
+      {/* Venue depuis « Appeler maintenant » : la raison en toutes
+          lettres, avant les montants. */}
+      {pourAppeler && soldeMinutes !== null && config && (
+        <p className="mt-4 rounded-2xl bg-gold/10 px-5 py-3.5 text-sm text-gold-dark ring-1 ring-gold/30">
+          Il vous reste <strong>{soldeMinutes} min</strong> — il en faut au
+          moins <strong>{config.creditMinimumMinutes}</strong> pour appeler.
+          Rechargez ci-dessous, puis retournez sur{" "}
+          <a href="/dashboard" className="underline">
+            votre espace
+          </a>{" "}
+          pour lancer l&apos;appel.
+        </p>
+      )}
+
+      {/* LA RECHARGE — paliers + curseur. Elle vit ici, et seulement ici. */}
+      {config && (
+        <div className="mt-6 rounded-3xl border border-greige/60 bg-ivory p-6 shadow-soft sm:p-7">
+          <BlocRecharge
+            prixMinuteCents={config.prixMinuteCents}
+            suggestionsMinutes={config.suggestionsMinutes}
+            minMinutes={config.minMinutes}
+            maxMinutes={config.maxMinutes}
+            pasMinutes={config.pasMinutes}
+          />
+        </div>
+      )}
 
       {/* 2. OÙ EST PASSÉ MON ARGENT — l'historique, groupé par mois */}
       {!chargement && transactions.length === 0 && (

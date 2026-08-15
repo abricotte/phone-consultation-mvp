@@ -26,13 +26,6 @@ interface Props {
   statutDemo?: ElenaStatus;
 }
 
-function prixDe(minutes: number, cents: number): string {
-  const t = minutes * cents;
-  return t % 100 === 0
-    ? `${t / 100} €`
-    : `${(t / 100).toFixed(2).replace(".", ",")} €`;
-}
-
 export default function HeroConsultation({
   soldeMinutes,
   minimumMinutes,
@@ -49,37 +42,8 @@ export default function HeroConsultation({
   const retour = heureRetour(presence.retourPrevu);
 
   const [appelEnCours, setAppelEnCours] = useState(false);
-  const [rechargeEnCours, setRechargeEnCours] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
-
-  // Durée personnalisée, choisie au curseur — visible en permanence
-  const [autreMinutes, setAutreMinutes] = useState(maxMinutes >= 45 ? 45 : maxMinutes);
-
-  // La recharge se déplie sur demande — ouverte d'office si le crédit ne
-  // permet pas d'appeler, car c'est alors la première chose à faire.
-  const [rechargeOuverte, setRechargeOuverte] = useState(
-    soldeMinutes < minimumMinutes
-  );
-
-  // Remplissage du curseur : la piste est orange jusqu'au pouce.
-  // Bornes = celles de la recharge (minMinutes/maxMinutes), pas le
-  // minimum d'appel — ce sont deux notions distinctes.
-  const progression =
-    maxMinutes > minMinutes
-      ? Math.round(((autreMinutes - minMinutes) / (maxMinutes - minMinutes)) * 100)
-      : 0;
-
-  // Colonnes de la grille de recharge, selon le nombre de paliers cochés
-  // dans le profil. Les classes sont écrites en toutes lettres : Tailwind
-  // ne compile que ce qu'il lit dans le source, une classe construite par
-  // concaténation n'existerait pas dans la feuille de style finale.
-  const grilleRecharge =
-    suggestionsMinutes.length <= 2
-      ? "grid-cols-2"
-      : suggestionsMinutes.length === 3
-        ? "grid-cols-3"
-        : "grid-cols-2 sm:grid-cols-4";
 
   const enLigne = statut === "disponible";
   const creditSuffisant = soldeMinutes >= minimumMinutes;
@@ -109,23 +73,6 @@ export default function HeroConsultation({
       setErreur(err instanceof Error ? err.message : "Erreur lors de l'appel");
     } finally {
       setAppelEnCours(false);
-    }
-  }
-
-  // Recharge express : UN clic → paiement Stripe directement
-  async function handleRechargeExpress(minutes: number) {
-    setErreur("");
-    setRechargeEnCours(minutes);
-    try {
-      const data = await api.topUp(minutes);
-      if (data.url) {
-        window.location.href = data.url;
-        return; // on quitte la page vers Stripe
-      }
-      throw new Error("Paiement indisponible, réessayez.");
-    } catch (err) {
-      setErreur(err instanceof Error ? err.message : "Une erreur est survenue");
-      setRechargeEnCours(null);
     }
   }
 
@@ -270,12 +217,14 @@ export default function HeroConsultation({
       </p>
 
       {/* DEUX PORTES — le cœur de l'espace, dessiné par Elena.
-          Ses deux modèles de consultation deviennent deux boutons côte à
-          côte : appeler maintenant (à la minute) ou réserver un créneau
-          (forfaits Calendly). La porte PLEINE suit son statut — mettre en
-          avant un appel impossible serait une porte peinte sur un mur.
-          L'argent passe en coulisse : « Recharger mon crédit » n'est
-          qu'un lien, qui déplie la recharge en dessous. */}
+          « L'accueil décide, l'écran suivant exécute » : ici, AUCUNE
+          recharge — elle vit sur Mon crédit, et seulement là.
+          Le bouton d'appel dit toujours la même chose mais mène soit à
+          l'appel, soit à la recharge, selon ce qui est nécessaire : la
+          cliente ne choisit jamais entre « appeler » et « recharger »,
+          le système sait. Et quand l'appel est impossible, le LIBELLÉ
+          change — proposer une action impossible frustre plus que de ne
+          rien proposer. */}
       <div className="mt-4 space-y-3">
         {enLigne && creditSuffisant ? (
           <button
@@ -290,33 +239,35 @@ export default function HeroConsultation({
               à la minute, pendant les permanences
             </span>
           </button>
-        ) : (
-          <button
-            onClick={() => {
-              if (enLigne) {
-                // En ligne mais crédit insuffisant : la porte mène à la
-                // recharge, avec l'explication du minimum.
-                setRechargeOuverte(true);
-                setErreur(
-                  `Il vous faut au moins ${minimumMinutes} min de crédit (${prixDe(minimumMinutes, prixMinuteCents)}) pour appeler.`
-                );
-              }
-            }}
-            className={`w-full rounded-2xl border border-greige/70 bg-cream/50 px-6 py-4 text-center transition ${
-              enLigne ? "hover:border-cta/50" : "cursor-default"
-            }`}
+        ) : enLigne ? (
+          // Même libellé, autre destination : la recharge, avec la raison.
+          <a
+            href="/credit?pour=appeler"
+            className="block w-full rounded-2xl bg-cta px-6 py-4 text-center shadow-card transition hover:bg-cta-dark"
           >
-            <span className="block text-lg font-semibold text-aubergine/70">
+            <span className="block text-lg font-semibold text-cta-text">
               Appeler maintenant
             </span>
-            <span className="block text-xs text-mention">
-              {enLigne
-                ? `dès ${minimumMinutes} min de crédit — rechargez ci-dessous`
-                : statut === "en_consultation"
-                  ? "dès qu'Elena se libère"
-                  : "à la minute, pendant les permanences"}
+            <span className="block text-xs text-cta-text/80">
+              il vous reste {soldeMinutes} min — rechargez pour appeler
             </span>
-          </button>
+          </a>
+        ) : (
+          // Appel impossible : simple constat, pas un bouton.
+          <div className="w-full rounded-2xl border border-greige/70 bg-cream/50 px-6 py-4 text-center">
+            <span className="block text-lg font-semibold text-aubergine/70">
+              {statut === "en_consultation"
+                ? "Appeler dès qu'Elena se libère"
+                : "Appeler pendant la permanence"}
+            </span>
+            <span className="block text-xs text-mention">
+              {statut === "en_consultation" && retour
+                ? `de retour vers ${retour}`
+                : presence.permanence.prochaine
+                  ? `prochaine : ${libellePermanence(presence.permanence.prochaine)}`
+                  : "à la minute, quand Elena est en ligne"}
+            </span>
+          </div>
         )}
 
         <a
@@ -337,110 +288,12 @@ export default function HeroConsultation({
           </span>
         </a>
 
-        <button
-          type="button"
-          onClick={() => setRechargeOuverte(!rechargeOuverte)}
-          className="mx-auto block text-sm font-medium text-mention underline decoration-greige underline-offset-4 transition hover:text-aubergine"
+        <a
+          href="/credit"
+          className="mx-auto block w-max text-sm font-medium text-mention underline decoration-greige underline-offset-4 transition hover:text-aubergine"
         >
           Recharger mon crédit
-        </button>
-      </div>
-
-      {/* Recharge express — repliée derrière « Recharger mon crédit » :
-          l'accueil propose d'abord la consultation, l'argent vient quand
-          on le demande. Elle s'ouvre d'elle-même si le crédit ne suffit
-          pas pour appeler. */}
-      <div className={rechargeOuverte ? "mt-6 border-t border-greige/40 pt-5" : "hidden"}>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
-          Recharge express
-        </p>
-        {/* La grille suit le nombre de paliers choisis dans le profil :
-            figée à trois colonnes, un quatrième palier se retrouvait seul
-            sur sa ligne, comme un oubli. */}
-        <div className={`mt-3 grid gap-2.5 ${grilleRecharge}`}>
-          {suggestionsMinutes.map((m) => {
-            const chargement = rechargeEnCours === m;
-            const primaire = !creditSuffisant;
-            return (
-              <button
-                key={m}
-                onClick={() => handleRechargeExpress(m)}
-                disabled={rechargeEnCours !== null}
-                className={`rounded-2xl px-3 py-3.5 text-center transition disabled:opacity-50 ${
-                  primaire
-                    ? "bg-cta text-cta-text shadow-card hover:bg-cta-dark"
-                    : "border border-greige/60 bg-cream/60 text-aubergine hover:border-cta/50 hover:bg-ivory"
-                }`}
-              >
-                <span className="block text-lg font-bold tracking-tight">
-                  {chargement ? "…" : `+${m} min`}
-                </span>
-                <span className={`text-xs font-medium ${primaire ? "text-cta-text/90" : "text-mention"}`}>
-                  {prixDe(m, prixMinuteCents)}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* CHOISIR SA DURÉE — ouvert d'emblée, avec un curseur.
-            Le menu déroulant repliée derrière un lien laissait croire que
-            le choix se limitait aux trois raccourcis. Or appeler pour la
-            durée qu'on veut est la raison d'être de cet espace : la porte
-            reste donc ouverte, et le prix suit le doigt. */}
-        <div className="mt-4 rounded-2xl border-2 border-dashed border-cta/45 bg-cream/40 p-4">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <span className="text-sm font-bold text-prix">
-              Ou choisissez votre durée, à la minute près
-            </span>
-            <span className="text-xs italic text-mention">
-              de {minMinutes} à {maxMinutes} min · {prixDe(1, prixMinuteCents)}/min
-            </span>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-4">
-            <input
-              type="range"
-              min={minMinutes}
-              max={maxMinutes}
-              step={pasMinutes}
-              value={autreMinutes}
-              onChange={(e) => setAutreMinutes(Number(e.target.value))}
-              aria-label="Choisir la durée en minutes"
-              className="h-1.5 min-w-[9rem] flex-1 cursor-pointer appearance-none rounded-full bg-greige accent-cta"
-              // #C24818 = couleur `cta` du theme (tailwind.config.ts) ;
-              // un degrade inline ne peut pas lire les classes Tailwind.
-              style={{
-                background: `linear-gradient(90deg, #C24818 ${progression}%, #EFE3D5 ${progression}%)`,
-              }}
-            />
-            <span className="rounded-2xl bg-aubergine px-4 py-2 text-center text-cream">
-              <span className="block font-serif text-lg font-semibold tabular-nums">
-                {autreMinutes} min
-              </span>
-              <span className="block text-xs text-cream/70 tabular-nums">
-                {prixDe(autreMinutes, prixMinuteCents)}
-              </span>
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => handleRechargeExpress(autreMinutes)}
-            disabled={rechargeEnCours !== null}
-            className="mt-4 w-full rounded-2xl bg-cta px-5 py-3.5 font-semibold text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50"
-          >
-            {rechargeEnCours === autreMinutes
-              ? "…"
-              : `Recharger ${autreMinutes} min — ${prixDe(autreMinutes, prixMinuteCents)}`}
-          </button>
-        </div>
-
-        <p className="mt-3 text-center text-xs leading-relaxed text-mention">
-          Un clic et vous passez au paiement sécurisé · minimum pour appeler :{" "}
-          {minimumMinutes} min ({prixDe(minimumMinutes, prixMinuteCents)}) · votre
-          crédit n&apos;expire jamais.
-        </p>
+        </a>
       </div>
 
       {message && (
