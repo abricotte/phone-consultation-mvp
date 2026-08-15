@@ -13,13 +13,18 @@ export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-greige/60 bg-cream/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <a href="/" className="flex items-center gap-2.5">
-          <span aria-hidden className="text-2xl leading-none text-aubergine/40">
-            ✦
-          </span>
-          <span className="font-serif text-2xl font-semibold tracking-wide text-aubergine">
-            Elena&nbsp;Wolska
-          </span>
+        {/* Le logo du site officiel — même image que sur elena-wolska.com,
+            pour que le passage vers l'espace ne ressemble pas à un
+            changement de maison. */}
+        <a href="/" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/elena-wolska-logo.png"
+            alt="Elena Wolska"
+            width={280}
+            height={100}
+            className="h-14 w-auto sm:h-16"
+          />
         </a>
 
         {/* Navigation desktop/tablette */}

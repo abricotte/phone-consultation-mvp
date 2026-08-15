@@ -50,7 +50,16 @@ export default function RootLayout({
         <footer className="mt-24 bg-footer text-white/80">
           <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:grid-cols-3">
             <div>
-              <p className="font-serif text-xl text-white">Elena Wolska</p>
+              {/* Même traitement que le pied de page du site officiel :
+                  le logo passé en blanc sur le fond sombre. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/elena-wolska-logo.png"
+                alt="Elena Wolska"
+                width={200}
+                height={71}
+                className="mb-3 h-16 w-auto brightness-0 invert"
+              />
               <p className="mt-2 text-sm leading-relaxed text-white/60">
                 Voyante sur l&apos;Amour et Médium sans Support, en Flashs
                 Directs. 19 ans d&apos;expérience. 20&nbsp;000+ consultations.
