@@ -1,0 +1,73 @@
+SAUVEGARDE DE LA ZONE DNS - elena-wolska.com
+Prise le 2026-08-15 a 15:59
+Avant deplacement du site de test entre equipes Netlify.
+==========================================================
+
+--- NS ---
+Address:  2001:861:5b02:32a0:3a35:fbff:fec3:35dc
+elena-wolska.com	nameserver = dns3.p05.nsone.net
+elena-wolska.com	nameserver = dns2.p05.nsone.net
+elena-wolska.com	nameserver = dns1.p05.nsone.net
+elena-wolska.com	nameserver = dns4.p05.nsone.net
+
+--- A ---
+Address:  2001:861:5b02:32a0:3a35:fbff:fec3:35dc
+Nom :    elena-wolska.com
+Addresses:  35.157.26.135
+	  63.176.8.218
+
+--- AAAA ---
+Address:  2001:861:5b02:32a0:3a35:fbff:fec3:35dc
+Nom :    elena-wolska.com
+
+--- MX ---
+Address:  2001:861:5b02:32a0:3a35:fbff:fec3:35dc
+elena-wolska.com
+	primary name server = dns1.p01.nsone.net
+	responsible mail addr = domains+netlify.netlify.com
+	serial  = 1772189516
+	refresh = 43200 (12 hours)
+	retry   = 7200 (2 hours)
+	expire  = 1209600 (14 days)
+	default TTL = 3600 (1 hour)
+
+--- TXT ---
+Address:  2001:861:5b02:32a0:3a35:fbff:fec3:35dc
+elena-wolska.com
+	primary name server = dns1.p01.nsone.net
+	responsible mail addr = domains+netlify.netlify.com
+	serial  = 1772189516
+	refresh = 43200 (12 hours)
+	retry   = 7200 (2 hours)
+	expire  = 1209600 (14 days)
+	default TTL = 3600 (1 hour)
+
+--- CNAME ---
+Address:  2001:861:5b02:32a0:3a35:fbff:fec3:35dc
+elena-wolska.com
+	primary name server = dns1.p01.nsone.net
+	responsible mail addr = domains+netlify.netlify.com
+	serial  = 1772189516
+	refresh = 43200 (12 hours)
+	retry   = 7200 (2 hours)
+	expire  = 1209600 (14 days)
+	default TTL = 3600 (1 hour)
+
+--- SOA ---
+Address:  2001:861:5b02:32a0:3a35:fbff:fec3:35dc
+elena-wolska.com
+	primary name server = dns1.p01.nsone.net
+	responsible mail addr = domains+netlify.netlify.com
+	serial  = 1772189516
+	refresh = 43200 (12 hours)
+	retry   = 7200 (2 hours)
+	expire  = 1209600 (14 days)
+	default TTL = 3600 (1 hour)
+
+--- www ---
+Address:  2001:861:5b02:32a0:3a35:fbff:fec3:35dc
+
+Nom :    www.elena-wolska.com
+Addresses:  35.157.26.135
+	  63.176.8.218
+

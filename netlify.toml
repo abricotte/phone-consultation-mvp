@@ -1,0 +1,25 @@
+# Configuration Netlify — a la RACINE du depot, volontairement.
+#
+# Le fichier frontend/netlify.toml ne suffit pas : Netlify ne le lit
+# qu'apres avoir su ou chercher, ce qui obligeait a saisir « frontend »
+# a la main dans l'interface au moment de l'import. Une case oubliee et
+# le build echoue sans message clair.
+#
+# Avec ce fichier, l'import d'un nouveau site depuis GitHub ne demande
+# aucun reglage : Netlify lit tout ici.
+#
+# ATTENTION — une seule chose reste a saisir a la main, car elle ne peut
+# pas figurer dans le depot :
+#
+#   NEXT_PUBLIC_API_URL = https://phone-consultation-mvp-production.up.railway.app/api
+#
+# Sans elle, le site se construit mais l'espace cliente ne parle plus au
+# serveur : aucune connexion, aucun solde, aucune consultation.
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
