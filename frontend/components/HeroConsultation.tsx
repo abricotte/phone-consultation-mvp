@@ -26,6 +26,44 @@ interface Props {
   statutDemo?: ElenaStatus;
 }
 
+
+/**
+ * Le visage d'Elena, avec l'état en badge dans le coin — comme une
+ * messagerie. La couleur continue de dire l'état ; le visage dit QUI :
+ * c'est elle qui est là, pas un point vert. Le pouls (ping) est réservé
+ * aux états où quelque chose est en train de se passer.
+ */
+function AvatarStatut({
+  couleur,
+  pouls = false,
+}: {
+  couleur: string;
+  pouls?: boolean;
+}) {
+  return (
+    <span className="relative inline-flex shrink-0">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/images/elena-avatar.png"
+        alt=""
+        width={44}
+        height={44}
+        className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow-soft"
+      />
+      <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4">
+        {pouls && (
+          <span
+            className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 ${couleur}`}
+          />
+        )}
+        <span
+          className={`relative inline-flex h-4 w-4 rounded-full ring-2 ring-white ${couleur}`}
+        />
+      </span>
+    </span>
+  );
+}
+
 export default function HeroConsultation({
   soldeMinutes,
   minimumMinutes,
@@ -94,10 +132,7 @@ export default function HeroConsultation({
           suffit — c'est l'information qui manquait, pas l'insistance. */}
       {statut === "disponible" && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-statut-online/10 px-5 py-4 ring-1 ring-statut-online/25">
-          <span className="relative flex h-3.5 w-3.5 shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-statut-online opacity-60" />
-            <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-statut-online" />
-          </span>
+          <AvatarStatut couleur="bg-statut-online" pouls />
           <span className="text-xl font-bold text-statut-online sm:text-2xl">
             Elena est en ligne
           </span>
@@ -109,7 +144,7 @@ export default function HeroConsultation({
 
       {statut === "en_consultation" && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-amber-50 px-5 py-4 ring-1 ring-amber-200">
-          <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-amber-500" />
+          <AvatarStatut couleur="bg-amber-500" />
           <span className="text-xl font-bold text-amber-700 sm:text-2xl">
             Elena est en consultation
           </span>
@@ -132,12 +167,12 @@ export default function HeroConsultation({
         (presence.messageAbsence ? (
           <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
             <span className="flex flex-wrap items-center gap-3">
-              <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-statut-offline" />
+              <AvatarStatut couleur="bg-statut-offline" />
               <span className="text-xl font-bold text-mention sm:text-2xl">
                 Elena n&apos;est pas en ligne
               </span>
             </span>
-            <p className="mt-1 pl-6 text-sm italic text-mention/80">
+            <p className="mt-1 pl-14 text-sm italic text-mention/80">
               {presence.messageAbsence}
             </p>
           </div>
@@ -145,15 +180,12 @@ export default function HeroConsultation({
           // Bascule éteinte pendant un créneau : le retard devient bénin.
           <div className="mb-4 rounded-2xl bg-gold/10 px-5 py-4 ring-1 ring-gold/30">
             <span className="flex flex-wrap items-center gap-3">
-              <span className="relative flex h-3.5 w-3.5 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold opacity-50" />
-                <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-gold" />
-              </span>
+              <AvatarStatut couleur="bg-gold" pouls />
               <span className="text-xl font-bold text-gold-dark sm:text-2xl">
                 Permanence en cours — Elena arrive
               </span>
             </span>
-            <p className="mt-1 pl-6 text-sm text-mention">
+            <p className="mt-1 pl-14 text-sm text-mention">
               Prévue de {heureParis(presence.permanence.enCours.debut)} à{" "}
               {heureParis(presence.permanence.enCours.fin)} · restez à proximité
             </p>
@@ -161,38 +193,38 @@ export default function HeroConsultation({
         ) : presence.permanence.prochaine ? (
           <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
             <span className="flex flex-wrap items-center gap-3">
-              <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-statut-offline" />
+              <AvatarStatut couleur="bg-statut-offline" />
               <span className="text-xl font-bold text-mention sm:text-2xl">
                 Prochaine permanence :{" "}
                 {libellePermanence(presence.permanence.prochaine)}
               </span>
             </span>
-            <p className="mt-1 pl-6 text-sm italic text-mention/80">
+            <p className="mt-1 pl-14 text-sm italic text-mention/80">
               à la minute pendant la permanence — ou réservez un créneau
             </p>
           </div>
         ) : presence.permanence.actives ? (
           <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
             <span className="flex flex-wrap items-center gap-3">
-              <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-statut-offline" />
+              <AvatarStatut couleur="bg-statut-offline" />
               <span className="text-xl font-bold text-mention sm:text-2xl">
                 Pas de permanence cette semaine
               </span>
             </span>
-            <p className="mt-1 pl-6 text-sm italic text-mention/80">
+            <p className="mt-1 pl-14 text-sm italic text-mention/80">
               les consultations se font sur rendez-vous — Découverte ou Complète
             </p>
           </div>
         ) : (
           <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
             <span className="flex flex-wrap items-center gap-3">
-              <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-statut-offline" />
+              <AvatarStatut couleur="bg-statut-offline" />
               <span className="text-xl font-bold text-mention sm:text-2xl">
                 Elena n&apos;est pas en ligne
               </span>
             </span>
             {presence.heuresIndicatives && (
-              <p className="mt-1 pl-6 text-sm italic text-mention/80">
+              <p className="mt-1 pl-14 text-sm italic text-mention/80">
                 {presence.heuresIndicatives}
               </p>
             )}
@@ -202,7 +234,7 @@ export default function HeroConsultation({
       {statut === "chargement" && (
         <div className="mb-4 rounded-2xl bg-greige/20 px-5 py-4">
           <span className="inline-flex items-center gap-3 text-base text-mention">
-            <span className="h-3.5 w-3.5 rounded-full bg-greige" />
+            <AvatarStatut couleur="bg-greige" />
             Vérification…
           </span>
         </div>

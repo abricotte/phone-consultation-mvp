@@ -19,14 +19,6 @@ interface Wallet {
   balance: number;
 }
 
-interface Transaction {
-  id: string;
-  type: string;
-  amount: number;
-  description: string;
-  createdAt: string;
-}
-
 // Pensée du jour — une par jour, en douceur (rotation déterministe)
 const PENSEES = [
   "Rien ne meurt, tout se transforme.",
@@ -46,7 +38,6 @@ function jourDeLAnnee(d: Date): number {
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [prixMinuteCents, setPrixMinuteCents] = useState(290);
   const [minimumMinutes, setMinimumMinutes] = useState(5);
   const [suggestionsMinutes, setSuggestionsMinutes] = useState<number[]>([10, 20, 30]);
@@ -123,8 +114,8 @@ export default function DashboardPage() {
         /* les valeurs par défaut restent affichées */
       });
 
-    Promise.all([api.getMe(), api.getWallet(), api.getTransactions()])
-      .then(([userData, walletData, txData]) => {
+    Promise.all([api.getMe(), api.getWallet()])
+      .then(([userData, walletData]) => {
         // Espace réservé aux clientes : la praticienne va dans son cabinet
         if (userData.role === "consultant" || userData.role === "admin") {
           window.location.replace("/cabinet-ew");
@@ -132,7 +123,6 @@ export default function DashboardPage() {
         }
         setUser(userData);
         setWallet(walletData);
-        setTransactions(txData);
       })
       .catch((err) => {
         setError(err.message);
@@ -146,35 +136,6 @@ export default function DashboardPage() {
 
   const balance = wallet?.balance ?? 0;
   const minutesRestantes = Math.floor((balance * 100) / prixMinuteCents);
-
-  // Le chemin ne montre que les consultations — les recharges sont de
-  // l'intendance, elles vivent dans l'onglet Compte.
-  const consultationsPassees = transactions.filter((tx) => tx.type === "debit");
-
-  // « Votre dernière consultation : il y a 12 jours » — une existence
-  // douce du temps qui passe, sans injonction. Prépare les jalons
-  // (« notre 12e consultation ensemble ») sans les précéder.
-  function depuisDerniere(): string | null {
-    if (consultationsPassees.length === 0) return null;
-    const jours = Math.floor(
-      (Date.now() - new Date(consultationsPassees[0].createdAt).getTime()) /
-        86_400_000
-    );
-    if (jours <= 0) return "aujourd'hui";
-    if (jours === 1) return "hier";
-    return `il y a ${jours} jours`;
-  }
-
-  // « 20 minutes avec Elena » plutôt que « −5,80 € » : la monnaie de cet
-  // espace est le temps passé ensemble, pas l'euro.
-  function minutesDeConsultation(description: string): string {
-    const m = description.match(/(\d+)\s*min/);
-    if (m) {
-      const n = Number(m[1]);
-      return `${n} minute${n > 1 ? "s" : ""} avec Elena`;
-    }
-    return description;
-  }
 
   if (loading)
     return <div className="mt-16 text-center text-mention">Chargement…</div>;
@@ -242,72 +203,12 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* MON CHEMIN AVEC ELENA — le renversement voulu par Elena :
-          « l'argent en coulisse, le cheminement en scène ». Ici, une
-          consultation est un moment passé ensemble, pas une dépense. Les
-          montants en euros vivent dans l'onglet Compte, à leur place. */}
-      <section className="rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft sm:p-8">
-        <h2 className="font-serif text-2xl font-semibold text-aubergine">
-          Mon chemin avec Elena
-        </h2>
-        {consultationsPassees.length === 0 ? (
-          <div className="mt-5 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-8 text-center">
-            <p className="text-3xl">✦</p>
-            <p className="mt-2 text-sm text-mention">
-              Votre chemin commencera à votre première consultation.
-            </p>
-          </div>
-        ) : (
-          <ul className="mt-4">
-            {/* Trois entrées seulement : l'accueil donne le fil, l'onglet
-                Consultations garde l'histoire complète. Deux listes
-                longues au même endroit se font concurrence. */}
-            {consultationsPassees.slice(0, 3).map((tx) => (
-              <li
-                key={tx.id}
-                className="flex items-center gap-3.5 border-b border-greige/40 py-3.5 last:border-0"
-              >
-                <span
-                  aria-hidden
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blush text-lg font-medium text-prix"
-                >
-                  ☾
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-ink">
-                    {minutesDeConsultation(tx.description)}
-                  </p>
-                  <p className="text-xs text-mention">
-                    {new Date(tx.createdAt).toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-        {consultationsPassees.length > 3 && (
-          <a
-            href="/consultations"
-            className="mt-3 inline-block text-sm font-bold text-prix hover:underline"
-          >
-            Voir toutes mes consultations →
-          </a>
-        )}
-        <p className="mt-4 text-xs text-mention">
-          {depuisDerniere() && (
-            <>Votre dernière consultation : {depuisDerniere()} · </>
-          )}
-          Le détail de vos recharges se trouve dans{" "}
-          <a href="/credit" className="underline hover:text-aubergine">
-            Mon crédit
-          </a>
-          .
-        </p>
-      </section>
+      {/* Rien sous les deux portes — decision d'Elena (15 aout 2026).
+          Le chemin a rejoint l'onglet Consultations. Et « Votre derniere
+          consultation : il y a 5 jours » a ete retire aussi : c'est un
+          compteur qui juge, une injonction deguisee. Une cliente qui
+          revient apres un mois ne doit rien lire qui ressemble a un
+          reproche. L'accueil decide, il ne compte pas. */}
     </div>
   );
 }

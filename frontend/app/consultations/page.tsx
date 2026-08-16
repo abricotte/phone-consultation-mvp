@@ -103,13 +103,19 @@ export default function ConsultationsPage() {
     <div className="mx-auto max-w-3xl px-5 py-10 font-jakarta">
       <EspaceNav />
 
+      {/* Le chemin vit ICI, et seulement ici — l'accueil ne le montre plus.
+          Un seul endroit pour l'histoire, sinon la cliente ne sait pas
+          lequel fait foi. */}
       <h1 className="mt-8 font-serif text-3xl font-semibold text-aubergine">
-        Mes consultations
+        Mon chemin avec Elena
       </h1>
       <p className="mt-2 text-sm text-mention">
-        L&apos;historique de vos consultations avec Elena. Pour le détail de vos
-        recharges et débits, consultez l&apos;historique des transactions dans
-        votre espace.
+        Chacune de vos consultations, dans l&apos;ordre. Le détail de vos
+        recharges se trouve dans{" "}
+        <a href="/credit" className="text-prix hover:underline">
+          Mon crédit
+        </a>
+        .
       </p>
 
       {/* Règle de facturation — annoncée clairement, elle rassure autant
