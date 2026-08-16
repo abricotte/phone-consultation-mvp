@@ -27,6 +27,14 @@ interface Props {
 }
 
 
+/** « 14,50 € » — le prix d'un nombre de minutes au tarif courant */
+function prixDe(minutes: number, cents: number): string {
+  const t = minutes * cents;
+  return t % 100 === 0
+    ? `${t / 100} €`
+    : `${(t / 100).toFixed(2).replace(".", ",")} €`;
+}
+
 /**
  * Le visage d'Elena, avec l'état en badge dans le coin — comme une
  * messagerie. La couleur continue de dire l'état ; le visage dit QUI :
@@ -85,6 +93,18 @@ export default function HeroConsultation({
 
   const enLigne = statut === "disponible";
   const creditSuffisant = soldeMinutes >= minimumMinutes;
+
+  // Une permanence AUJOURD'HUI change tout le ton de l'ecran : ce n'est
+  // plus une porte close, c'est une promesse — « Elena sera en ligne de
+  // 17h45 a 19h ». Et si le credit manque, la porte pleine mene a la
+  // recharge avec cette promesse pour raison : « vous serez prete ».
+  const prochaine = presence.permanence.prochaine;
+  const permanenceAujourdhui =
+    !!prochaine &&
+    statut === "hors_ligne" &&
+    !presence.messageAbsence &&
+    new Date(prochaine.debut).toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" }) ===
+      new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });
 
 
   async function handleAppel() {
@@ -190,13 +210,28 @@ export default function HeroConsultation({
               {heureParis(presence.permanence.enCours.fin)} · restez à proximité
             </p>
           </div>
-        ) : presence.permanence.prochaine ? (
+        ) : permanenceAujourdhui && prochaine ? (
+          // Une permanence AUJOURD'HUI : on l'annonce en positif — « sera
+          // en ligne » — pas en creux — « n'est pas en ligne ».
+          <div className="mb-4 rounded-2xl bg-gold/10 px-5 py-4 ring-1 ring-gold/30">
+            <span className="flex flex-wrap items-center gap-3">
+              <AvatarStatut couleur="bg-gold" />
+              <span className="text-xl font-bold text-gold-dark sm:text-2xl">
+                Elena sera en ligne aujourd&apos;hui, de{" "}
+                {heureParis(prochaine.debut)} à {heureParis(prochaine.fin)}
+              </span>
+            </span>
+            <p className="mt-1 pl-[4.25rem] text-sm text-mention">
+              Vous pourrez l&apos;appeler à la minute pendant ce créneau.
+            </p>
+          </div>
+        ) : prochaine ? (
           <div className="mb-4 rounded-2xl bg-greige/25 px-5 py-4">
             <span className="flex flex-wrap items-center gap-3">
               <AvatarStatut couleur="bg-statut-offline" />
               <span className="text-xl font-bold text-mention sm:text-2xl">
                 Prochaine permanence :{" "}
-                {libellePermanence(presence.permanence.prochaine)}
+                {libellePermanence(prochaine)}
               </span>
             </span>
             <p className="mt-1 pl-[4.25rem] text-sm italic text-mention/80">
@@ -244,8 +279,13 @@ export default function HeroConsultation({
           les plateformes, elle se lit en même temps que le chiffre. */}
       <p className="mt-1 text-center text-sm text-mention">
         Votre crédit :{" "}
-        <span className="font-bold text-aubergine">{soldeMinutes} min</span> ·
-        n&apos;expire jamais
+        <span className="font-bold text-aubergine">{soldeMinutes} min</span>
+        {/* Quand une permanence approche et que le crédit manque, la
+            ligne dit le minimum : la cliente comprend AVANT de cliquer
+            pourquoi la porte mène à la recharge. */}
+        {permanenceAujourdhui && !creditSuffisant
+          ? ` — il faut au moins ${minimumMinutes} min (${prixDe(minimumMinutes, prixMinuteCents)}) pour appeler`
+          : " · n'expire jamais"}
       </p>
 
       {/* DEUX PORTES — le cœur de l'espace, dessiné par Elena.
@@ -284,6 +324,30 @@ export default function HeroConsultation({
               il vous reste {soldeMinutes} min — rechargez pour appeler
             </span>
           </a>
+        ) : permanenceAujourdhui && prochaine && !creditSuffisant ? (
+          // Elle pourra appeler dans quelques heures et n'a pas le credit :
+          // la porte pleine mene a la recharge, avec la promesse pour raison.
+          <a
+            href="/credit?pour=appeler"
+            className="block w-full rounded-2xl bg-cta px-6 py-4 text-center shadow-card transition hover:bg-cta-dark"
+          >
+            <span className="block text-lg font-semibold text-cta-text">
+              Préparer mon crédit pour l&apos;appeler
+            </span>
+            <span className="block text-xs text-cta-text/80">
+              rechargez maintenant — vous serez prête à {heureParis(prochaine.debut)}
+            </span>
+          </a>
+        ) : permanenceAujourdhui && prochaine ? (
+          // Credit suffisant, permanence a venir : elle est prete, on le dit.
+          <div className="w-full rounded-2xl border border-gold/40 bg-gold/5 px-6 py-4 text-center">
+            <span className="block text-lg font-semibold text-gold-dark">
+              Vous êtes prête pour {heureParis(prochaine.debut)}
+            </span>
+            <span className="block text-xs text-mention">
+              revenez à cette heure — le bouton d&apos;appel apparaîtra
+            </span>
+          </div>
         ) : (
           // Appel impossible : simple constat, pas un bouton.
           <div className="w-full rounded-2xl border border-greige/70 bg-cream/50 px-6 py-4 text-center">
@@ -305,7 +369,7 @@ export default function HeroConsultation({
         <a
           href="https://elena-wolska.com/disponibilites"
           className={`block w-full rounded-2xl px-6 py-4 text-center transition ${
-            enLigne && creditSuffisant
+            (enLigne && creditSuffisant) || (permanenceAujourdhui && !creditSuffisant)
               ? "border border-greige/70 bg-white text-aubergine hover:border-cta/50"
               : "bg-cta text-cta-text shadow-card hover:bg-cta-dark"
           }`}
@@ -313,7 +377,9 @@ export default function HeroConsultation({
           <span className="block text-lg font-semibold">Réserver un créneau</span>
           <span
             className={`block text-xs ${
-              enLigne && creditSuffisant ? "text-mention" : "text-cta-text/80"
+              (enLigne && creditSuffisant) || (permanenceAujourdhui && !creditSuffisant)
+                ? "text-mention"
+                : "text-cta-text/80"
             }`}
           >
             au calendrier · Découverte 20 min ou Complète 45 min
@@ -324,7 +390,9 @@ export default function HeroConsultation({
           href="/credit"
           className="mx-auto block w-max text-sm font-medium text-mention underline decoration-greige underline-offset-4 transition hover:text-aubergine"
         >
-          Recharger mon crédit
+          {permanenceAujourdhui && !creditSuffisant
+            ? "Recharger sans appeler"
+            : "Recharger mon crédit"}
         </a>
       </div>
 

@@ -70,6 +70,8 @@ export const api = {
 
   // Profil cliente (date de naissance + "personnes qui comptent")
   getProfil: () => request("/profil"),
+  // Le mot d'Elena — affiché sous le bonjour, remplace la citation du jour
+  getMotElena: () => request("/profil/mot-elena"),
   updateProfil: (body: {
     dateNaissance?: string | null;
     ascendant?: string | null;
@@ -192,6 +194,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ semaine }),
     }),
+  // Le mot d'Elena — un seul à la fois, publier remplace, vide = retirer
+  adminGetMotElena: () => request("/admin/mot-elena"),
+  adminPublierMotElena: (texte: string) =>
+    request("/admin/mot-elena", { method: "POST", body: JSON.stringify({ texte }) }),
+  adminRetirerMotElena: () => request("/admin/mot-elena", { method: "DELETE" }),
   // Numéros bloqués
   adminGetNumerosBloques: () => request("/admin/numeros-bloques"),
   adminBloquerNumero: (telephone: string, motif?: string) =>

@@ -1,6 +1,7 @@
 const express = require('express');
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
+const { dateFloue } = require('../utils/motElena');
 
 const router = express.Router();
 
@@ -151,6 +152,35 @@ router.patch('/', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Erreur mise à jour profil:', err);
     res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// GET /api/profil/mot-elena - Le mot du jour d'Elena, pour toute cliente
+// connectée. Un seul mot actif ; s'il n'y en a pas, l'espace affiche la
+// citation du jour — le frontend n'a qu'à tester `mot === null`.
+router.get('/mot-elena', authMiddleware, async (req, res) => {
+  try {
+    const { data } = await supabase
+      .from('mot_elena')
+      .select('texte, publie_le')
+      .eq('retire', false)
+      .order('publie_le', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!data) return res.json({ mot: null });
+
+    res.json({
+      mot: {
+        texte: data.texte,
+        // La date floue est calculée ICI, en heure de Paris : le
+        // navigateur d'une cliente peut être sur n'importe quel fuseau.
+        quand: dateFloue(data.publie_le),
+      },
+    });
+  } catch {
+    // Table absente ou erreur : la citation reprend, jamais d'écran cassé.
+    res.json({ mot: null });
   }
 });
 

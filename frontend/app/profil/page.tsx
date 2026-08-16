@@ -328,9 +328,10 @@ export default function ProfilPage() {
 
         {/* Date de naissance — affichage / édition */}
         <div className="mt-5 border-t border-greige/50 pt-5">
-          <p className="text-xs text-mention">
-            Pour votre lecture et votre cadeau d&apos;anniversaire 🎁
-          </p>
+          {/* Pas de « cadeau d'anniversaire » : on ne le fait pas (encore).
+              Promettre ce qui n'existe pas est la seule chose pire que
+              ne rien promettre. */}
+          <p className="text-xs text-mention">Pour votre lecture.</p>
 
           {montrerInput ? (
             <form onSubmit={handleDateSubmit} className="mt-2">

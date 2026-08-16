@@ -6,6 +6,9 @@ import { usePathname } from "next/navigation";
 const ONGLETS = [
   { href: "/cabinet-ew", label: "Cabinet", icone: "✦" },
   { href: "/cabinet-ew/journal", label: "Journal", icone: "☾" },
+  // Les rendez-vous ont leur onglet : « à rattraper » grandissait sur
+  // l'accueil jusqu'à ecraser la journee. Le jour reste sur l'accueil.
+  { href: "/cabinet-ew/calendly", label: "Calendly", icone: "▤" },
   { href: "/cabinet-ew/clientes", label: "Clientes", icone: "✧" },
   // Un onglet pour ce qui se fait toutes les semaines : le calendrier
   // encombrait la page d'arrivée, qui sert ce qui se fait tous les jours.

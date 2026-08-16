@@ -82,7 +82,15 @@ function compteARebours(iso: string): string {
   return `dans ${h} h${reste > 0 ? ` ${String(reste).padStart(2, "0")}` : ""}`;
 }
 
-export default function RendezVousDuJour() {
+// `mode` : "jour" sur l'accueil du cabinet — le jour, rien que le jour ;
+// "complet" dans l'onglet Calendly — avec « à rattraper » et l'historique.
+// Regle d'Elena : la page d'arrivee sert le quotidien, un onglet sert
+// l'archive. Huit rendez-vous a rattraper ecrasaient la journee.
+export default function RendezVousDuJour({
+  mode = "jour",
+}: {
+  mode?: "jour" | "complet";
+} = {}) {
   const [duJour, setDuJour] = useState<RendezVous[]>([]);
   const [enRetard, setEnRetard] = useState<RendezVous[]>([]);
   const [evenements, setEvenements] = useState<Evenement[]>([]);
@@ -171,7 +179,7 @@ export default function RendezVousDuJour() {
   return (
     <section className="mt-4 rounded-3xl border border-greige/50 bg-ivory p-6 shadow-soft">
       <h2 className="font-jakarta text-lg font-bold text-aubergine">
-        {dateDuJour()}
+        {mode === "jour" ? dateDuJour() : "Aujourd'hui"}
       </h2>
 
       {message && (
@@ -300,8 +308,20 @@ export default function RendezVousDuJour() {
         </ul>
       )}
 
-      {/* À RATTRAPER — jamais effacé en silence */}
-      {aRattraper.length > 0 && (
+      {/* À RATTRAPER — jamais efface en silence. Sur l'accueil : un seul
+          compteur qui renvoie a l'onglet ; la liste complete vit la-bas. */}
+      {mode === "jour" && aRattraper.length > 0 && (
+        <p className="mt-4 border-t border-greige/40 pt-3 text-sm">
+          <span className="font-bold text-gold-dark">
+            {aRattraper.length} rendez-vous a rattraper
+          </span>
+          <span className="text-mention"> · </span>
+          <a href="/cabinet-ew/calendly" className="text-prix hover:underline">
+            voir dans Calendly →
+          </a>
+        </p>
+      )}
+      {mode === "complet" && aRattraper.length > 0 && (
         <div className="mt-4 border-t border-greige/40 pt-3">
           <p className="text-xs font-bold uppercase tracking-wider text-gold-dark">
             À rattraper

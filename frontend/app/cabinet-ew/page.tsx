@@ -316,6 +316,10 @@ export default function AdminPage() {
       {/* 2 bis. MA JOURNÉE — juste sous le statut : le poste de pilotage,
              à la place de la boîte mail. Toujours visible — une journée
              libre se lit, elle ne se devine pas. */}
+      {/* La permanence du jour, en tete des infos du jour : c'est
+             l'engagement de la journee, elle se lit avec les rendez-vous. */}
+      <RappelPermanence />
+
       <RendezVousDuJour />
 
       {/* 3. LES CHIFFRES DU JOUR — les quatre vignettes, qu'Elena tient
@@ -413,11 +417,6 @@ export default function AdminPage() {
           voir le journal →
         </a>
       </p>
-
-      {/* 3 bis. RAPPEL DE PERMANENCE — une seule ligne. Le calendrier a
-             son onglet (geste hebdomadaire) ; ici, juste de quoi ne pas
-             decouvrir un vendredi que la semaine est vide. */}
-      <RappelPermanence />
 
       {/* 4. CONSULTATION MINUTÉE — repliée : usage occasionnel */}
       <div className="mt-5 rounded-2xl border border-greige/70 bg-ivory shadow-soft">

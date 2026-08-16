@@ -132,6 +132,13 @@ export default function ProfilPraticiennePage() {
   const [heuresIndicatives, setHeuresIndicatives] = useState("");
   const [absenceDebut, setAbsenceDebut] = useState("");
   const [absenceFin, setAbsenceFin] = useState("");
+
+  // Le mot d'Elena
+  const [motTexte, setMotTexte] = useState("");
+  const [motActif, setMotActif] = useState<{ texte: string; quand: string | null } | null>(null);
+  const [motEnCours, setMotEnCours] = useState(false);
+  const [motMsg, setMotMsg] = useState("");
+  const [motErr, setMotErr] = useState("");
   const [textesMsg, setTextesMsg] = useState("");
   const [textesEnCours, setTextesEnCours] = useState(false);
 
@@ -199,6 +206,11 @@ export default function ProfilPraticiennePage() {
       window.location.replace("/cabinet-ew");
       return;
     }
+    api
+      .adminGetMotElena()
+      .then((r: { actif: { texte: string; quand: string | null } | null }) => setMotActif(r.actif))
+      .catch(() => setMotActif(null));
+
     api
       .adminGetProfil()
       .then((p: Profil) => {
@@ -321,6 +333,39 @@ export default function ProfilPraticiennePage() {
       setTarifsErr(err instanceof Error ? err.message : "Erreur");
     } finally {
       setTarifsEnCours(false);
+    }
+  }
+
+  async function publierMot(e: React.FormEvent) {
+    e.preventDefault();
+    setMotEnCours(true);
+    setMotMsg("");
+    setMotErr("");
+    try {
+      // Publier avec un champ vide = retirer (le serveur le sait aussi)
+      const r = await api.adminPublierMotElena(motTexte);
+      setMotActif(r.actif);
+      setMotMsg(r.message);
+      if (r.actif) setMotTexte("");
+    } catch (err) {
+      setMotErr(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setMotEnCours(false);
+    }
+  }
+
+  async function retirerMot() {
+    setMotEnCours(true);
+    setMotMsg("");
+    setMotErr("");
+    try {
+      const r = await api.adminRetirerMotElena();
+      setMotActif(null);
+      setMotMsg(r.message);
+    } catch (err) {
+      setMotErr(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setMotEnCours(false);
     }
   }
 
@@ -768,6 +813,62 @@ export default function ProfilPraticiennePage() {
               Modifiez un tarif pour voir ce que vos clientes verront.
             </p>
           )}
+        </form>
+      </Section>
+
+      {/* LE MOT D'ELENA — un message court affiché sous le bonjour de
+          TOUTES ses clientes. Un seul à la fois. Placé ici, avec ses
+          textes : c'est un texte qu'elle change de temps en temps, pas un
+          geste du quotidien — donc pas sur la page d'arrivée. */}
+      <Section
+        titre="Le mot d'Elena"
+        sous="Affiché sur l'espace de toutes vos clientes, sous leur bonjour. Un seul mot à la fois — le nouveau remplace l'ancien."
+      >
+        <form onSubmit={publierMot} className="space-y-3">
+          <div>
+            <textarea
+              rows={3}
+              maxLength={200}
+              value={motTexte}
+              onChange={(e) => setMotTexte(e.target.value)}
+              placeholder="Cette semaine, on tient la route."
+              className="w-full rounded-2xl border border-greige/60 bg-white px-4 py-3 font-serif text-lg italic leading-relaxed text-aubergine placeholder:text-mention/50 focus:border-gold focus:outline-none"
+            />
+            <p className="mt-1 text-right text-xs tabular-nums text-mention">
+              {motTexte.length} / 200
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <button type="submit" disabled={motEnCours} className={bouton}>
+              {motEnCours ? "Publication…" : "Afficher chez mes clientes"}
+            </button>
+            {motActif && (
+              <button
+                type="button"
+                onClick={retirerMot}
+                disabled={motEnCours}
+                className="text-sm text-mention underline decoration-greige underline-offset-4 transition hover:text-red-600"
+              >
+                Retirer le mot
+              </button>
+            )}
+          </div>
+
+          {/* Bloc d'état : ce que les clientes voient EN CE MOMENT */}
+          {motActif ? (
+            <p className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800">
+              ✓ Un mot est affiché
+              {motActif.quand ? ` depuis ${motActif.quand}` : ""} :{" "}
+              <span className="font-serif italic">« {motActif.texte} »</span>
+            </p>
+          ) : (
+            <p className="rounded-xl bg-greige/20 px-4 py-3 text-sm text-mention">
+              — Aucun mot affiché — vos clientes voient la citation du jour.
+            </p>
+          )}
+          {motMsg && <p className="text-sm text-green-700">{motMsg}</p>}
+          {motErr && <p className="text-sm text-red-600">{motErr}</p>}
         </form>
       </Section>
 

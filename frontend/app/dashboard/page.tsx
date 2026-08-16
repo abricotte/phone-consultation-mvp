@@ -54,6 +54,7 @@ export default function DashboardPage() {
   const [pensee, setPensee] = useState("");
   const [signe, setSigne] = useState<Signe | null>(null);
   const [ascendant, setAscendant] = useState<Signe | null>(null);
+  const [motElena, setMotElena] = useState<{ texte: string; quand: string | null } | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -81,6 +82,12 @@ export default function DashboardPage() {
       setPaymentStatus("Paiement annulé.");
       window.history.replaceState({}, "", "/dashboard");
     }
+
+    // Le mot d'Elena — s'il y en a un, il remplace la citation du jour.
+    api
+      .getMotElena()
+      .then((r: { mot: { texte: string; quand: string | null } | null }) => setMotElena(r.mot))
+      .catch(() => setMotElena(null));
 
     // Signe et ascendant à côté du bonjour : l'espace la reconnaît.
     api
@@ -171,10 +178,35 @@ export default function DashboardPage() {
             </span>
           )}
         </div>
-        {pensee && (
-          <p className="mt-2 font-serif text-lg italic text-mention/90">
-            « {pensee} »
-          </p>
+        {/* LE MOT D'ELENA — quand elle en a posé un, il remplace la citation.
+            Un mot écrit par elle, pour toutes, qu'elle change quand elle
+            veut : c'est ce qui fait vivre l'espace même quand elle est
+            hors ligne. Sans mot, la citation du jour reprend sa place —
+            il n'y a jamais d'état vide. */}
+        {motElena ? (
+          <div className="relative mt-4 max-w-xl rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/10 to-cream px-5 pb-4 pt-5">
+            <span
+              aria-hidden
+              className="absolute -top-3 left-5 rounded-full bg-cream px-2 text-base text-gold"
+            >
+              ✦
+            </span>
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-gold-dark">
+              Le mot d&apos;Elena
+            </p>
+            <p className="mt-1.5 font-serif text-lg italic leading-relaxed text-aubergine">
+              « {motElena.texte} »
+            </p>
+            {motElena.quand && (
+              <p className="mt-1.5 text-[11.5px] text-gold-dark/70">{motElena.quand}</p>
+            )}
+          </div>
+        ) : (
+          pensee && (
+            <p className="mt-2 font-serif text-lg italic text-mention/90">
+              « {pensee} »
+            </p>
+          )
         )}
       </header>
 

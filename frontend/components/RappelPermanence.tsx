@@ -54,17 +54,45 @@ export default function RappelPermanence() {
     .filter((c) => new Date(c.fin).getTime() > Date.now())
     .sort((a, b) => a.debut.localeCompare(b.debut));
 
-  let texte: React.ReactNode;
+  // UNE PERMANENCE AUJOURD'HUI se lit en un regard : c'est l'engagement
+  // du jour, pas une note de bas de page. Les autres cas restent discrets.
   if (duJour.length > 0) {
-    texte = (
-      <>
-        Permanence aujourd&apos;hui :{" "}
-        <span className="font-semibold text-aubergine tabular-nums">
-          {duJour.map((c) => `${heure(c.debut)} – ${heure(c.fin)}`).join(" · ")}
-        </span>
-      </>
+    const enCours = duJour.find(
+      (c) =>
+        new Date(c.debut).getTime() <= Date.now() &&
+        new Date(c.fin).getTime() > Date.now()
     );
-  } else if (aVenir.length > 0) {
+    return (
+      <div
+        className={`mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-5 py-4 ${
+          enCours
+            ? "bg-gold/15 ring-1 ring-gold/40"
+            : "bg-blush/60 ring-1 ring-greige/50"
+        }`}
+      >
+        <span className="flex flex-wrap items-baseline gap-2.5">
+          <span aria-hidden className="text-lg text-gold-dark">
+            ◷
+          </span>
+          <span className="text-lg font-bold text-aubergine">
+            {enCours ? "Permanence en cours" : "Permanence aujourd'hui"}
+          </span>
+          <span className="text-lg font-bold tabular-nums text-gold-dark">
+            {duJour.map((c) => `${heure(c.debut)} – ${heure(c.fin)}`).join(" · ")}
+          </span>
+        </span>
+        <a
+          href="/cabinet-ew/permanences"
+          className="shrink-0 text-xs text-prix hover:underline"
+        >
+          gérer →
+        </a>
+      </div>
+    );
+  }
+
+  let texte: React.ReactNode;
+  if (aVenir.length > 0) {
     texte = (
       <>
         Prochaine permanence :{" "}

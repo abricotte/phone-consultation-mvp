@@ -23,6 +23,9 @@ const {
 // Numéros bloqués (cf. utils/blocage.js)
 const { preparerBlocage } = require('../utils/blocage');
 
+// Le mot d'Elena (cf. utils/motElena.js)
+const { dateFloue, nettoyerMot } = require('../utils/motElena');
+
 // Réglages de pilotage — bornés côté serveur (cf. utils/reglages.js)
 const { borner: bornerReglages } = require('../utils/reglages');
 
@@ -2055,6 +2058,86 @@ function lundiDeLaSemaine(brut) {
   const jourISO = new Date(ref.getTime() - recul * 86_400_000)
     .toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
   return new Date(`${jourISO}T00:00:00+02:00`);
+}
+
+// ------------------------------------------------------------------
+// LE MOT D'ELENA
+//
+// Un message court affiché sous le bonjour de TOUTES les clientes. Un
+// seul à la fois : publier remplace, retirer rend la citation du jour.
+// Jamais de notification, jamais d'envoi — c'est l'espace qui change
+// quand la cliente vient, pas un message qui la poursuit.
+// ------------------------------------------------------------------
+
+// GET /api/admin/mot-elena — le mot actif, pour le bloc d'état du cabinet
+router.get('/mot-elena', async (req, res) => {
+  try {
+    const { data } = await supabase
+      .from('mot_elena')
+      .select('id, texte, publie_le')
+      .eq('retire', false)
+      .order('publie_le', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    res.json(
+      data
+        ? { actif: { id: data.id, texte: data.texte, quand: dateFloue(data.publie_le) } }
+        : { actif: null }
+    );
+  } catch (err) {
+    console.error('Erreur lecture mot Elena:', err);
+    res.status(500).json({ error: messageMot(err) });
+  }
+});
+
+// POST /api/admin/mot-elena { texte } — publier. Un texte vide = retirer.
+router.post('/mot-elena', async (req, res) => {
+  try {
+    const texte = nettoyerMot(req.body.texte);
+
+    // Retirer l'actuel dans tous les cas : soit on le remplace, soit on
+    // l'efface. L'historique reste (retire = true), rien n'est supprimé.
+    await supabase.from('mot_elena').update({ retire: true }).eq('retire', false);
+
+    if (!texte) {
+      return res.json({ actif: null, message: 'Le mot est retiré — vos clientes revoient la citation du jour.' });
+    }
+
+    const { data, error } = await supabase
+      .from('mot_elena')
+      .insert({ texte })
+      .select('id, texte, publie_le')
+      .single();
+    if (error) throw error;
+
+    res.status(201).json({
+      actif: { id: data.id, texte: data.texte, quand: dateFloue(data.publie_le) },
+      message: 'Votre mot est affiché chez toutes vos clientes.',
+    });
+  } catch (err) {
+    console.error('Erreur publication mot Elena:', err);
+    res.status(500).json({ error: messageMot(err) });
+  }
+});
+
+// DELETE /api/admin/mot-elena — retirer explicitement
+router.delete('/mot-elena', async (req, res) => {
+  try {
+    await supabase.from('mot_elena').update({ retire: true }).eq('retire', false);
+    res.json({ actif: null, message: 'Le mot est retiré — vos clientes revoient la citation du jour.' });
+  } catch (err) {
+    console.error('Erreur retrait mot Elena:', err);
+    res.status(500).json({ error: messageMot(err) });
+  }
+});
+
+function messageMot(err) {
+  const texte = `${err?.message || ''} ${err?.code || ''}`.toLowerCase();
+  if (texte.includes('mot_elena') || texte.includes('42p01') || texte.includes('does not exist')) {
+    return "La table du mot d'Elena n'existe pas encore : exécutez la migration 013 dans Supabase.";
+  }
+  return 'Erreur serveur';
 }
 
 // ------------------------------------------------------------------
