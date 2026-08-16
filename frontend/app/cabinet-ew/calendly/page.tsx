@@ -101,25 +101,26 @@ export default function CalendlyPage() {
         </p>
       </div>
 
-      {/* Aujourd'hui + à rattraper — le composant complet */}
-      <RendezVousDuJour mode="complet" />
-
-      {/* LANCER UNE CONSULTATION MINUTEE — le repli, a cote de la liste :
-          la cliente n'est pas dans les rendez-vous, on la lance a la main.
-          Replie : usage occasionnel, la liste passe d'abord. */}
+      {/* LANCER UNE CONSULTATION MINUTEE — en PREMIER (decision d'Elena) :
+          c'est le geste actif de cette page, les listes sont la lecture.
+          Replie pour ne pas cacher le reste ; un clic l'ouvre. */}
       <details className="mt-4 rounded-3xl border border-greige/50 bg-ivory shadow-soft">
         <summary className="cursor-pointer list-none px-6 py-4">
           <span className="block font-jakarta text-lg font-bold text-aubergine">
             Lancer une consultation minutée
           </span>
           <span className="block text-xs text-mention">
-            Pour un rendez-vous déjà réglé qui n&apos;apparaît pas ci-dessus
+            Pour un rendez-vous déjà réglé — votre téléphone sonne d&apos;abord
           </span>
         </summary>
         <div className="border-t border-greige/40 px-6 pb-6 pt-4">
           <ConsultationMinutee />
         </div>
       </details>
+
+
+      {/* Aujourd'hui + à rattraper — le composant complet */}
+      <RendezVousDuJour mode="complet" />
 
       {/* La semaine à venir */}
       <section className="mt-4 rounded-3xl border border-greige/50 bg-ivory p-6 shadow-soft">
