@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
 import RendezVousDuJour from "@/components/RendezVousDuJour";
+import ConsultationMinutee from "@/components/ConsultationMinutee";
 
 // CALENDLY — les rendez-vous, tous, à leur place.
 //
@@ -102,6 +103,23 @@ export default function CalendlyPage() {
 
       {/* Aujourd'hui + à rattraper — le composant complet */}
       <RendezVousDuJour mode="complet" />
+
+      {/* LANCER UNE CONSULTATION MINUTEE — le repli, a cote de la liste :
+          la cliente n'est pas dans les rendez-vous, on la lance a la main.
+          Replie : usage occasionnel, la liste passe d'abord. */}
+      <details className="mt-4 rounded-3xl border border-greige/50 bg-ivory shadow-soft">
+        <summary className="cursor-pointer list-none px-6 py-4">
+          <span className="block font-jakarta text-lg font-bold text-aubergine">
+            Lancer une consultation minutée
+          </span>
+          <span className="block text-xs text-mention">
+            Pour un rendez-vous déjà réglé qui n&apos;apparaît pas ci-dessus
+          </span>
+        </summary>
+        <div className="border-t border-greige/40 px-6 pb-6 pt-4">
+          <ConsultationMinutee />
+        </div>
+      </details>
 
       {/* La semaine à venir */}
       <section className="mt-4 rounded-3xl border border-greige/50 bg-ivory p-6 shadow-soft">

@@ -11,6 +11,7 @@ import BandeauAppelEnCours, {
 import SanteLigne from "@/components/SanteLigne";
 import RendezVousDuJour from "@/components/RendezVousDuJour";
 import RappelPermanence from "@/components/RappelPermanence";
+import RechercheCliente from "@/components/RechercheCliente";
 
 interface Forfait {
   code: string;
@@ -84,19 +85,11 @@ export default function AdminPage() {
   const [lErreur, setLErreur] = useState("");
   const [lEnCours, setLEnCours] = useState(false);
 
-  // Consultation minutée — repliée par défaut : usage occasionnel
-  // (rendez-vous Calendly), elle ne doit pas occuper l'écran d'accueil.
-  const [telephone, setTelephone] = useState("");
-  const [forfaitCode, setForfaitCode] = useState("");
-  const [lancement, setLancement] = useState(false);
-  const [messageAppel, setMessageAppel] = useState("");
-  const [minuteeOuverte, setMinuteeOuverte] = useState(false);
 
   async function recharger() {
     const [s, j] = await Promise.all([api.adminGetStatut(), api.adminGetJour()]);
     setStatut(s);
     setJour(j);
-    if (!forfaitCode && s.forfaits?.length) setForfaitCode(s.forfaits[0].code);
   }
 
   useEffect(() => {
@@ -132,23 +125,6 @@ export default function AdminPage() {
       setError(err instanceof Error ? err.message : "Erreur");
     } finally {
       setToggling(false);
-    }
-  }
-
-  async function handleLancerConsultation(e: React.FormEvent) {
-    e.preventDefault();
-    setLancement(true);
-    setError("");
-    setMessageAppel("");
-    try {
-      const data = await api.adminLancerConsultation(telephone, forfaitCode);
-      setMessageAppel(data.message);
-      setTelephone("");
-      await recharger();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur au lancement");
-    } finally {
-      setLancement(false);
     }
   }
 
@@ -316,6 +292,11 @@ export default function AdminPage() {
       {/* 2 bis. MA JOURNÉE — juste sous le statut : le poste de pilotage,
              à la place de la boîte mail. Toujours visible — une journée
              libre se lit, elle ne se devine pas. */}
+      {/* TROUVER UNE CLIENTE — sous le statut, avant tout le reste : c'est
+             le geste qu'Elena fait pendant un appel. Elle tape, Entree,
+             elle est sur la fiche. Il doit etre en haut, sans defiler. */}
+      <RechercheCliente />
+
       {/* La permanence du jour, en tete des infos du jour : c'est
              l'engagement de la journee, elle se lit avec les rendez-vous. */}
       <RappelPermanence />
@@ -418,93 +399,9 @@ export default function AdminPage() {
         </a>
       </p>
 
-      {/* 4. CONSULTATION MINUTÉE — repliée : usage occasionnel */}
-      <div className="mt-5 rounded-2xl border border-greige/70 bg-ivory shadow-soft">
-        <button
-          onClick={() => setMinuteeOuverte((v) => !v)}
-          aria-expanded={minuteeOuverte}
-          className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
-        >
-          <span>
-            <span className="block font-bold text-aubergine">
-              Lancer une consultation minutée
-            </span>
-            <span className="block text-xs text-mention">
-              Pour un rendez-vous déjà réglé (Calendly)
-            </span>
-          </span>
-          <span aria-hidden className="shrink-0 text-mention">
-            {minuteeOuverte ? "▲" : "▼"}
-          </span>
-        </button>
-
-        {minuteeOuverte && (
-          <div className="border-t border-greige/50 px-5 pb-5 pt-4">
-            <p className="text-sm text-mention">
-              Votre téléphone sonne d&apos;abord, puis la cliente est appelée.
-              Coupure automatique à la durée choisie, signal 2 minutes avant la
-              fin. Aucun débit de crédit.
-            </p>
-
-            <form onSubmit={handleLancerConsultation} className="mt-4 space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-aubergine">
-                  Numéro de la cliente
-                </label>
-                <input
-                  type="tel"
-                  value={telephone}
-                  onChange={(e) => setTelephone(e.target.value)}
-                  placeholder="06 12 34 56 78"
-                  required
-                  className="w-full max-w-xs rounded-lg border border-greige bg-white px-3 py-2.5 text-aubergine"
-                />
-              </div>
-
-              <div>
-                <p className="mb-2 text-sm font-medium text-aubergine">Durée</p>
-                <div className="flex flex-wrap gap-2.5">
-                  {statut?.forfaits?.map((f) => (
-                    <button
-                      key={f.code}
-                      type="button"
-                      onClick={() => setForfaitCode(f.code)}
-                      className={`rounded-xl border px-4 py-2.5 text-center transition ${
-                        forfaitCode === f.code
-                          ? "border-cta bg-blush shadow-card"
-                          : "border-greige/70 bg-ivory/60 hover:border-cta/50"
-                      }`}
-                    >
-                      <span className="block text-lg font-bold tracking-tight text-aubergine">
-                        {f.minutes} min
-                      </span>
-                      <span className="text-xs text-mention">{f.nom}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {messageAppel && (
-                <p className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
-                  📞 {messageAppel}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                disabled={lancement || enConsultation}
-                className="w-full rounded-full bg-cta px-8 py-3 font-bold text-cta-text shadow-card transition hover:bg-cta-dark disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-              >
-                {lancement
-                  ? "Lancement de l'appel…"
-                  : enConsultation
-                  ? "Consultation en cours…"
-                  : "Lancer l'appel"}
-              </button>
-            </form>
-          </div>
-        )}
-      </div>
+      {/* La consultation minutee a rejoint l'onglet Calendly (decision
+          d'Elena) : c'est un geste Calendly par nature, il vit a cote de
+          la liste des rendez-vous. */}
 
       {/* 5. Ligne téléphonique — discrète, en pied */}
       <SanteLigne variante="pied" />

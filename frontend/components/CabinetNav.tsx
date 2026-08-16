@@ -3,18 +3,19 @@
 import { usePathname } from "next/navigation";
 
 // Navigation du cabinet praticienne — miroir de l'EspaceNav des clientes.
+// Ordre voulu par Elena, de gauche a droite : d'abord ce qui pilote la
+// journee (Cabinet, Permanences, Calendly), puis les personnes
+// (Clientes), puis ce qu'on consulte (Journal, Revenus), puis soi
+// (Profil), puis sa parole aux clientes (Le mot d'Elena).
 const ONGLETS = [
   { href: "/cabinet-ew", label: "Cabinet", icone: "✦" },
-  { href: "/cabinet-ew/journal", label: "Journal", icone: "☾" },
-  // Les rendez-vous ont leur onglet : « à rattraper » grandissait sur
-  // l'accueil jusqu'à ecraser la journee. Le jour reste sur l'accueil.
+  { href: "/cabinet-ew/permanences", label: "Permanences", icone: "◷" },
   { href: "/cabinet-ew/calendly", label: "Calendly", icone: "▤" },
   { href: "/cabinet-ew/clientes", label: "Clientes", icone: "✧" },
-  // Un onglet pour ce qui se fait toutes les semaines : le calendrier
-  // encombrait la page d'arrivée, qui sert ce qui se fait tous les jours.
-  { href: "/cabinet-ew/permanences", label: "Permanences", icone: "◷" },
+  { href: "/cabinet-ew/journal", label: "Journal", icone: "☾" },
   { href: "/cabinet-ew/revenus", label: "Revenus", icone: "◈" },
   { href: "/cabinet-ew/profil", label: "Profil", icone: "⚙" },
+  { href: "/cabinet-ew/mot", label: "Le mot d'Elena", icone: "✎" },
 ];
 
 export default function CabinetNav() {
