@@ -46,9 +46,9 @@ function AvatarStatut({
       <img
         src="/images/elena-avatar.png"
         alt=""
-        width={44}
-        height={44}
-        className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow-soft"
+        width={56}
+        height={56}
+        className="h-14 w-14 rounded-full object-cover ring-2 ring-white shadow-soft"
       />
       <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4">
         {pouls && (
@@ -172,7 +172,7 @@ export default function HeroConsultation({
                 Elena n&apos;est pas en ligne
               </span>
             </span>
-            <p className="mt-1 pl-14 text-sm italic text-mention/80">
+            <p className="mt-1 pl-[4.25rem] text-sm italic text-mention/80">
               {presence.messageAbsence}
             </p>
           </div>
@@ -185,7 +185,7 @@ export default function HeroConsultation({
                 Permanence en cours — Elena arrive
               </span>
             </span>
-            <p className="mt-1 pl-14 text-sm text-mention">
+            <p className="mt-1 pl-[4.25rem] text-sm text-mention">
               Prévue de {heureParis(presence.permanence.enCours.debut)} à{" "}
               {heureParis(presence.permanence.enCours.fin)} · restez à proximité
             </p>
@@ -199,7 +199,7 @@ export default function HeroConsultation({
                 {libellePermanence(presence.permanence.prochaine)}
               </span>
             </span>
-            <p className="mt-1 pl-14 text-sm italic text-mention/80">
+            <p className="mt-1 pl-[4.25rem] text-sm italic text-mention/80">
               à la minute pendant la permanence — ou réservez un créneau
             </p>
           </div>
@@ -211,7 +211,7 @@ export default function HeroConsultation({
                 Pas de permanence cette semaine
               </span>
             </span>
-            <p className="mt-1 pl-14 text-sm italic text-mention/80">
+            <p className="mt-1 pl-[4.25rem] text-sm italic text-mention/80">
               les consultations se font sur rendez-vous — Découverte ou Complète
             </p>
           </div>
@@ -224,7 +224,7 @@ export default function HeroConsultation({
               </span>
             </span>
             {presence.heuresIndicatives && (
-              <p className="mt-1 pl-14 text-sm italic text-mention/80">
+              <p className="mt-1 pl-[4.25rem] text-sm italic text-mention/80">
                 {presence.heuresIndicatives}
               </p>
             )}
