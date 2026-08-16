@@ -606,7 +606,7 @@ router.get('/clientes', async (req, res) => {
           .in('user_id', ids),
         supabase
           .from('sessions')
-          .select('client_id, status, started_at, duration_seconds, total_cost')
+          .select('client_id, status, started_at, duration_seconds, total_cost, type')
           .eq('praticienne_id', p.id)
           .in('client_id', ids),
       ]);
@@ -614,12 +614,49 @@ router.get('/clientes', async (req, res) => {
       for (const w of wallets || []) walletsParId[w.user_id] = parseFloat(w.balance || 0);
       for (const s of sessions || []) {
         if (s.status !== 'completed') continue;
-        const agg = (sessionsParId[s.client_id] ||= { nb: 0, derniere: null, total: 0 });
+        const agg = (sessionsParId[s.client_id] ||= {
+          nb: 0,
+          derniere: null,
+          total: 0,
+          minute: 0,
+          calendly: 0,
+        });
         agg.nb += 1;
-        agg.total += parseFloat(s.total_cost || 0);
+        const montant = parseFloat(s.total_cost || 0);
+        agg.total += montant;
+        // Deux argents distincts : la minute (portefeuille) et le forfait
+        // (encaissé par Calendly). Elena veut les voir séparément.
+        if (s.type === 'forfait_manuel' || s.type === 'forfait') agg.calendly += montant;
+        else agg.minute += montant;
         if (s.started_at && (!agg.derniere || s.started_at > agg.derniere)) {
           agg.derniere = s.started_at;
         }
+      }
+
+      // L'ARGENT CALENDLY DORMAIT. Une réservation payée 58 € ou 129 €
+      // n'apparaissait nulle part tant que la consultation n'avait pas eu
+      // lieu — la cliente affichait « 0 € dépensés » alors qu'elle avait
+      // déjà payé. Le rendez-vous porte le montant encaissé, à sa date de
+      // paiement : c'est lui qui fait foi pour un CA à l'encaissement.
+      // On ne compte que les rendez-vous NON encore honorés : une fois la
+      // session créée, c'est elle qui porte le montant (sinon double).
+      const { data: rdv } = await supabase
+        .from('rendez_vous')
+        .select('client_id, montant_paye, statut, session_id')
+        .in('client_id', ids)
+        .not('montant_paye', 'is', null);
+      for (const r of rdv || []) {
+        if (r.statut === 'annule' || r.session_id) continue;
+        const agg = (sessionsParId[r.client_id] ||= {
+          nb: 0,
+          derniere: null,
+          total: 0,
+          minute: 0,
+          calendly: 0,
+        });
+        const montant = parseFloat(r.montant_paye || 0);
+        agg.total += montant;
+        agg.calendly += montant;
       }
     }
 
@@ -635,6 +672,9 @@ router.get('/clientes', async (req, res) => {
         nbConsultations: sessionsParId[c.id]?.nb ?? 0,
         derniereConsultation: sessionsParId[c.id]?.derniere ?? null,
         totalDepense: Math.round((sessionsParId[c.id]?.total ?? 0) * 100) / 100,
+        // Détail par origine — deux argents, deux lectures
+        depenseMinute: Math.round((sessionsParId[c.id]?.minute ?? 0) * 100) / 100,
+        depenseCalendly: Math.round((sessionsParId[c.id]?.calendly ?? 0) * 100) / 100,
       }))
     );
   } catch (err) {
@@ -1786,16 +1826,22 @@ router.get('/rendez-vous', async (req, res) => {
           .map((r) => r.client_id)
       ),
     ];
-    const aAborderParId = {};
+    // Ce que la fiche apporte au rendez-vous : le motif ET la date de
+    // naissance — l'un pour savoir ce qu'elle vient chercher, l'autre
+    // pour son ciel. Pour tous les rendez-vous, « à rattraper » compris :
+    // Elena les prépare de la même façon.
+    const ficheParId = {};
     if (idsClientes.length > 0) {
       const { data: fiches } = await supabase
         .from('users')
-        .select('id, a_aborder, a_aborder_maj_le')
+        .select('id, a_aborder, a_aborder_maj_le, date_naissance')
         .in('id', idsClientes);
       for (const f of fiches || []) {
-        if (f.a_aborder) {
-          aAborderParId[f.id] = { texte: f.a_aborder, majLe: f.a_aborder_maj_le };
-        }
+        ficheParId[f.id] = {
+          aAborder: f.a_aborder || null,
+          aAborderMajLe: f.a_aborder_maj_le || null,
+          dateNaissance: f.date_naissance || null,
+        };
       }
     }
 
@@ -1806,7 +1852,8 @@ router.get('/rendez-vous', async (req, res) => {
       // « À rattraper » se DÉDUIT — pas de statut stocké, donc rien qui
       // sorte de la liste sans qu'Elena l'ait décidé.
       aRattraper: r.statut === 'prevu' && new Date(r.debut).getTime() < maintenant,
-      aAborder: (r.client_id && aAborderParId[r.client_id]?.texte) || null,
+      aAborder: (r.client_id && ficheParId[r.client_id]?.aAborder) || null,
+      dateNaissance: (r.client_id && ficheParId[r.client_id]?.dateNaissance) || null,
     });
 
     res.json({

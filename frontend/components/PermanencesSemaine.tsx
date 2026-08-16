@@ -19,6 +19,30 @@ interface Creneau {
 
 const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
+// Deux listes par pas de 15 minutes, de 07:00 à 23:45 — des choix qui
+// existent vraiment, au lieu du sélecteur natif qui fait défiler minute
+// par minute. La liste de FIN ne propose que des heures postérieures au
+// début : impossible de poser 19:00 → 16:00 par erreur.
+const HEURES: string[] = [];
+for (let h = 7; h <= 23; h++) {
+  for (const m of ["00", "15", "30", "45"]) {
+    HEURES.push(`${String(h).padStart(2, "0")}:${m}`);
+  }
+}
+
+/** « 3 h de permanence », « 1 h 30 de permanence », « 45 min » */
+function libelleDuree(debut: string, fin: string): string {
+  const [hd, md] = debut.split(":").map(Number);
+  const [hf, mf] = fin.split(":").map(Number);
+  const minutes = hf * 60 + mf - (hd * 60 + md);
+  if (minutes <= 0) return "";
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m} min de permanence`;
+  if (m === 0) return `${h} h de permanence`;
+  return `${h} h ${String(m).padStart(2, "0")} de permanence`;
+}
+
 /** 'YYYY-MM-DD' en heure de Paris */
 function jourISO(d: Date): string {
   return d.toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });
@@ -212,21 +236,44 @@ export default function PermanencesSemaine() {
 
               {ajoutJour === i ? (
                 <span className="inline-flex flex-wrap items-center gap-2">
-                  <input
-                    type="time"
+                  <select
                     value={heureDebut}
-                    onChange={(e) => setHeureDebut(e.target.value)}
-                    className="rounded-lg border border-greige/60 px-2 py-1 text-sm"
+                    onChange={(e) => {
+                      const d = e.target.value;
+                      setHeureDebut(d);
+                      // La fin suit si elle est devenue antérieure au début
+                      if (heureFin <= d) {
+                        const suivante = HEURES.find((h) => h > d);
+                        if (suivante) setHeureFin(suivante);
+                      }
+                    }}
+                    className="rounded-lg border border-greige/60 bg-white px-2 py-1.5 text-sm tabular-nums"
                     aria-label="Heure de début"
-                  />
+                  >
+                    {HEURES.map((h) => (
+                      <option key={h} value={h}>
+                        {h}
+                      </option>
+                    ))}
+                  </select>
                   <span className="text-xs text-mention">→</span>
-                  <input
-                    type="time"
+                  <select
                     value={heureFin}
                     onChange={(e) => setHeureFin(e.target.value)}
-                    className="rounded-lg border border-greige/60 px-2 py-1 text-sm"
+                    className="rounded-lg border border-greige/60 bg-white px-2 py-1.5 text-sm tabular-nums"
                     aria-label="Heure de fin"
-                  />
+                  >
+                    {HEURES.filter((h) => h > heureDebut).map((h) => (
+                      <option key={h} value={h}>
+                        {h}
+                      </option>
+                    ))}
+                  </select>
+                  {libelleDuree(heureDebut, heureFin) && (
+                    <span className="rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold-dark">
+                      {libelleDuree(heureDebut, heureFin)}
+                    </span>
+                  )}
                   <button
                     type="button"
                     onClick={() => poser(i)}

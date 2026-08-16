@@ -23,6 +23,8 @@ interface Cliente {
   nbConsultations: number;
   derniereConsultation: string | null;
   totalDepense: number;
+  depenseMinute: number;
+  depenseCalendly: number;
 }
 
 const TEINTES = [
@@ -326,11 +328,22 @@ export default function ClientesPage() {
                   </span>
                 </span>
 
-                <span className="w-24 shrink-0 text-right">
+                <span className="w-28 shrink-0 text-right">
                   <span className="block font-bold tabular-nums text-aubergine">
                     {euros(c.totalDepense)}
                   </span>
-                  <span className="block text-xs text-mention">dépensés</span>
+                  {/* Deux argents : la minute (portefeuille) et le forfait
+                      (Calendly). La ventilation ne s'affiche que si les
+                      deux existent — sinon un seul mot suffit. */}
+                  <span className="block text-xs text-mention">
+                    {c.depenseMinute > 0 && c.depenseCalendly > 0
+                      ? `${euros(c.depenseMinute)} min · ${euros(c.depenseCalendly)} rdv`
+                      : c.depenseCalendly > 0
+                        ? "sur rendez-vous"
+                        : c.depenseMinute > 0
+                          ? "à la minute"
+                          : "dépensés"}
+                  </span>
                 </span>
 
                 <span className="w-24 shrink-0 text-right">

@@ -7,6 +7,9 @@ const ONGLETS = [
   { href: "/cabinet-ew", label: "Cabinet", icone: "✦" },
   { href: "/cabinet-ew/journal", label: "Journal", icone: "☾" },
   { href: "/cabinet-ew/clientes", label: "Clientes", icone: "✧" },
+  // Un onglet pour ce qui se fait toutes les semaines : le calendrier
+  // encombrait la page d'arrivée, qui sert ce qui se fait tous les jours.
+  { href: "/cabinet-ew/permanences", label: "Permanences", icone: "◷" },
   { href: "/cabinet-ew/revenus", label: "Revenus", icone: "◈" },
   { href: "/cabinet-ew/profil", label: "Profil", icone: "⚙" },
 ];

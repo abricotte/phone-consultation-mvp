@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { signeAstrologique } from "@/lib/astro";
 
 // « MA JOURNÉE » — le poste de pilotage du cabinet, validé sur croquis.
 //
@@ -32,6 +33,7 @@ interface RendezVous {
   aRattraper: boolean;
   /** « Ce qu'elle veut aborder » — écrit par la cliente pour la séance */
   aAborder: string | null;
+  dateNaissance: string | null;
 }
 
 interface Evenement {
@@ -187,6 +189,12 @@ export default function RendezVousDuJour() {
           </p>
           <p className="mt-1.5 text-2xl font-bold tracking-tight text-aubergine">
             {prochain.prenom}
+            {signeAstrologique(prochain.dateNaissance) && (
+              <span className="ml-2 text-base font-medium text-mention">
+                {signeAstrologique(prochain.dateNaissance)!.emoji}{" "}
+                {signeAstrologique(prochain.dateNaissance)!.nom}
+              </span>
+            )}
             <span className="text-mention"> · </span>
             {heure(prochain.debut)}
             <span className="ml-2 text-base font-medium text-prix">
@@ -314,6 +322,12 @@ export default function RendezVousDuJour() {
                 ) : (
                   <span className="font-medium text-aubergine">{r.prenom}</span>
                 )}
+                {signeAstrologique(r.dateNaissance) && (
+                  <span className="text-xs text-mention">
+                    {signeAstrologique(r.dateNaissance)!.emoji}{" "}
+                    {signeAstrologique(r.dateNaissance)!.nom}
+                  </span>
+                )}
                 {r.tentatives > 0 && (
                   <span className="text-xs text-red-600">
                     {r.tentatives} tentative{r.tentatives > 1 ? "s" : ""}
@@ -327,6 +341,13 @@ export default function RendezVousDuJour() {
                 >
                   {lancement === r.id ? "appel…" : "lancer l'appel"}
                 </button>
+                {/* Ce qu'elle veut aborder — a rattraper se prepare comme
+                    le prochain : Elena doit savoir ce qu'on vient chercher. */}
+                {r.aAborder && (
+                  <span className="basis-full pl-2 text-xs italic text-ink/80">
+                    ✦ « {r.aAborder.length > 140 ? r.aAborder.slice(0, 140) + "…" : r.aAborder} »
+                  </span>
+                )}
               </li>
             ))}
           </ul>
