@@ -1929,9 +1929,22 @@ router.get('/permanences', async (req, res) => {
     res.json({ lundi: lundi.toISOString(), creneaux: data || [] });
   } catch (err) {
     console.error('Erreur permanences:', err);
-    res.status(500).json({ error: 'Erreur serveur' });
+    res.status(500).json({ error: messagePermanence(err) });
   }
 });
+
+/**
+ * « Erreur serveur » n'apprend rien à qui lit l'écran. Le seul échec
+ * probable ici est une table absente — la migration 012 n'ayant pas été
+ * exécutée. Autant le dire, plutôt que de laisser chercher.
+ */
+function messagePermanence(err) {
+  const texte = `${err?.message || ''} ${err?.code || ''}`.toLowerCase();
+  if (texte.includes('permanences') || texte.includes('42p01') || texte.includes('does not exist')) {
+    return "La table des permanences n'existe pas encore : exécutez la migration 012 dans Supabase.";
+  }
+  return 'Erreur serveur';
+}
 
 // POST /api/admin/permanences { debut, fin } (ISO)
 router.post('/permanences', async (req, res) => {
@@ -1960,7 +1973,7 @@ router.post('/permanences', async (req, res) => {
     res.status(201).json(data);
   } catch (err) {
     console.error('Erreur création permanence:', err);
-    res.status(500).json({ error: 'Erreur serveur' });
+    res.status(500).json({ error: messagePermanence(err) });
   }
 });
 
