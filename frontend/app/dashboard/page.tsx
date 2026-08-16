@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { capitaliser } from "@/lib/format";
 import { signeAstrologique, signeParCode, type Signe } from "@/lib/astro";
 import HeroConsultation from "@/components/HeroConsultation";
+import EncadrePermanences from "@/components/EncadrePermanences";
 import EspaceNav from "@/components/EspaceNav";
 
 interface User {
@@ -233,9 +234,15 @@ export default function DashboardPage() {
           maxMinutes={maxMinutes}
           pasMinutes={pasMinutes}
         />
+
+        {/* PROCHAINES PERMANENCES — sous la carte d'action. Les 2-3
+            prochains moments ou Elena sera en ligne, et la sortie vers le
+            rendez-vous. S'efface de lui-meme si Elena est en ligne, ou si
+            elle n'utilise pas les permanences. */}
+        <EncadrePermanences />
       </div>
 
-      {/* Rien sous les deux portes — decision d'Elena (15 aout 2026).
+      {/* Rien d'autre sous les deux portes — decision d'Elena (15 aout 2026).
           Le chemin a rejoint l'onglet Consultations. Et « Votre derniere
           consultation : il y a 5 jours » a ete retire aussi : c'est un
           compteur qui juge, une injonction deguisee. Une cliente qui

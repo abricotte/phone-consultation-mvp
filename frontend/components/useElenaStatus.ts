@@ -22,11 +22,13 @@ export interface ElenaPresence {
   permanence: {
     enCours: { debut: string; fin: string } | null;
     prochaine: { debut: string; fin: string } | null;
+    /** Les 3 prochains créneaux — pour l'encadré de l'accueil */
+    prochaines: { debut: string; fin: string }[];
     actives: boolean;
   };
 }
 
-const AUCUNE_PERMANENCE = { enCours: null, prochaine: null, actives: false };
+const AUCUNE_PERMANENCE = { enCours: null, prochaine: null, prochaines: [], actives: false };
 
 const INITIAL: ElenaPresence = {
   statut: "chargement",
@@ -58,7 +60,11 @@ export function useElenaPresence(pollMs = 30_000): ElenaPresence {
           retourPrevu: r.retourPrevu ?? null,
           heuresIndicatives: r.heuresIndicatives ?? null,
           messageAbsence: r.messageAbsence ?? null,
-          permanence: r.permanence ?? AUCUNE_PERMANENCE,
+          permanence: {
+            ...AUCUNE_PERMANENCE,
+            ...(r.permanence ?? {}),
+            prochaines: r.permanence?.prochaines ?? [],
+          },
         });
       } catch {
         if (active) setPresence({ ...INITIAL, statut: "hors_ligne" });
@@ -107,6 +113,26 @@ export function libellePermanence(c: { debut: string; fin: string }): string {
           timeZone: "Europe/Paris",
         });
   return `${jour} ${heureParis(c.debut)} – ${heureParis(c.fin)}`;
+}
+
+/** « mar. 16:00 – 19:00 » — pastille compacte de l'encadré */
+export function libelleCourtPermanence(c: { debut: string; fin: string }): string {
+  const jour = new Date(c.debut).toLocaleDateString("fr-FR", {
+    weekday: "short",
+    timeZone: "Europe/Paris",
+  });
+  return `${jour} ${heureParis(c.debut)} – ${heureParis(c.fin)}`;
+}
+
+/** « dans 1 j 4 h », « dans 3 h », « dans 40 min » */
+export function dansCombien(iso: string): string {
+  const min = Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
+  if (min < 60) return `dans ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `dans ${h} h`;
+  const j = Math.floor(h / 24);
+  const reste = h % 24;
+  return `dans ${j} j${reste > 0 ? ` ${reste} h` : ""}`;
 }
 
 /** « 15 h 05 » — ou null si l'heure est invalide ou déjà passée */

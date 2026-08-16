@@ -97,7 +97,10 @@ router.get('/statut', async (req, res) => {
     // le bouton fait foi » : ces données n'ouvrent jamais d'appel, elles
     // disent seulement quand revenir. `enCours` porte le cas « bascule
     // éteinte pendant un créneau » → « Elena arrive ».
-    let permanence = { enCours: null, prochaine: null, actives: false };
+    // `prochaines` : les 3 prochains créneaux, pour l'encadré de l'accueil
+    // cliente. Trois maximum — au-delà, ce serait un calendrier, et un
+    // calendrier appellerait un onglet.
+    let permanence = { enCours: null, prochaine: null, prochaines: [], actives: false };
     try {
       const maintenant = new Date().toISOString();
       const { data: creneaux } = await supabase
@@ -115,6 +118,10 @@ router.get('/statut', async (req, res) => {
         if (prochaine) {
           permanence.prochaine = { debut: prochaine.debut, fin: prochaine.fin };
         }
+        permanence.prochaines = creneaux
+          .filter((c) => c.debut > maintenant)
+          .slice(0, 3)
+          .map((c) => ({ debut: c.debut, fin: c.fin }));
       } else {
         // Rien à venir : Elena utilise-t-elle les permanences ? Si oui,
         // l'écriteau « pas de permanence cette semaine » a un sens ; si
