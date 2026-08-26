@@ -1,9 +1,19 @@
-# Espaces privés : jamais explorés, jamais indexés.
-# Le cabinet praticienne n'est référencé nulle part dans le site ;
-# cette règle ajoute une barrière contre l'indexation accidentelle.
+# espace.elena-wolska.com — JAMAIS indexé, en entier.
+#
+# Ce sous-domaine n'est pas un site : c'est l'espace personnel des
+# clientes. On y arrive en se connectant, jamais par une recherche.
+#
+# Deux raisons de tout interdire, pas seulement les pages privées :
+#
+# 1. Sa page d'accueil reprend le discours d'elena-wolska.com. Indexée,
+#    elle ferait CONCURRENCE au vrai site sur les mêmes mots — et c'est
+#    Google qui choisirait lequel montrer.
+# 2. Un sous-domaine finit toujours par être découvert (les certificats
+#    HTTPS sont publiés dans des registres publics), même sans aucun lien
+#    pointant vers lui.
+#
+# Cette règle reste valable APRÈS le lancement : les clientes doivent
+# arriver par elena-wolska.com, jamais par un résultat de recherche égaré.
+
 User-agent: *
-Disallow: /cabinet-ew
-Disallow: /dashboard
-Disallow: /compte
-Disallow: /profil
-Disallow: /consultations
+Disallow: /
