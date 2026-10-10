@@ -83,6 +83,7 @@ export default function AdminPage() {
   const [lMdp, setLMdp] = useState("");
   const [lErreur, setLErreur] = useState("");
   const [lEnCours, setLEnCours] = useState(false);
+  const [dateDuJour, setDateDuJour] = useState("");
 
 
   async function recharger() {
@@ -92,6 +93,10 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
+    setDateDuJour(
+      new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })
+    );
+
     // Sans jeton → formulaire de connexion dédié (porte d'entrée de la
     // praticienne). Jeton présent mais mauvais rôle / erreur → 404
     // générique : l'existence de cet espace n'est confirmée à personne.
@@ -218,6 +223,19 @@ export default function AdminPage() {
 
   return (
     <CabinetShell>
+      {/* Même en-tête que l'espace des clientes : la date, le bonjour.
+          Le Salon est une seule maison, des deux côtés de la porte. */}
+      <header>
+        {dateDuJour && (
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
+            {dateDuJour}
+          </p>
+        )}
+        <h1 className="mt-1.5 font-serif text-4xl font-semibold leading-tight text-aubergine md:text-[46px]">
+          Bonjour Elena
+        </h1>
+      </header>
+
       {error && (
         <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
           {error}
@@ -298,103 +316,84 @@ export default function AdminPage() {
              l'engagement de la journee, elle se lit avec les rendez-vous. */}
       <RappelPermanence />
 
-      <RendezVousDuJour />
+      {/* MA JOURNÉE (ce qui VIENT) à gauche, AUJOURD'HUI (ce qui est
+          FAIT) à droite, dans la tuile sombre — validée par Elena le
+          10 octobre. Les quatre chiffres y restent lisibles d'un coup :
+          encaissé, consultations, écoute, tentatives. */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <RendezVousDuJour />
+        </div>
 
-      {/* 3. LES CHIFFRES DU JOUR — les quatre vignettes, qu'Elena tient
-             à garder : « on voit tout d'un coup ». Elles racontent ce qui
-             est FAIT ; ce qui VIENT est au-dessus, dans « Ma journée ». */}
-      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {[
-          {
-            valeur: `${jour?.consultationsAbouties ?? 0}`,
-            label: "consultation" + ((jour?.consultationsAbouties ?? 0) > 1 ? "s" : "") + " aboutie" + ((jour?.consultationsAbouties ?? 0) > 1 ? "s" : ""),
-            accent: true,
-          },
-          {
-            valeur: `${jour?.tentativesSansReponse ?? 0}`,
-            label:
-              "tentative" +
-              ((jour?.tentativesSansReponse ?? 0) > 1 ? "s" : "") +
-              " sans réponse",
-            accent: false,
-          },
-          {
-            valeur: `${jour?.dureeTotaleMinutes ?? 0} min`,
-            label: "d'écoute",
-            accent: false,
-          },
-          {
-            valeur: euros(jour?.revenusJour ?? 0),
-            label: "encaissés",
-            accent: true,
-          },
-        ].map((carte) => (
-          <div
-            key={carte.label}
-            className="rounded-2xl border border-greige/60 bg-ivory px-4 py-3.5 text-center"
-          >
-            <p
-              className={`text-2xl font-bold tabular-nums tracking-tight sm:text-3xl ${
-                carte.accent ? "text-prix" : "text-mention"
-              }`}
-            >
-              {carte.valeur}
-            </p>
-            <p className="mt-0.5 text-xs leading-tight text-mention">
-              {carte.label}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {jour && jour.appelsActifs > 0 && (
-        <p className="mt-3 text-sm font-medium text-green-700">
-          📞 {jour.appelsActifs} appel{jour.appelsActifs > 1 ? "s" : ""} en cours
-        </p>
-      )}
-
-      {/* Dernier appel — le geste le plus fréquent après une consultation
-          est d'ouvrir la fiche de celle qu'on vient de quitter. */}
-      {jour?.dernierAppel && (
-        <p className="mt-2 text-xs text-mention">
-          Dernier appel :{" "}
-          <span className="font-semibold text-ink">
-            {jour.dernierAppel.prenom}
+        <section className="relative mt-4 flex flex-col overflow-hidden rounded-3xl bg-aubergine p-5 text-cream md:p-6">
+          <span aria-hidden className="pointer-events-none absolute right-5 top-4 text-xl text-gold/60">
+            ✦
           </span>
-          , {heureCourte(jour.dernierAppel.fini)}, {jour.dernierAppel.minutes} min
-          {jour.dernierAppel.clienteId && (
-            <>
-              {" · "}
-              <a
-                href={`/cabinet-ew/clientes/${jour.dernierAppel.clienteId}`}
-                className="text-prix hover:underline"
-              >
-                voir sa fiche
-              </a>
-            </>
-          )}
-        </p>
-      )}
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-light">
+            Aujourd&apos;hui
+          </p>
+          <p className="mt-3 font-serif text-[48px] font-semibold leading-none tabular-nums">
+            {euros(jour?.revenusJour ?? 0)}
+          </p>
+          <p className="mt-1 text-[13px] text-cream/70">encaissés</p>
 
-      <p className="mt-2 text-xs text-mention">
-        {/* Cet argent est encaissé mais dû en prestation : il compte pour
-            la TVA et la trésorerie, pas comme un revenu acquis. */}
-        <span
-          className="cursor-help border-b border-dotted border-mention/50"
-          title="Déjà encaissé, à honorer en consultations. Cet argent est sur votre compte mais vous le devez encore en prestations."
-        >
-          Crédit détenu par vos clientes
-        </span>{" "}
-        :{" "}
-        <span className="font-semibold text-ink">
-          {euros(jour?.soldesClientsTotal ?? 0)}
-        </span>{" "}
-        ({jour?.nombreWallets ?? 0} portefeuille
-        {(jour?.nombreWallets ?? 0) > 1 ? "s" : ""}) ·{" "}
-        <a href="/cabinet-ew/journal" className="text-prix hover:underline">
-          voir le journal →
-        </a>
-      </p>
+          <p className="mt-4 text-sm tabular-nums text-cream">
+            {jour?.consultationsAbouties ?? 0} consultation
+            {(jour?.consultationsAbouties ?? 0) > 1 ? "s" : ""} aboutie
+            {(jour?.consultationsAbouties ?? 0) > 1 ? "s" : ""} ·{" "}
+            {jour?.dureeTotaleMinutes ?? 0} min d&apos;écoute
+          </p>
+          <p className="mt-1 text-sm tabular-nums text-cream/70">
+            {jour?.tentativesSansReponse ?? 0} tentative
+            {(jour?.tentativesSansReponse ?? 0) > 1 ? "s" : ""} sans réponse
+          </p>
+
+          {jour && jour.appelsActifs > 0 && (
+            <p className="mt-2 text-sm font-semibold text-gold-light">
+              {jour.appelsActifs} appel{jour.appelsActifs > 1 ? "s" : ""} en cours
+            </p>
+          )}
+
+          {/* Dernier appel — le geste le plus fréquent après une
+              consultation est d'ouvrir la fiche de celle qu'on vient de
+              quitter. */}
+          {jour?.dernierAppel && (
+            <p className="mt-4 text-xs text-cream/70">
+              Dernier appel :{" "}
+              <span className="font-semibold text-cream">{jour.dernierAppel.prenom}</span>,{" "}
+              {heureCourte(jour.dernierAppel.fini)}, {jour.dernierAppel.minutes} min
+              {jour.dernierAppel.clienteId && (
+                <>
+                  {" · "}
+                  <a
+                    href={`/cabinet-ew/clientes/${jour.dernierAppel.clienteId}`}
+                    className="text-gold-light hover:underline"
+                  >
+                    voir sa fiche
+                  </a>
+                </>
+              )}
+            </p>
+          )}
+
+          <p className="mt-auto pt-4 text-xs text-cream/60">
+            {/* Cet argent est encaissé mais dû en prestation : il compte pour
+                la TVA et la trésorerie, pas comme un revenu acquis. */}
+            <span
+              className="cursor-help border-b border-dotted border-cream/40"
+              title="Déjà encaissé, à honorer en consultations. Cet argent est sur votre compte mais vous le devez encore en prestations."
+            >
+              Crédit détenu
+            </span>{" "}
+            : <span className="font-semibold text-cream/90">{euros(jour?.soldesClientsTotal ?? 0)}</span>{" "}
+            ({jour?.nombreWallets ?? 0} portefeuille
+            {(jour?.nombreWallets ?? 0) > 1 ? "s" : ""}) ·{" "}
+            <a href="/cabinet-ew/journal" className="text-gold-light hover:underline">
+              journal →
+            </a>
+          </p>
+        </section>
+      </div>
 
       {/* La consultation minutee a rejoint l'onglet Calendly (decision
           d'Elena) : c'est un geste Calendly par nature, il vit a cote de
