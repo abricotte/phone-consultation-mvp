@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
-import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
 import {
   enregistrerReglages,
@@ -380,9 +379,7 @@ export default function ProfilPraticiennePage() {
 
   return (
     <CabinetShell>
-      <CabinetNav />
-
-      <h1 className="font-jakarta mt-6 text-3xl font-bold tracking-tight text-aubergine">
+      <h1 className="font-jakarta text-3xl font-bold tracking-tight text-aubergine">
         Mon profil
       </h1>
       <p className="mt-1 text-sm text-mention">

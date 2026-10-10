@@ -1,14 +1,14 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { estRouteEspace } from "@/lib/espace";
+import { sansChromeGlobal } from "@/lib/espace";
 
 // Pied de page du site, aligné sur la structure et le ton
 // d'elena-wolska.com. Absent de l'espace cliente : le shell y porte
 // déjà le logo et la navigation (voir EspaceShell).
 export default function SiteFooter() {
   const pathname = usePathname();
-  if (estRouteEspace(pathname)) return null;
+  if (sansChromeGlobal(pathname)) return null;
 
   return (
     <footer className="mt-24 bg-footer text-white/80">

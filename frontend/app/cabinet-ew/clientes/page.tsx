@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
-import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
 import {
   chargerReglages,
@@ -189,8 +188,6 @@ export default function ClientesPage() {
 
   return (
     <CabinetShell>
-      <CabinetNav />
-
       <div className="mt-8">
         <h1 className="font-jakarta text-3xl font-bold tracking-tight text-aubergine">
           Mes clientes

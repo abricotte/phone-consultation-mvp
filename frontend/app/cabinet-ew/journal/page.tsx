@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
-import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
 import BoutonBloquer from "@/components/BoutonBloquer";
 import { memeNumero } from "@/lib/format";
@@ -244,9 +243,7 @@ export default function JournalPage() {
 
   return (
     <CabinetShell>
-      <CabinetNav />
-
-      <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="font-jakarta text-3xl font-bold tracking-tight text-aubergine">
           Journal des appels
         </h1>

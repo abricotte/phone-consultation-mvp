@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { notFound, useParams } from "next/navigation";
 import { api } from "@/lib/api";
-import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
 import FilChronologique, {
   type EvenementFil,
@@ -366,8 +365,6 @@ export default function FicheClientePage() {
 
   return (
     <CabinetShell>
-      <CabinetNav />
-
       <a
         href="/cabinet-ew/clientes"
         className="mt-8 inline-block text-sm font-medium text-prix transition-colors hover:text-cta"

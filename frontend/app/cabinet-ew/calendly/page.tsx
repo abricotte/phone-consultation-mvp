@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
-import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
 import RendezVousDuJour from "@/components/RendezVousDuJour";
 import ConsultationMinutee from "@/components/ConsultationMinutee";
@@ -89,8 +88,6 @@ export default function CalendlyPage() {
 
   return (
     <CabinetShell>
-      <CabinetNav />
-
       <div className="mt-6">
         <h1 className="font-jakarta text-3xl font-bold tracking-tight text-aubergine">
           Rendez-vous Calendly

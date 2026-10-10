@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
-import CabinetNav from "@/components/CabinetNav";
 import CabinetShell from "@/components/CabinetShell";
 import BandeauAppelEnCours, {
   type AppelEnCours,
@@ -219,8 +218,6 @@ export default function AdminPage() {
 
   return (
     <CabinetShell>
-      <CabinetNav />
-
       {error && (
         <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
           {error}

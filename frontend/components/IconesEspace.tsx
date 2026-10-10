@@ -12,7 +12,13 @@ export type NomIcone =
   | "appeler"
   | "reserver"
   | "modifier"
-  | "fleche";
+  | "fleche"
+  // cabinet
+  | "permanences"
+  | "clientes"
+  | "revenus"
+  | "plus"
+  | "croix";
 
 export function Icone({
   nom,
@@ -94,6 +100,41 @@ export function Icone({
       return (
         <svg {...commun}>
           <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      );
+    // ── cabinet ──
+    case "permanences":
+      return (
+        <svg {...commun}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      );
+    case "clientes":
+      return (
+        <svg {...commun}>
+          <circle cx="9" cy="8" r="3.5" />
+          <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4.5-6.2" />
+        </svg>
+      );
+    case "revenus":
+      return (
+        <svg {...commun}>
+          <path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6" />
+        </svg>
+      );
+    case "plus":
+      return (
+        <svg {...commun}>
+          <circle cx="5" cy="12" r="1.5" fill="currentColor" />
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+          <circle cx="19" cy="12" r="1.5" fill="currentColor" />
+        </svg>
+      );
+    case "croix":
+      return (
+        <svg {...commun}>
+          <path d="M6 6l12 12M18 6L6 18" />
         </svg>
       );
   }

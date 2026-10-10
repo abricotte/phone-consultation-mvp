@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { estRouteEspace } from "@/lib/espace";
+import { sansChromeGlobal } from "@/lib/espace";
 
 // Navigation cliente volontairement réduite à deux gestes : retrouver
 // son espace, ou consulter. Le cabinet praticienne n'y figure JAMAIS —
@@ -15,7 +15,7 @@ export default function SiteHeader() {
 
   // Dans l'espace cliente, le shell porte le logo : ce header ferait
   // doublon. Il s'efface, les pages publiques le gardent.
-  if (estRouteEspace(pathname)) return null;
+  if (sansChromeGlobal(pathname)) return null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-greige/60 bg-cream/85 backdrop-blur">

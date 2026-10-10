@@ -25,10 +25,17 @@ export const ONGLETS_ESPACE: {
   { href: "/compte", label: "Compte", court: "Compte", icone: "compte" },
 ];
 
-/** Vrai sur les pages de l'espace cliente (header et footer globaux masqués) */
+/** Vrai sur les pages de l'espace cliente */
 export function estRouteEspace(pathname: string | null): boolean {
   if (!pathname) return false;
   return ONGLETS_ESPACE.some(
     (o) => pathname === o.href || pathname.startsWith(o.href + "/")
   );
+}
+
+/** Vrai là où le header et le footer du site s'effacent : l'espace
+ *  cliente et le cabinet — chacun a son shell, qui porte le logo. */
+export function sansChromeGlobal(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return estRouteEspace(pathname) || pathname === "/cabinet-ew" || pathname.startsWith("/cabinet-ew/");
 }
