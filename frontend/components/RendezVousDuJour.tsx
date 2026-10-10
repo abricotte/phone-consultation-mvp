@@ -83,7 +83,8 @@ function compteARebours(iso: string): string {
 }
 
 // `mode` : "jour" sur l'accueil du cabinet — le jour, rien que le jour ;
-// "complet" dans l'onglet Calendly — avec « à rattraper » et l'historique.
+// "complet" dans l'onglet Calendly — avec l'historique du jour (la liste
+// « à rattraper » est un composant à part : RendezVousARattraper).
 // Regle d'Elena : la page d'arrivee sert le quotidien, un onglet sert
 // l'archive. Huit rendez-vous a rattraper ecrasaient la journee.
 export default function RendezVousDuJour({
@@ -321,58 +322,8 @@ export default function RendezVousDuJour({
           </a>
         </p>
       )}
-      {mode === "complet" && aRattraper.length > 0 && (
-        <div className="mt-4 border-t border-greige/40 pt-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-gold-dark">
-            À rattraper
-          </p>
-          <ul className="mt-2 space-y-1.5">
-            {aRattraper.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="text-mention">
-                  {jourCourt(r.debut)}, {heure(r.debut)}
-                </span>
-                {r.client_id ? (
-                  <a
-                    href={`/cabinet-ew/clientes/${r.client_id}`}
-                    className="font-medium text-aubergine hover:underline"
-                  >
-                    {r.prenom}
-                  </a>
-                ) : (
-                  <span className="font-medium text-aubergine">{r.prenom}</span>
-                )}
-                {signeAstrologique(r.dateNaissance) && (
-                  <span className="text-xs text-mention">
-                    {signeAstrologique(r.dateNaissance)!.emoji}{" "}
-                    {signeAstrologique(r.dateNaissance)!.nom}
-                  </span>
-                )}
-                {r.tentatives > 0 && (
-                  <span className="text-xs text-red-600">
-                    {r.tentatives} tentative{r.tentatives > 1 ? "s" : ""}
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={() => lancer(r)}
-                  disabled={lancement !== null}
-                  className="text-xs text-prix underline-offset-2 hover:underline disabled:opacity-40"
-                >
-                  {lancement === r.id ? "appel…" : "lancer l'appel"}
-                </button>
-                {/* Ce qu'elle veut aborder — a rattraper se prepare comme
-                    le prochain : Elena doit savoir ce qu'on vient chercher. */}
-                {r.aAborder && (
-                  <span className="basis-full pl-2 text-xs italic text-ink/80">
-                    ✦ « {r.aAborder.length > 140 ? r.aAborder.slice(0, 140) + "…" : r.aAborder} »
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {/* En mode « complet », la liste vit dans RendezVousARattraper,
+          juste en dessous — avec les gestes « Fait » et « Lancer l'appel ». */}
 
       {/* Déjà faites — repliées, pour mémoire */}
       {faits.length > 0 && (

@@ -1817,7 +1817,7 @@ router.get('/rendez-vous', async (req, res) => {
       .eq('statut', 'prevu')
       .lt('debut', debutJour)
       .order('debut', { ascending: false })
-      .limit(20);
+      .limit(50);
 
     // « Ce qu'elle veut aborder » : porté par le prochain rendez-vous,
     // c'est la rencontre des deux fonctionnalités — Elena sait avant de
@@ -1866,6 +1866,55 @@ router.get('/rendez-vous', async (req, res) => {
     });
   } catch (err) {
     console.error('Erreur rendez-vous du jour:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PATCH /api/admin/rendez-vous/:id - Elena décide du sort d'un rendez-vous
+// passé : « fait » (assuré depuis son propre téléphone), « annulé », ou
+// retour à « prévu » (le filet du retour arrière). « À rattraper » se
+// déduisait, rien n'en sortait sans décision — c'est ici la décision.
+// Un rendez-vous déjà rattaché à une session ne se touche pas : c'est
+// l'appel qui fait foi.
+router.patch('/rendez-vous/:id', async (req, res) => {
+  try {
+    const statut = req.body?.statut;
+    if (!['honore', 'annule', 'prevu'].includes(statut)) {
+      return res.status(400).json({ error: 'Statut invalide' });
+    }
+    const { data, error } = await supabase
+      .from('rendez_vous')
+      .update({ statut, maj_le: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .is('session_id', null)
+      .select('id, statut')
+      .single();
+    if (error || !data) {
+      return res.status(404).json({ error: 'Rendez-vous introuvable, ou déjà honoré par un appel' });
+    }
+    res.json({ ok: true, rendezVous: data });
+  } catch (err) {
+    console.error('Erreur maj rendez-vous:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/admin/rendez-vous/solder - tous les rendez-vous passés encore
+// « prévu » deviennent « fait ». Pour le jour où Elena rattrape d'un coup
+// l'historique de ce qu'elle a assuré hors plateforme.
+router.post('/rendez-vous/solder', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('rendez_vous')
+      .update({ statut: 'honore', maj_le: new Date().toISOString() })
+      .eq('statut', 'prevu')
+      .is('session_id', null)
+      .lt('debut', new Date().toISOString())
+      .select('id');
+    if (error) throw error;
+    res.json({ ok: true, nombre: (data || []).length });
+  } catch (err) {
+    console.error('Erreur solde rendez-vous:', err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });

@@ -179,6 +179,14 @@ export const api = {
   // Rendez-vous Calendly
   adminGetRendezVous: (jour?: string) =>
     request(`/admin/rendez-vous${jour ? `?jour=${jour}` : ""}`),
+  // Elena décide du sort d'un rendez-vous passé : fait, annulé, ou retour à prévu
+  adminMajRendezVous: (id: string, statut: "honore" | "annule" | "prevu") =>
+    request(`/admin/rendez-vous/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ statut }),
+    }),
+  // Tous les rendez-vous passés encore « prévu » → faits
+  adminSolderRendezVous: () => request("/admin/rendez-vous/solder", { method: "POST" }),
   // Permanences — le calendrier annonce, le bouton fait foi
   adminGetPermanences: (semaine?: string) =>
     request(`/admin/permanences${semaine ? `?semaine=${semaine}` : ""}`),

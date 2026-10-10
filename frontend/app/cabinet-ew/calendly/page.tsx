@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetShell from "@/components/CabinetShell";
 import RendezVousDuJour from "@/components/RendezVousDuJour";
+import RendezVousARattraper from "@/components/RendezVousARattraper";
 import ConsultationMinutee from "@/components/ConsultationMinutee";
 
 // CALENDLY — les rendez-vous, tous, à leur place.
@@ -116,8 +117,11 @@ export default function CalendlyPage() {
       </details>
 
 
-      {/* Aujourd'hui + à rattraper — le composant complet */}
+      {/* Aujourd'hui — le composant complet */}
       <RendezVousDuJour mode="complet" />
+
+      {/* À rattraper — un jour par groupe, « Fait » ou « Lancer l'appel » */}
+      <RendezVousARattraper />
 
       {/* La semaine à venir */}
       <section className="mt-4 rounded-3xl border border-greige/50 bg-ivory p-6 shadow-soft">
