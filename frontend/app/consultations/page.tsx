@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import EspaceNav from "@/components/EspaceNav";
+import EspaceShell from "@/components/EspaceShell";
 
 interface Consultation {
   id: string;
@@ -100,13 +100,13 @@ export default function ConsultationsPage() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-10 font-jakarta">
-      <EspaceNav />
+    <EspaceShell>
+      <div className="max-w-3xl">
 
       {/* Le chemin vit ICI, et seulement ici — l'accueil ne le montre plus.
           Un seul endroit pour l'histoire, sinon la cliente ne sait pas
           lequel fait foi. */}
-      <h1 className="mt-8 font-serif text-3xl font-semibold text-aubergine">
+      <h1 className="font-serif text-3xl font-semibold text-aubergine">
         Mon chemin avec Elena
       </h1>
       <p className="mt-2 text-sm text-mention">
@@ -200,6 +200,7 @@ export default function ConsultationsPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </EspaceShell>
   );
 }

@@ -96,6 +96,23 @@ export function heureParis(iso: string): string {
   });
 }
 
+/** « 17h45 », « 19h » — l'heure comme on l'écrit ; `longue` donne « 19h00 » */
+export function heureFr(iso: string, longue = false): string {
+  const [h, m] = heureParis(iso).split(":");
+  if (!m) return h;
+  return m === "00" && !longue ? `${Number(h)}h` : `${Number(h)}h${m}`;
+}
+
+/** « jeudi », « aujourd'hui », « demain » — le jour d'un créneau, relatif */
+export function jourRelatif(iso: string): string {
+  const jourISO = (d: Date) =>
+    d.toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });
+  const debut = new Date(iso);
+  if (jourISO(new Date()) === jourISO(debut)) return "aujourd'hui";
+  if (jourISO(new Date(Date.now() + 86_400_000)) === jourISO(debut)) return "demain";
+  return debut.toLocaleDateString("fr-FR", { weekday: "long", timeZone: "Europe/Paris" });
+}
+
 /** « mardi 16:00 – 19:00 » — ou « aujourd'hui 16:00 – 19:00 » */
 export function libellePermanence(c: { debut: string; fin: string }): string {
   const jourISO = (d: Date) =>

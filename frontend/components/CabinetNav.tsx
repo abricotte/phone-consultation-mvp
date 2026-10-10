@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
-// Navigation du cabinet praticienne — miroir de l'EspaceNav des clientes.
+// Navigation du cabinet praticienne — miroir de l'EspaceShell des clientes.
 // Ordre voulu par Elena, de gauche a droite : d'abord ce qui pilote la
 // journee (Cabinet, Permanences, Calendly), puis les personnes
 // (Clientes), puis ce qu'on consulte (Journal, Revenus), puis soi

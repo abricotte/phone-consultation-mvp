@@ -8,7 +8,7 @@ import {
   signeParCode,
   SIGNES_LISTE,
 } from "@/lib/astro";
-import EspaceNav from "@/components/EspaceNav";
+import EspaceShell from "@/components/EspaceShell";
 
 interface Proche {
   id: string;
@@ -198,13 +198,16 @@ export default function ProfilPage() {
   const montrerInput = editionDate || !dateEnregistree;
 
   if (chargement)
-    return <div className="mt-16 text-center text-mention">Chargement…</div>;
+    return (
+      <EspaceShell>
+        <p className="mt-16 text-center text-mention">Chargement…</p>
+      </EspaceShell>
+    );
 
   return (
-    <div className="mx-auto max-w-2xl px-5 py-10 font-jakarta">
-      <EspaceNav />
-
-      <header className="mt-8">
+    <EspaceShell signe={signe?.nom} ascendant={ascSigne?.nom}>
+      <div className="max-w-2xl">
+      <header>
         <h1 className="font-serif text-4xl font-semibold text-aubergine">
           Mon profil
         </h1>
@@ -226,7 +229,10 @@ export default function ProfilPage() {
           Le seul champ de cet espace qu'Elena est censée lire : le ton
           doit le dire sans ambiguïté, sinon la cliente ne saurait pas si
           elle écrit pour elle-même ou pour être entendue. */}
-      <section className="mt-6 rounded-3xl border border-gold/40 bg-gold/5 p-7 shadow-soft">
+      <section
+        id="aborder"
+        className="mt-6 rounded-3xl border border-gold/40 bg-gold/5 p-7 shadow-soft"
+      >
         <h2 className="font-serif text-2xl font-semibold text-aubergine">
           Ce que je veux aborder
         </h2>
@@ -611,6 +617,7 @@ export default function ProfilPage() {
           .
         </p>
       </section>
-    </div>
+      </div>
+    </EspaceShell>
   );
 }

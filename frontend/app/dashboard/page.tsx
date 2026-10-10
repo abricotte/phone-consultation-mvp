@@ -4,9 +4,27 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { capitaliser } from "@/lib/format";
 import { signeAstrologique, signeParCode, type Signe } from "@/lib/astro";
-import HeroConsultation from "@/components/HeroConsultation";
-import EncadrePermanences from "@/components/EncadrePermanences";
-import EspaceNav from "@/components/EspaceNav";
+import { useElenaPresence } from "@/components/useElenaStatus";
+import EspaceShell from "@/components/EspaceShell";
+import CarteElena from "@/components/CarteElena";
+import TuileCredit from "@/components/TuileCredit";
+import TuilePermanences, { permanencesVisibles } from "@/components/TuilePermanences";
+import TuileAborder from "@/components/TuileAborder";
+
+// MON ESPACE — l'accueil, « Le Salon » (maquette validée par Elena le
+// 10 octobre 2026). Un tableau de bord doux : tout l'essentiel tient
+// sans défiler, en tuiles, et chaque tuile répond à une question que la
+// cliente se pose en arrivant :
+//
+//   A · Carte d'Elena       « Puis-je l'appeler maintenant ? »
+//   B · Mon crédit          « Combien me reste-t-il ? »
+//   C · Permanences         « Quand revient-elle ? »
+//   D · Ce que je veux aborder   « Qu'est-ce que je veux lui dire ? »
+//
+// Rien d'autre — décisions d'Elena : pas de recharge ici (« l'accueil
+// décide, Mon crédit exécute »), pas d'historique (il vit dans
+// Consultations), pas de « dernière consultation il y a X jours » —
+// c'est un compteur qui juge, une injonction déguisée.
 
 interface User {
   id: string;
@@ -41,10 +59,6 @@ export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [prixMinuteCents, setPrixMinuteCents] = useState(290);
   const [minimumMinutes, setMinimumMinutes] = useState(5);
-  const [suggestionsMinutes, setSuggestionsMinutes] = useState<number[]>([10, 20, 30]);
-  const [minMinutes, setMinMinutes] = useState(5);
-  const [maxMinutes, setMaxMinutes] = useState(90);
-  const [pasMinutes, setPasMinutes] = useState(5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -55,7 +69,13 @@ export default function DashboardPage() {
   const [pensee, setPensee] = useState("");
   const [signe, setSigne] = useState<Signe | null>(null);
   const [ascendant, setAscendant] = useState<Signe | null>(null);
+  const [aAborder, setAAborder] = useState("");
   const [motElena, setMotElena] = useState<{ texte: string; quand: string | null } | null>(null);
+
+  // La présence d'Elena, lue UNE fois ici et partagée aux tuiles : un
+  // seul polling pour toute la page, et la grille sait d'avance si la
+  // tuile des permanences a quelque chose à dire.
+  const presence = useElenaPresence();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -90,34 +110,24 @@ export default function DashboardPage() {
       .then((r: { mot: { texte: string; quand: string | null } | null }) => setMotElena(r.mot))
       .catch(() => setMotElena(null));
 
-    // Signe et ascendant à côté du bonjour : l'espace la reconnaît.
+    // Son ciel (pour la pastille du menu) et ce qu'elle veut aborder
     api
       .getProfil()
-      .then((p: { dateNaissance: string | null; ascendant: string | null }) => {
-        setSigne(signeAstrologique(p.dateNaissance));
-        setAscendant(signeParCode(p.ascendant));
-      })
+      .then(
+        (p: { dateNaissance: string | null; ascendant: string | null; aAborder?: string }) => {
+          setSigne(signeAstrologique(p.dateNaissance));
+          setAscendant(signeParCode(p.ascendant));
+          setAAborder(p.aAborder || "");
+        }
+      )
       .catch(() => {});
 
     api
       .getRechargeConfig()
-      .then(
-        (c: {
-          prixMinuteCents: number;
-          creditMinimumMinutes: number;
-          suggestionsMinutes: number[];
-          minMinutes: number;
-          maxMinutes: number;
-          pasMinutes: number;
-        }) => {
-          if (c?.prixMinuteCents) setPrixMinuteCents(c.prixMinuteCents);
-          if (c?.creditMinimumMinutes) setMinimumMinutes(c.creditMinimumMinutes);
-          if (c?.suggestionsMinutes?.length) setSuggestionsMinutes(c.suggestionsMinutes);
-          if (c?.minMinutes) setMinMinutes(c.minMinutes);
-          if (c?.maxMinutes) setMaxMinutes(c.maxMinutes);
-          if (c?.pasMinutes) setPasMinutes(c.pasMinutes);
-        }
-      )
+      .then((c: { prixMinuteCents: number; creditMinimumMinutes: number }) => {
+        if (c?.prixMinuteCents) setPrixMinuteCents(c.prixMinuteCents);
+        if (c?.creditMinimumMinutes) setMinimumMinutes(c.creditMinimumMinutes);
+      })
       .catch(() => {
         /* les valeurs par défaut restent affichées */
       });
@@ -142,43 +152,36 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const balance = wallet?.balance ?? 0;
+  const balance = Number(wallet?.balance ?? 0);
   const minutesRestantes = Math.floor((balance * 100) / prixMinuteCents);
+  const permVisibles = permanencesVisibles(presence);
 
   if (loading)
-    return <div className="mt-16 text-center text-mention">Chargement…</div>;
+    return (
+      <EspaceShell>
+        <p className="mt-16 text-center text-mention">Chargement…</p>
+      </EspaceShell>
+    );
   if (error && !user)
-    return <div className="mt-16 text-center text-red-600">{error}</div>;
+    return (
+      <EspaceShell>
+        <p className="mt-16 text-center text-red-600">{error}</p>
+      </EspaceShell>
+    );
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-8 font-jakarta">
-      <EspaceNav />
-
-      {/* Salutation */}
-      <header className="relative mt-10 mb-8">
-        <span aria-hidden className="pointer-events-none absolute right-2 top-0 text-lg text-gold/50">✦</span>
-        <span aria-hidden className="pointer-events-none absolute right-14 top-8 text-[0.6rem] text-coral/40">✦</span>
-
+    <EspaceShell prenom={user?.firstName} signe={signe?.nom} ascendant={ascendant?.nom}>
+      {/* ── En-tête ── le signe n'y est plus : il a migré dans la
+          pastille du menu. Sur téléphone il reste dans Profil. */}
+      <header className="mb-7">
         {dateDuJour && (
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-mention">
             {dateDuJour}
           </p>
         )}
-        <div className="mt-1.5 flex flex-wrap items-baseline gap-3">
-          <h1 className="font-serif text-4xl font-semibold text-aubergine sm:text-5xl">
-            Bonjour {capitaliser(user?.firstName)}
-          </h1>
-          {/* Son ciel à côté de son prénom : l'espace la reconnaît. */}
-          {signe && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blush px-3 py-1 text-sm text-aubergine">
-              <span aria-hidden>{signe.emoji}</span>
-              {signe.nom}
-              {ascendant && (
-                <span className="text-mention">· asc. {ascendant.nom}</span>
-              )}
-            </span>
-          )}
-        </div>
+        <h1 className="mt-1.5 font-serif text-4xl font-semibold leading-tight text-aubergine md:text-[46px]">
+          Bonjour {capitaliser(user?.firstName)}
+        </h1>
         {/* LE MOT D'ELENA — quand elle en a posé un, il remplace la citation.
             Un mot écrit par elle, pour toutes, qu'elle change quand elle
             veut : c'est ce qui fait vivre l'espace même quand elle est
@@ -204,50 +207,51 @@ export default function DashboardPage() {
           </div>
         ) : (
           pensee && (
-            <p className="mt-2 font-serif text-lg italic text-mention/90">
-              « {pensee} »
-            </p>
+            <p className="mt-2 font-serif text-[19px] italic text-mention">« {pensee} »</p>
           )
         )}
       </header>
 
       {paymentStatus && (
-        <div className={`mb-6 rounded-2xl p-4 ${paymentStatus.includes("succès") ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
+        <div
+          className={`mb-6 rounded-2xl p-4 ${
+            paymentStatus.includes("succès")
+              ? "bg-green-50 text-green-700"
+              : "bg-yellow-50 text-yellow-700"
+          }`}
+        >
           {paymentStatus}
         </div>
       )}
 
-      {error && (
-        <div className="mb-6 rounded-2xl bg-red-50 p-4 text-red-600">
-          {error}
+      {error && <div className="mb-6 rounded-2xl bg-red-50 p-4 text-red-600">{error}</div>}
+
+      {/* ── La grille ── bureau : 3 colonnes, A et C sur deux.
+          Téléphone : une colonne, A → B → C → D. Quand la tuile des
+          permanences n'a rien à dire, D prend toute la largeur — pas de
+          trou. */}
+      <div className="grid gap-5 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <CarteElena
+            soldeMinutes={minutesRestantes}
+            minimumMinutes={minimumMinutes}
+            prixMinuteCents={prixMinuteCents}
+            presence={presence}
+          />
         </div>
-      )}
 
-      {/* LE geste direct : appeler / recharger (tout centralisé ici) */}
-      <div className="mb-6">
-        <HeroConsultation
-          soldeMinutes={minutesRestantes}
-          minimumMinutes={minimumMinutes}
-          prixMinuteCents={prixMinuteCents}
-          suggestionsMinutes={suggestionsMinutes}
-          minMinutes={minMinutes}
-          maxMinutes={maxMinutes}
-          pasMinutes={pasMinutes}
-        />
+        <TuileCredit soldeEuros={balance} soldeMinutes={minutesRestantes} />
 
-        {/* PROCHAINES PERMANENCES — sous la carte d'action. Les 2-3
-            prochains moments ou Elena sera en ligne, et la sortie vers le
-            rendez-vous. S'efface de lui-meme si Elena est en ligne, ou si
-            elle n'utilise pas les permanences. */}
-        <EncadrePermanences />
+        {permVisibles && (
+          <div className="md:col-span-2">
+            <TuilePermanences presence={presence} />
+          </div>
+        )}
+
+        <div className={permVisibles ? "" : "md:col-span-3"}>
+          <TuileAborder texte={aAborder} />
+        </div>
       </div>
-
-      {/* Rien d'autre sous les deux portes — decision d'Elena (15 aout 2026).
-          Le chemin a rejoint l'onglet Consultations. Et « Votre derniere
-          consultation : il y a 5 jours » a ete retire aussi : c'est un
-          compteur qui juge, une injonction deguisee. Une cliente qui
-          revient apres un mois ne doit rien lire qui ressemble a un
-          reproche. L'accueil decide, il ne compte pas. */}
-    </div>
+    </EspaceShell>
   );
 }

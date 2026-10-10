@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
-import EspaceNav from "@/components/EspaceNav";
+import EspaceShell from "@/components/EspaceShell";
 import BlocRecharge from "@/components/BlocRecharge";
 
 // MON CRÉDIT — l'argent a désormais sa page.
@@ -144,12 +144,9 @@ export default function CreditPage() {
     solde !== null && prixMinute > 0 ? Math.floor(solde / prixMinute) : null;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-16">
-      <div className="pt-6">
-        <EspaceNav />
-      </div>
-
-      <h1 className="mt-8 font-serif text-3xl font-semibold text-aubergine">
+    <EspaceShell>
+      <div className="max-w-3xl">
+      <h1 className="font-serif text-3xl font-semibold text-aubergine">
         Mon crédit
       </h1>
       <p className="mt-1 text-sm text-mention">
@@ -282,6 +279,7 @@ export default function CreditPage() {
           {euros(totalUtilise)} utilisés en consultations.
         </p>
       )}
-    </div>
+      </div>
+    </EspaceShell>
   );
 }

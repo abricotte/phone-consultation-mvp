@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import EspaceNav from "@/components/EspaceNav";
+import EspaceShell from "@/components/EspaceShell";
 
 interface User {
   email: string;
@@ -102,13 +102,16 @@ export default function ComptePage() {
   }
 
   if (chargement)
-    return <div className="mt-16 text-center text-mention">Chargement…</div>;
+    return (
+      <EspaceShell>
+        <p className="mt-16 text-center text-mention">Chargement…</p>
+      </EspaceShell>
+    );
 
   return (
-    <div className="mx-auto max-w-2xl px-5 py-10 font-jakarta">
-      <EspaceNav />
-
-      <h1 className="mt-8 font-serif text-3xl font-semibold text-aubergine">
+    <EspaceShell>
+      <div className="max-w-2xl">
+      <h1 className="font-serif text-3xl font-semibold text-aubergine">
         Mon compte
       </h1>
 
@@ -273,6 +276,7 @@ export default function ComptePage() {
         </a>
         .
       </p>
-    </div>
+      </div>
+    </EspaceShell>
   );
 }

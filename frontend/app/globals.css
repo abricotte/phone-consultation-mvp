@@ -25,6 +25,12 @@
   }
 }
 
+/* Dans l'espace cliente, pas de header collant : l'ancre
+   (/profil#aborder) n'a plus 6 rem à compenser. */
+.espace-shell [id] {
+  scroll-margin-top: 1.5rem;
+}
+
 @layer utilities {
   /* Filet doré discret */
   .rule-gold {
