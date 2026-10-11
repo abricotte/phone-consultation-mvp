@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import MotDePasseOublie from "@/components/MotDePasseOublie";
 import { api } from "@/lib/api";
 
 export default function LoginPage() {
@@ -74,6 +75,17 @@ export default function LoginPage() {
             {loading ? "Connexion..." : "Se connecter"}
           </button>
         </form>
+
+        {/* Mot de passe oublié — par appel : le téléphone du compte dicte
+            un code. Pas d'email sur la plateforme. */}
+        <MotDePasseOublie
+          email={email}
+          onConnecte={(data) => {
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            window.location.href = "/dashboard";
+          }}
+        />
 
         <p className="text-sm text-gray-600 mt-4 text-center">
           Pas encore de compte ?{" "}

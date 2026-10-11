@@ -304,35 +304,36 @@ router.post('/change-password', authMiddleware, async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// MOT DE PASSE OUBLIÉ — PRATICIENNE, PAR APPEL.
+// MOT DE PASSE OUBLIÉ — PAR APPEL, POUR TOUT COMPTE.
 //
 // Pas d'email sortant sur la plateforme (Resend n'est pas branché) : le
-// code est DICTÉ par téléphone, sur le numéro enregistré de la
-// praticienne, comme pour la vérification d'un nouveau numéro. Qui tient
-// ce téléphone peut choisir un nouveau mot de passe — personne d'autre.
+// code est DICTÉ par téléphone, sur le numéro enregistré du compte —
+// chaque cliente en a un, c'est celui que l'espace appelle pour
+// consulter. Même mécanique que la vérification d'un nouveau numéro.
+// Qui tient ce téléphone peut choisir un nouveau mot de passe, personne
+// d'autre.
 //
-// Rien n'est confirmé à qui n'est pas la praticienne : même réponse que
-// l'adresse soit la bonne ou non, et l'appel ne part que si elle l'est.
+// Rien n'est confirmé à un inconnu : même réponse que l'adresse existe
+// ou non, et l'appel ne part que si elle existe.
 // ------------------------------------------------------------------
 
-async function praticienneParEmail(email) {
+async function utilisateurParEmail(email) {
   if (typeof email !== 'string' || !email.trim()) return null;
   const { data } = await supabase
     .from('users')
     .select('id, email, phone, first_name, last_name, role')
     .eq('email', email.trim().toLowerCase())
-    .in('role', ['consultant', 'admin'])
     .maybeSingle();
   return data || null;
 }
 
 const REPONSE_NEUTRE =
-  "Si cette adresse est celle de la praticienne, son téléphone sonne dans quelques secondes et lui dicte un code.";
+  "Si cette adresse correspond à un compte, le téléphone qui y est enregistré sonne dans quelques secondes et dicte un code.";
 
-// POST /api/auth/cabinet/mot-de-passe/demander
-router.post('/cabinet/mot-de-passe/demander', loginLimiter, async (req, res) => {
+// POST /api/auth/mot-de-passe/demander
+router.post('/mot-de-passe/demander', loginLimiter, async (req, res) => {
   try {
-    const user = await praticienneParEmail(req.body?.email);
+    const user = await utilisateurParEmail(req.body?.email);
     if (!user || !user.phone) {
       return res.json({ message: REPONSE_NEUTRE });
     }
@@ -368,7 +369,7 @@ router.post('/cabinet/mot-de-passe/demander', loginLimiter, async (req, res) => 
       return res.status(502).json({ error: "L'appel n'a pas pu partir. Réessayez dans un instant." });
     }
 
-    console.log('Mot de passe oublié : appel lancé vers la praticienne');
+    console.log(`Mot de passe oublié : appel lancé (${user.role})`);
     res.json({ message: REPONSE_NEUTRE, expireDans: 600 });
   } catch (err) {
     console.error('Erreur mot de passe oublié (demande):', err);
@@ -376,8 +377,8 @@ router.post('/cabinet/mot-de-passe/demander', loginLimiter, async (req, res) => 
   }
 });
 
-// POST /api/auth/cabinet/mot-de-passe/confirmer - code dicté + nouveau mot de passe
-router.post('/cabinet/mot-de-passe/confirmer', loginLimiter, async (req, res) => {
+// POST /api/auth/mot-de-passe/confirmer - code dicté + nouveau mot de passe
+router.post('/mot-de-passe/confirmer', loginLimiter, async (req, res) => {
   try {
     const code = String(req.body?.code || '').trim();
     const nouveau = req.body?.nouveauMotDePasse;
@@ -387,7 +388,7 @@ router.post('/cabinet/mot-de-passe/confirmer', loginLimiter, async (req, res) =>
     const erreurMdp = motDePasseInvalide(nouveau);
     if (erreurMdp) return res.status(400).json({ error: erreurMdp });
 
-    const user = await praticienneParEmail(req.body?.email);
+    const user = await utilisateurParEmail(req.body?.email);
     if (!user) return res.status(401).json({ error: 'Code incorrect.' });
 
     const { data: verif } = await supabase
@@ -425,7 +426,7 @@ router.post('/cabinet/mot-de-passe/confirmer', loginLimiter, async (req, res) =>
       .eq('id', user.id);
     if (majErr) throw majErr;
     await supabase.from('verifications_numero').delete().eq('id', verif.id);
-    console.log('Mot de passe praticienne changé par appel');
+    console.log(`Mot de passe changé par appel (${user.role})`);
 
     // Elle entre directement : le code dicté vaut la preuve.
     const token = jwt.sign(

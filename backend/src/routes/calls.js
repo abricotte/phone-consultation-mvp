@@ -660,7 +660,7 @@ router.get('/twiml/verification', twilioSignature, async (req, res) => {
       response.say(
         { language: 'fr-FR' },
         motifMdp
-          ? 'Bonjour Elena. Voici le code pour choisir un nouveau mot de passe.'
+          ? "Bonjour. Voici le code pour choisir un nouveau mot de passe sur l'espace d'Elena Wolska."
           : 'Bonjour Elena. Voici le code de vérification de votre nouveau numéro.'
       );
       for (let i = 0; i < 3; i++) {

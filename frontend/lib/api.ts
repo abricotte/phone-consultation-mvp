@@ -57,14 +57,14 @@ export const api = {
   login: (body: { email: string; password: string }) =>
     request("/auth/login", { method: "POST", body: JSON.stringify(body) }),
   getMe: () => request("/auth/me"),
-  // Mot de passe oublié de la praticienne : un code dicté par appel
-  cabinetMdpDemander: (email: string) =>
-    request("/auth/cabinet/mot-de-passe/demander", {
+  // Mot de passe oublié (clientes et praticienne) : un code dicté par appel
+  mdpDemander: (email: string) =>
+    request("/auth/mot-de-passe/demander", {
       method: "POST",
       body: JSON.stringify({ email }),
     }),
-  cabinetMdpConfirmer: (body: { email: string; code: string; nouveauMotDePasse: string }) =>
-    request("/auth/cabinet/mot-de-passe/confirmer", {
+  mdpConfirmer: (body: { email: string; code: string; nouveauMotDePasse: string }) =>
+    request("/auth/mot-de-passe/confirmer", {
       method: "POST",
       body: JSON.stringify(body),
     }),
