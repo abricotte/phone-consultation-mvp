@@ -23,6 +23,8 @@ export interface Reglages {
   seuilTwilio: number;
   /** Nombre de consultations à partir duquel une cliente est « habituée » */
   seuilHabituee: number;
+  /** Objectif d'encaissement mensuel en € — 0 = pas d'objectif affiché */
+  objectifMensuel: number;
 }
 
 export const REGLAGES_DEFAUT: Reglages = {
@@ -33,6 +35,7 @@ export const REGLAGES_DEFAUT: Reglages = {
   coutsFixes: 0,
   seuilTwilio: 5,
   seuilHabituee: 5,
+  objectifMensuel: 0,
 };
 
 const CLE = "reglagesCabinet";
@@ -52,6 +55,7 @@ function borner(r: Partial<Reglages> | null | undefined): Reglages {
     coutsFixes: entre(r.coutsFixes, 0, 100000, REGLAGES_DEFAUT.coutsFixes),
     seuilTwilio: entre(r.seuilTwilio, 0, 1000, REGLAGES_DEFAUT.seuilTwilio),
     seuilHabituee: entre(r.seuilHabituee, 1, 100, REGLAGES_DEFAUT.seuilHabituee),
+    objectifMensuel: entre(r.objectifMensuel, 0, 1000000, REGLAGES_DEFAUT.objectifMensuel),
   };
 }
 

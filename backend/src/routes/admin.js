@@ -884,7 +884,7 @@ router.get('/encaissements-calendly', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('rendez_vous')
-      .select('id, nom, formule, minutes, debut, statut, montant_paye, paye_le')
+      .select('id, client_id, nom, formule, minutes, debut, statut, montant_paye, paye_le')
       .not('montant_paye', 'is', null)
       .neq('statut', 'annule')
       // Honoré par un appel depuis l'espace : la session porte déjà le
@@ -896,6 +896,7 @@ router.get('/encaissements-calendly', async (req, res) => {
     res.json(
       (data || []).map((r) => ({
         id: r.id,
+        clientId: r.client_id || null,
         date: r.paye_le || r.debut,
         debut: r.debut,
         prenom: capitaliserPrenom(r.nom),

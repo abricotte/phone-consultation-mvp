@@ -17,6 +17,7 @@ const DEFAUT = {
   coutsFixes: 0,
   seuilTwilio: 5,
   seuilHabituee: 5,
+  objectifMensuel: 0, // objectif d'encaissement du mois, 0 = aucun
 };
 
 // [min, max] par champ numérique. Un réglage aberrant fausserait tous les
@@ -28,6 +29,7 @@ const BORNES = {
   coutsFixes: [0, 100000],
   seuilTwilio: [0, 1000],
   seuilHabituee: [1, 100],
+  objectifMensuel: [0, 1000000],
 };
 
 function borner(brut) {
