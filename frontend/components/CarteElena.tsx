@@ -216,7 +216,10 @@ export default function CarteElena({
 
   // Porte 2 en contour quand la porte 1 est un vrai bouton plein ;
   // pleine quand la porte 1 n'est qu'un constat — règle inchangée.
-  const porte1Pleine = (enLigne && creditSuffisant) || (permanenceAujourdhui && !creditSuffisant);
+  // Deux boutons pleins côte à côte se disputent l'œil (vu sur l'écran
+  // de Rue, 11 octobre) : dès que la porte 1 est un vrai bouton — appel
+  // ou recharge — la porte 2 passe en contour.
+  const porte1Pleine = enLigne || (permanenceAujourdhui && !creditSuffisant);
 
   const classePleine =
     "block w-full rounded-2xl bg-cta px-6 py-[18px] text-center shadow-card transition hover:bg-cta-dark";
