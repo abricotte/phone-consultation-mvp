@@ -654,9 +654,14 @@ router.get('/twiml/verification', twilioSignature, async (req, res) => {
       // au téléphone est inutilisable.
       const chiffres = verif.code.split('').join(', ');
       response.pause({ length: 1 });
+      // Même appel pour deux motifs : vérifier un nouveau numéro, ou
+      // choisir un nouveau mot de passe (mot de passe oublié).
+      const motifMdp = req.query.motif === 'mdp';
       response.say(
         { language: 'fr-FR' },
-        'Bonjour Elena. Voici le code de vérification de votre nouveau numéro.'
+        motifMdp
+          ? 'Bonjour Elena. Voici le code pour choisir un nouveau mot de passe.'
+          : 'Bonjour Elena. Voici le code de vérification de votre nouveau numéro.'
       );
       for (let i = 0; i < 3; i++) {
         response.pause({ length: 1 });
@@ -665,7 +670,9 @@ router.get('/twiml/verification', twilioSignature, async (req, res) => {
       response.pause({ length: 1 });
       response.say(
         { language: 'fr-FR' },
-        'Saisissez ce code dans votre cabinet pour confirmer. À bientôt.'
+        motifMdp
+          ? 'Saisissez ce code sur la page de connexion, avec votre nouveau mot de passe. À bientôt.'
+          : 'Saisissez ce code dans votre cabinet pour confirmer. À bientôt.'
       );
     }
   } catch (err) {

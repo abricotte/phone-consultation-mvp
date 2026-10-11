@@ -83,6 +83,12 @@ export default function AdminPage() {
   const [lMdp, setLMdp] = useState("");
   const [lErreur, setLErreur] = useState("");
   const [lEnCours, setLEnCours] = useState(false);
+  // Mot de passe oublié — par appel : son téléphone dicte un code
+  const [oubli, setOubli] = useState<"ferme" | "demande" | "code">("ferme");
+  const [oCode, setOCode] = useState("");
+  const [oMdp, setOMdp] = useState("");
+  const [oMdp2, setOMdp2] = useState("");
+  const [oMessage, setOMessage] = useState("");
   const [dateDuJour, setDateDuJour] = useState("");
 
 
@@ -129,6 +135,49 @@ export default function AdminPage() {
       setError(err instanceof Error ? err.message : "Erreur");
     } finally {
       setToggling(false);
+    }
+  }
+
+  async function demanderCode() {
+    setLErreur("");
+    setOMessage("");
+    if (!lEmail) {
+      setLErreur("Indiquez d'abord votre email, puis demandez le code.");
+      return;
+    }
+    setLEnCours(true);
+    try {
+      const r = await api.cabinetMdpDemander(lEmail);
+      setOMessage(r.message);
+      setOubli("code");
+    } catch (err) {
+      setLErreur(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setLEnCours(false);
+    }
+  }
+
+  async function confirmerNouveauMdp(e: React.FormEvent) {
+    e.preventDefault();
+    setLErreur("");
+    if (oMdp !== oMdp2) {
+      setLErreur("Les deux mots de passe ne sont pas identiques.");
+      return;
+    }
+    setLEnCours(true);
+    try {
+      const data = await api.cabinetMdpConfirmer({
+        email: lEmail,
+        code: oCode,
+        nouveauMotDePasse: oMdp,
+      });
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      window.location.reload();
+    } catch (err) {
+      setLErreur(err instanceof Error ? err.message : "Erreur");
+    } finally {
+      setLEnCours(false);
     }
   }
 
@@ -211,6 +260,115 @@ export default function AdminPage() {
               {lEnCours ? "Connexion…" : "Entrer"}
             </button>
           </form>
+
+          {/* MOT DE PASSE OUBLIÉ — par appel. Pas d'email sortant sur la
+              plateforme : le téléphone de la praticienne sonne et dicte
+              un code à 4 chiffres, qu'elle saisit ici avec son nouveau
+              mot de passe. Qui tient ce téléphone peut le faire, personne
+              d'autre. */}
+          {oubli === "ferme" && (
+            <button
+              type="button"
+              onClick={() => setOubli("demande")}
+              className="mt-4 text-xs text-mention underline decoration-greige underline-offset-4 hover:text-aubergine"
+            >
+              Mot de passe oublié ?
+            </button>
+          )}
+
+          {oubli === "demande" && (
+            <div className="mt-5 rounded-2xl bg-blush px-4 py-4">
+              <p className="text-sm font-semibold text-aubergine">Mot de passe oublié</p>
+              <p className="mt-1 text-sm text-ink/80">
+                Indiquez votre email ci-dessus : votre téléphone va sonner et
+                vous dicter un code à 4 chiffres.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={demanderCode}
+                  disabled={lEnCours}
+                  className="rounded-full bg-aubergine px-5 py-2.5 text-sm font-semibold text-cream hover:bg-aubergine/90 disabled:opacity-50"
+                >
+                  {lEnCours ? "Appel…" : "M'appeler avec le code"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOubli("ferme")}
+                  className="text-xs text-mention hover:text-aubergine"
+                >
+                  annuler
+                </button>
+              </div>
+            </div>
+          )}
+
+          {oubli === "code" && (
+            <form onSubmit={confirmerNouveauMdp} className="mt-5 space-y-3 rounded-2xl bg-blush px-4 py-4">
+              <p className="text-sm font-semibold text-aubergine">Nouveau mot de passe</p>
+              {oMessage && <p className="text-xs text-ink/80">{oMessage}</p>}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-aubergine">
+                  Code dicté au téléphone
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="\\d{4}"
+                  maxLength={4}
+                  value={oCode}
+                  onChange={(e) => setOCode(e.target.value.replace(/\\D/g, ""))}
+                  required
+                  className="w-32 rounded-lg border border-greige bg-white px-3 py-2.5 text-center text-lg tracking-[0.3em] text-ink"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-aubergine">
+                  Nouveau mot de passe
+                </label>
+                <input
+                  type="password"
+                  value={oMdp}
+                  onChange={(e) => setOMdp(e.target.value)}
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                  className="w-full rounded-lg border border-greige bg-white px-3 py-2.5 text-ink"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-aubergine">
+                  Le même, une seconde fois
+                </label>
+                <input
+                  type="password"
+                  value={oMdp2}
+                  onChange={(e) => setOMdp2(e.target.value)}
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                  className="w-full rounded-lg border border-greige bg-white px-3 py-2.5 text-ink"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <button
+                  type="submit"
+                  disabled={lEnCours}
+                  className="rounded-full bg-cta px-5 py-2.5 text-sm font-semibold text-cta-text hover:bg-cta-dark disabled:opacity-50"
+                >
+                  {lEnCours ? "Enregistrement…" : "Enregistrer et entrer"}
+                </button>
+                <button
+                  type="button"
+                  onClick={demanderCode}
+                  disabled={lEnCours}
+                  className="text-xs text-mention hover:text-aubergine"
+                >
+                  pas de code reçu ? rappeler
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     );
