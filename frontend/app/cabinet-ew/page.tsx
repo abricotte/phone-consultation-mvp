@@ -314,10 +314,10 @@ export default function AdminPage() {
                 <input
                   type="text"
                   inputMode="numeric"
-                  pattern="\\d{4}"
+                  pattern="\d{4}"
                   maxLength={4}
                   value={oCode}
-                  onChange={(e) => setOCode(e.target.value.replace(/\\D/g, ""))}
+                  onChange={(e) => setOCode(e.target.value.replace(/\D/g, ""))}
                   required
                   className="w-32 rounded-lg border border-greige bg-white px-3 py-2.5 text-center text-lg tracking-[0.3em] text-ink"
                 />
