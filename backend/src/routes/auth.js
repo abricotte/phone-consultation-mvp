@@ -327,6 +327,15 @@ async function utilisateurParEmail(email) {
   return data || null;
 }
 
+/** « 06 ** ** ** 12 » — assez pour se reconnaître, pas pour composer */
+function masquerTel(n) {
+  const chiffres = String(n || '').replace(/\D/g, '');
+  if (chiffres.length < 6) return '(numéro incomplet)';
+  const fin = chiffres.slice(-2);
+  const debut = chiffres.startsWith('33') ? '0' + chiffres.charAt(2) : chiffres.slice(0, 2);
+  return `${debut} ** ** ** ${fin}`;
+}
+
 const REPONSE_NEUTRE =
   "Si cette adresse correspond à un compte, le téléphone qui y est enregistré sonne dans quelques secondes et dicte un code.";
 
@@ -339,6 +348,15 @@ router.post('/mot-de-passe/demander', loginLimiter, async (req, res) => {
     }
     if (!twilio) {
       return res.status(503).json({ error: 'Téléphonie non configurée.' });
+    }
+    // Un numéro enregistré avant la normalisation, ou un numéro de test,
+    // ferait échouer l'appel en silence : on le dit, avec le numéro
+    // masqué — la personne qui connaît l'email sait aussi son numéro.
+    const telephone = normalizePhone(user.phone);
+    if (!telephone || !estNumeroFrancais(telephone)) {
+      return res.status(422).json({
+        error: `Le numéro enregistré sur ce compte (${masquerTel(user.phone)}) n'est pas un numéro français joignable. Écrivez à Elena pour le corriger.`,
+      });
     }
 
     const code = String(Math.floor(1000 + Math.random() * 9000));
@@ -356,7 +374,7 @@ router.post('/mot-de-passe/demander', loginLimiter, async (req, res) => {
     const backendUrl = (process.env.BACKEND_URL || '').replace(/\/+$/, '');
     try {
       const appel = await twilio.calls.create({
-        to: user.phone,
+        to: telephone,
         from: process.env.TWILIO_PHONE_NUMBER,
         url: `${backendUrl}/api/calls/twiml/verification?id=${verif.id}&motif=mdp`,
         method: 'GET',
@@ -365,8 +383,17 @@ router.post('/mot-de-passe/demander', loginLimiter, async (req, res) => {
       await supabase.from('verifications_numero').update({ call_sid: appel.sid }).eq('id', verif.id);
     } catch (twErr) {
       await supabase.from('verifications_numero').delete().eq('id', verif.id);
-      console.error('Appel mot de passe oublié impossible:', twErr.message);
-      return res.status(502).json({ error: "L'appel n'a pas pu partir. Réessayez dans un instant." });
+      // Le code Twilio dans les journaux : 21211 = numéro invalide,
+      // 21215 = destination non autorisée sur le compte, 20003 = clés.
+      console.error(
+        `Appel mot de passe oublié impossible (code ${twErr.code || '?'}, vers ${masquerTel(telephone)}):`,
+        twErr.message
+      );
+      const raison =
+        twErr.code === 21211 || twErr.code === 21214
+          ? `Le numéro enregistré sur ce compte (${masquerTel(telephone)}) est refusé par la téléphonie. Écrivez à Elena pour le corriger.`
+          : "L'appel n'a pas pu partir. Réessayez dans un instant.";
+      return res.status(502).json({ error: raison });
     }
 
     console.log(`Mot de passe oublié : appel lancé (${user.role})`);
