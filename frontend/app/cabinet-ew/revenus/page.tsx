@@ -62,6 +62,23 @@ function libelleMois(cle: string): string {
   });
 }
 
+/** Découverte, Complète, à la minute — la question d'Elena : « combien de chaque ? » */
+type Categorie = "decouverte" | "complete" | "minute" | "autre";
+function categorie(formule: string): Categorie {
+  const f = formule.toLowerCase();
+  if (f.includes("découverte") || f.includes("decouverte")) return "decouverte";
+  if (f.includes("complète") || f.includes("complete")) return "complete";
+  if (f.includes("immédiate") || f.includes("minute")) return "minute";
+  return "autre";
+}
+
+/** Les N mois qui précèdent (et incluent) un mois, du plus ancien au plus récent */
+function derniersMois(cle: string, n: number): string[] {
+  const out = [cle];
+  while (out.length < n) out.unshift(moisPrecedent(out[0]));
+  return out;
+}
+
 function moisPrecedent(cle: string): string {
   const [a, m] = cle.split("-").map(Number);
   const d = new Date(a, m - 2, 1);
@@ -252,11 +269,18 @@ export default function RevenusPage() {
       montant: k.montant,
     }));
 
+    // Combien de chaque : Découverte, Complète, appels à la minute —
+    // toutes sources confondues (Calendly et appels depuis l'espace).
+    const comptes: Record<Categorie, number> = { decouverte: 0, complete: 0, minute: 0, autre: 0 };
+    for (const a of facturees) comptes[categorie(a.formule)] += 1;
+    for (const k of calendlyMois) comptes[categorie(k.formule)] += 1;
+
     return {
       encaisseTTC,
       encaisseAppels,
       encaisseCalendly,
       nbCalendly: calendlyMois.length,
+      comptes,
       tvaCollectee,
       encaisseHT,
       encaisseRecharges,
@@ -294,6 +318,24 @@ export default function RevenusPage() {
       calendly.filter((k) => cleMois(k.date) === prec).reduce((acc, k) => acc + k.montant, 0)
     );
   }, [appels, calendly, moisActif]);
+
+  // Les six derniers mois côte à côte : une comparaison se lit d'un
+  // regard, pas en changeant de mois dans le menu.
+  const historique = useMemo(() => {
+    if (!moisActif) return [];
+    const totaux = new Map<string, number>();
+    for (const a of appels) {
+      if (a.issue !== "terminee") continue;
+      const c = cleMois(a.date);
+      totaux.set(c, (totaux.get(c) || 0) + a.montant);
+    }
+    for (const k of calendly) {
+      const c = cleMois(k.date);
+      totaux.set(c, (totaux.get(c) || 0) + k.montant);
+    }
+    return derniersMois(moisActif, 6).map((c) => ({ cle: c, total: totaux.get(c) || 0 }));
+  }, [appels, calendly, moisActif]);
+  const maxHistorique = Math.max(...historique.map((h) => h.total), 1);
 
   const creditEnCirculation = clientes.reduce((acc, c) => acc + (c.solde || 0), 0);
 
@@ -418,7 +460,71 @@ export default function RevenusPage() {
                 )}
               </p>
             </div>
+
+            {/* Combien de chaque — la question d'Elena */}
+            <p className="mt-4 flex flex-wrap gap-x-5 gap-y-1 border-t border-statut-online/20 pt-3 text-sm text-ink">
+              {(
+                [
+                  ["decouverte", "Découverte"],
+                  ["complete", "Complète"],
+                  ["minute", "à la minute"],
+                  ["autre", "autre"],
+                ] as [Categorie, string][]
+              )
+                .filter(([k]) => cascade.comptes[k] > 0)
+                .map(([k, l]) => (
+                  <span key={k}>
+                    <span className="font-bold tabular-nums text-aubergine">{cascade.comptes[k]}</span>{" "}
+                    {l}
+                  </span>
+                ))}
+              {cascade.nbFacturees + cascade.nbCalendly === 0 && (
+                <span className="text-mention">aucune consultation facturée ce mois-ci</span>
+              )}
+            </p>
           </section>
+
+          {/* 1 bis. LES DERNIERS MOIS — la comparaison d'un regard */}
+          {historique.some((h) => h.total > 0) && (
+            <section className="mt-4 rounded-3xl border border-greige/50 bg-ivory p-6 shadow-soft">
+              <h2 className="font-jakarta text-lg font-bold text-aubergine">Les six derniers mois</h2>
+              <p className="mt-0.5 text-xs text-mention">encaissé TTC, toutes sources</p>
+              <ul className="mt-4 grid grid-cols-6 items-end gap-2">
+                {historique.map((h) => {
+                  const actif = h.cle === moisActif;
+                  const hauteur = Math.max(4, Math.round((h.total / maxHistorique) * 96));
+                  return (
+                    <li key={h.cle} className="flex flex-col items-center gap-1.5">
+                      <span
+                        className={`text-xs font-semibold tabular-nums ${
+                          actif ? "text-aubergine" : "text-mention"
+                        }`}
+                      >
+                        {h.total > 0 ? euros(h.total).replace(",00", "") : "—"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setMoisChoisi(h.cle)}
+                        aria-label={libelleMois(h.cle)}
+                        title={libelleMois(h.cle)}
+                        className={`w-full rounded-t-lg transition ${
+                          actif ? "bg-aubergine" : "bg-gold/50 hover:bg-gold"
+                        }`}
+                        style={{ height: `${hauteur}px` }}
+                      />
+                      <span
+                        className={`text-[11px] capitalize ${
+                          actif ? "font-semibold text-aubergine" : "text-mention"
+                        }`}
+                      >
+                        {libelleMois(h.cle).split(" ")[0].slice(0, 4)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
 
           {/* 2. LE DÉTAIL, EN TABLEAU SOBRE */}
           <section className="mt-4 overflow-hidden rounded-3xl border border-greige/50 bg-ivory shadow-soft">

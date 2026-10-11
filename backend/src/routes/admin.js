@@ -887,6 +887,9 @@ router.get('/encaissements-calendly', async (req, res) => {
       .select('id, nom, formule, minutes, debut, statut, montant_paye, paye_le')
       .not('montant_paye', 'is', null)
       .neq('statut', 'annule')
+      // Honoré par un appel depuis l'espace : la session porte déjà le
+      // montant (cf. /appels) — sinon il compterait deux fois.
+      .is('session_id', null)
       .order('debut', { ascending: false })
       .limit(500);
     if (error) throw error;
