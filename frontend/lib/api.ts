@@ -167,6 +167,8 @@ export const api = {
   adminGetFrequentation: (jours = 30) =>
     request(`/admin/frequentation?jours=${jours}`),
   adminGetRecharges: () => request("/admin/recharges"),
+  // Rendez-vous payés sur Calendly — pour Revenus
+  adminGetEncaissementsCalendly: () => request("/admin/encaissements-calendly"),
   // Profil praticienne
   adminGetProfil: () => request("/admin/profil"),
   adminPatchTarifs: (body: Record<string, unknown>) =>

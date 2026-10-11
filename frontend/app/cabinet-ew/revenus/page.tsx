@@ -33,6 +33,18 @@ interface Recharge {
   description: string;
 }
 
+// Un rendez-vous payé sur Calendly — à sa date de paiement. Depuis
+// septembre, c'est par là que passe l'argent d'Elena : sans ces lignes,
+// l'onglet restait figé au dernier appel d'août.
+interface EncaissementCalendly {
+  id: string;
+  date: string;
+  prenom: string;
+  formule: string;
+  minutes: number;
+  montant: number;
+}
+
 function euros(n: number): string {
   return `${n.toFixed(2).replace(".", ",")} €`;
 }
@@ -133,6 +145,7 @@ export default function RevenusPage() {
   const [appels, setAppels] = useState<Appel[]>([]);
   const [clientes, setClientes] = useState<ClienteRef[]>([]);
   const [recharges, setRecharges] = useState<Recharge[]>([]);
+  const [calendly, setCalendly] = useState<EncaissementCalendly[]>([]);
   const [loading, setLoading] = useState(true);
   const [accesRefuse, setAccesRefuse] = useState(false);
   const [moisChoisi, setMoisChoisi] = useState("");
@@ -152,11 +165,15 @@ export default function RevenusPage() {
       api.adminGetAppels(),
       api.adminGetClientes(),
       api.adminGetRecharges(),
+      // Tolérant : si le serveur n'a pas encore cette route, la page vit
+      // sans les lignes Calendly plutôt que de disparaître en 404.
+      api.adminGetEncaissementsCalendly().catch(() => []),
     ])
-      .then(([a, c, r]: [Appel[], ClienteRef[], Recharge[]]) => {
+      .then(([a, c, r, k]: [Appel[], ClienteRef[], Recharge[], EncaissementCalendly[]]) => {
         setAppels(a);
         setClientes(c);
         setRecharges(r);
+        setCalendly(k || []);
       })
       .catch(() => setAccesRefuse(true))
       .finally(() => setLoading(false));
@@ -171,9 +188,10 @@ export default function RevenusPage() {
     const set = new Set([
       ...appels.map((a) => cleMois(a.date)),
       ...recharges.map((r) => cleMois(r.date)),
+      ...calendly.map((k) => cleMois(k.date)),
     ]);
     return [...set].sort().reverse();
-  }, [appels, recharges]);
+  }, [appels, recharges, calendly]);
 
   const moisActif = moisChoisi || moisDisponibles[0] || "";
 
@@ -185,9 +203,14 @@ export default function RevenusPage() {
       (a) => a.issue === "terminee" || a.issue === "non_facturee"
     );
     const rechargesMois = recharges.filter((r) => cleMois(r.date) === moisActif);
+    const calendlyMois = calendly.filter((k) => cleMois(k.date) === moisActif);
 
     // Les prix affichés aux clientes sont TTC (obligation en B2C).
-    const encaisseTTC = facturees.reduce((acc, a) => acc + a.montant, 0);
+    // Deux sources d'encaissement : les appels à la minute (via le crédit)
+    // et les rendez-vous payés sur Calendly.
+    const encaisseAppels = facturees.reduce((acc, a) => acc + a.montant, 0);
+    const encaisseCalendly = calendlyMois.reduce((acc, k) => acc + k.montant, 0);
+    const encaisseTTC = encaisseAppels + encaisseCalendly;
     const encaisseRecharges = rechargesMois.reduce((acc, r) => acc + r.montant, 0);
 
     // LA TVA N'EST PAS VOTRE ARGENT : collectée pour l'État, elle sort
@@ -196,9 +219,13 @@ export default function RevenusPage() {
     const tvaCollectee = reglages.tvaActive ? encaisseTTC - encaisseTTC / (1 + t) : 0;
     const encaisseHT = encaisseTTC - tvaCollectee;
 
-    // Stripe facture les RECHARGES (c'est là que l'argent entre)
+    // Stripe facture là où l'argent entre : les RECHARGES, et les
+    // paiements Calendly (encaissés par Stripe aussi, même barème estimé).
     const fraisStripe =
-      encaisseRecharges * STRIPE_TAUX + rechargesMois.length * STRIPE_FIXE;
+      encaisseRecharges * STRIPE_TAUX +
+      rechargesMois.length * STRIPE_FIXE +
+      encaisseCalendly * STRIPE_TAUX +
+      calendlyMois.length * STRIPE_FIXE;
 
     // Twilio facture le temps de communication réel
     const secondes = tenues.reduce((acc, a) => acc + a.dureeSecondes, 0);
@@ -213,8 +240,23 @@ export default function RevenusPage() {
 
     const minutes = secondes / 60;
 
+    // Les rendez-vous Calendly rejoignent les lignes du mois (export CSV,
+    // répartition par formule) sous une forme d'appel : durée = forfait.
+    const lignesCalendly: Appel[] = calendlyMois.map((k) => ({
+      id: k.id,
+      date: k.date,
+      cliente: { prenom: k.prenom, initiale: "", telephone: null },
+      formule: `${k.formule} (Calendly)`,
+      issue: "calendly",
+      dureeSecondes: k.minutes * 60,
+      montant: k.montant,
+    }));
+
     return {
       encaisseTTC,
+      encaisseAppels,
+      encaisseCalendly,
+      nbCalendly: calendlyMois.length,
       tvaCollectee,
       encaisseHT,
       encaisseRecharges,
@@ -231,28 +273,34 @@ export default function RevenusPage() {
       minutes,
       // Revenu réel par minute d'écoute : les appels < 1 min non
       // facturés le font mécaniquement baisser sous les 2,90 € affichés
-      revenuParMinute: minutes > 0 ? encaisseTTC / minutes : 0,
-      panierConsultation: facturees.length ? encaisseTTC / facturees.length : 0,
+      revenuParMinute: minutes > 0 ? encaisseAppels / minutes : 0,
+      panierConsultation:
+        facturees.length + calendlyMois.length
+          ? encaisseTTC / (facturees.length + calendlyMois.length)
+          : 0,
       panierRecharge: rechargesMois.length
         ? encaisseRecharges / rechargesMois.length
         : 0,
-      lignes: duMois,
+      lignes: [...duMois, ...lignesCalendly].sort((x, y) => y.date.localeCompare(x.date)),
     };
-  }, [appels, recharges, moisActif, reglages]);
+  }, [appels, recharges, calendly, moisActif, reglages]);
 
   const encaissePrecedent = useMemo(() => {
     const prec = moisPrecedent(moisActif);
-    return appels
-      .filter((a) => cleMois(a.date) === prec && a.issue === "terminee")
-      .reduce((acc, a) => acc + a.montant, 0);
-  }, [appels, moisActif]);
+    return (
+      appels
+        .filter((a) => cleMois(a.date) === prec && a.issue === "terminee")
+        .reduce((acc, a) => acc + a.montant, 0) +
+      calendly.filter((k) => cleMois(k.date) === prec).reduce((acc, k) => acc + k.montant, 0)
+    );
+  }, [appels, calendly, moisActif]);
 
   const creditEnCirculation = clientes.reduce((acc, c) => acc + (c.solde || 0), 0);
 
   // Répartition par formule
   const parFormule = useMemo(() => {
     const m = new Map<string, { nb: number; total: number }>();
-    for (const a of cascade.lignes.filter((x) => x.issue === "terminee")) {
+    for (const a of cascade.lignes.filter((x) => x.issue === "terminee" || x.issue === "calendly")) {
       const e = m.get(a.formule) || { nb: 0, total: 0 };
       e.nb += 1;
       e.total += a.montant;
@@ -378,6 +426,20 @@ export default function RevenusPage() {
               <tbody>
                 {[
                   { l: "Encaissé TTC", v: cascade.encaisseTTC, fort: true },
+                  ...(cascade.nbCalendly > 0
+                    ? [
+                        {
+                          l: `dont rendez-vous Calendly (${cascade.nbCalendly})`,
+                          v: cascade.encaisseCalendly,
+                          intermediaire: true,
+                        },
+                        {
+                          l: `dont appels à la minute (${cascade.nbFacturees})`,
+                          v: cascade.encaisseAppels,
+                          intermediaire: true,
+                        },
+                      ]
+                    : []),
                   ...(reglages.tvaActive
                     ? [
                         {
@@ -394,7 +456,9 @@ export default function RevenusPage() {
                       ]
                     : []),
                   {
-                    l: `Frais Stripe (${cascade.nbRecharges} recharge${cascade.nbRecharges > 1 ? "s" : ""})`,
+                    l: `Frais Stripe (${cascade.nbRecharges} recharge${cascade.nbRecharges > 1 ? "s" : ""}${
+                      cascade.nbCalendly > 0 ? ` + ${cascade.nbCalendly} Calendly` : ""
+                    })`,
                     v: -cascade.fraisStripe,
                   },
                   {
@@ -535,8 +599,9 @@ export default function RevenusPage() {
                   {euros(cascade.panierConsultation)}
                 </p>
                 <p className="text-xs text-mention">
-                  {cascade.nbFacturees} facturée
-                  {cascade.nbFacturees > 1 ? "s" : ""}
+                  {cascade.nbFacturees + cascade.nbCalendly} facturée
+                  {cascade.nbFacturees + cascade.nbCalendly > 1 ? "s" : ""}
+                  {cascade.nbCalendly > 0 ? ` · dont ${cascade.nbCalendly} Calendly` : ""}
                 </p>
               </div>
               <div>

@@ -876,6 +876,38 @@ router.get('/recharges', async (req, res) => {
   }
 });
 
+// GET /api/admin/encaissements-calendly - les rendez-vous payés sur
+// Calendly, à leur date de paiement. Revenus ne voyait que les appels et
+// les recharges : depuis septembre, tout l'argent d'Elena passe par
+// Calendly et l'onglet restait figé en août. Les annulés sont exclus.
+router.get('/encaissements-calendly', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('rendez_vous')
+      .select('id, nom, formule, minutes, debut, statut, montant_paye, paye_le')
+      .not('montant_paye', 'is', null)
+      .neq('statut', 'annule')
+      .order('debut', { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    res.json(
+      (data || []).map((r) => ({
+        id: r.id,
+        date: r.paye_le || r.debut,
+        debut: r.debut,
+        prenom: capitaliserPrenom(r.nom),
+        formule: r.formule || 'Rendez-vous',
+        minutes: r.minutes || 0,
+        statut: r.statut,
+        montant: parseFloat(r.montant_paye || 0),
+      }))
+    );
+  } catch (err) {
+    console.error('Erreur encaissements Calendly:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // ------------------------------------------------------------------
 // CARNET DE NOTES — privé, jamais exposé aux clientes.
 // ------------------------------------------------------------------
