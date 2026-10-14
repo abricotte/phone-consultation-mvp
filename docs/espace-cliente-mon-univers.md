@@ -260,19 +260,20 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   avant d'appuyer ; réglée par Stripe, pas sur le crédit minutes. Une
   urgence de jour hors permanence (85 €) reste à décider.
 - **L'emblème à la place de la photo** : au premier écran de l'espace, la
-  cliente choisit une figure parmi **huit**, ensemble, sans colonnes
-  féminin / masculin. Grille arrêtée le 14 octobre au soir : **la Sirène**
-  (attirer sans courir, sans son trident), **la Fée** (réparer en
-  silence), **le Papillon** (se transformer), **le Cerf** (porter la forêt
-  sur la tête), **le Cygne** (la grâce, sans effort), **le Sphinx** (garder
-  la question — un chat assis en attendant), **le Dauphin** (jouer avec
-  les profondeurs), **l'Aigle** (voir de haut). Écartées mais gardées sous
-  la main sur la maquette : la Chouette, la Louve, la Colombe, la Licorne,
-  la Renarde, l'Ourse ; retirés : la Lionne, le Pégase, le Dragon, le
-  Phénix. Elle sert de petit logo dans le menu et dans sa carte. Pas de
-  photo demandée ni stockée. Pas d'émoticônes. **Graphisme retenu : au
-  trait** — dessins fins recolorés en aubergine, trait à 3,4, chaque
-  dessin recentré dans un carré autour de son vrai contour ;
+  cliente choisit une figure parmi **neuf**, ensemble, sans colonnes
+  féminin / masculin. Grille arrêtée le 14 octobre au soir : **la Licorne**
+  (croire encore), **la Colombe** (apaiser), **le Papillon** (se
+  transformer), **le Cerf** (porter la forêt sur la tête), **le Cygne** (la
+  grâce, sans effort), **le Loup** (protéger les siens — le dessin de la
+  bibliothèque, au masculin), **le Sphinx** (garder la question — un chat
+  assis en attendant), **le Dauphin** (jouer avec les profondeurs),
+  **l'Aigle** (voir de haut). Écartées mais sous la main sur la maquette :
+  la Sirène, la Fée, la Chouette, la Renarde, l'Ourse, et une Louve
+  dessinée maison (yeux fermés, sourire). Retirés : la Lionne, le Pégase,
+  le Dragon, le Phénix. Elle sert de petit logo dans le menu et dans sa
+  carte. Pas de photo demandée ni stockée. Pas d'émoticônes. **Graphisme
+  retenu : au trait** — dessins fins recolorés en aubergine, trait à 3,4,
+  chaque dessin recentré dans un carré autour de son vrai contour ;
   provisoirement ceux d'OpenMoji (CC BY-SA 4.0, à créditer dans les
   mentions légales). Les silhouettes de game-icons.net restent sur la
   maquette en second choix. **À terme, Elena peint les siennes**, comme
