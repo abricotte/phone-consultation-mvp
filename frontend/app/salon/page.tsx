@@ -49,7 +49,7 @@ export default function SalonPage() {
         label="Le salon"
         valeur={onglet}
         onChange={setOnglet}
-        options={[["ecouter", "Écouter"], ["lire", "Lire"], ["jeu", "L'oracle de l'amour"]] as const}
+        options={[["ecouter", "Écouter"], ["lire", "Lire et grandir"], ["jeu", "L'oracle de l'amour"]] as const}
       />
 
       {onglet === "ecouter" && (
