@@ -3,22 +3,14 @@
 import { useEffect, useState } from "react";
 import EspaceShell from "@/components/EspaceShell";
 import { Filet } from "@/components/Ornements";
-import { CATALOGUE } from "@/lib/tests";
+import { CATALOGUE, THEMES } from "@/lib/tests";
 import type { ResultatEnregistre } from "@/lib/tests/types";
 import { api } from "@/lib/api";
 
-// TESTS SPIRITUELS — quinze tests écrits par Elena, gratuits, dans l'espace.
-// Le résultat reste ici, daté. Elena le voit dans la fiche de la cliente
-// avant de l'appeler (c'est dit sous chaque test). Rien n'est partagé ailleurs.
-
-const TEINTES = [
-  "border-[#DED6EC] bg-[#F1EDF8]",
-  "border-[#D3E0D2] bg-[#EDF4EC]",
-  "border-[#D4E0EA] bg-[#EBF2F7]",
-  "border-[#EAD6DF] bg-[#F8EDF2]",
-  "border-[#F0D9D3] bg-[#FBEFEB]",
-  "border-[#EAD9B4] bg-[#FBF3E2]",
-];
+// TESTS SPIRITUELS — quinze tests écrits par Elena, offerts, rangés en
+// trois thèmes (vous et l'autre · vous, en amour · votre lumière). Le
+// résultat reste ici, daté. Elena le voit dans la fiche de la cliente
+// avant de l'appeler (c'est dit sous chaque test). Rien n'est partagé.
 
 function dateCourte(iso: string) {
   return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -34,6 +26,7 @@ export default function TestsPage() {
 
   const dernierPar = new Map<string, ResultatEnregistre>();
   for (const r of resultats) if (!dernierPar.has(r.test)) dernierPar.set(r.test, r);
+  const faits = CATALOGUE.filter((e) => dernierPar.has(e.slug)).length;
 
   async function effacer(id: string) {
     await api.deleteTest(id).catch(() => {});
@@ -42,51 +35,90 @@ export default function TestsPage() {
 
   return (
     <EspaceShell>
-      <header className="mb-8 max-w-2xl">
-        <h1 className="font-serif text-4xl font-semibold leading-tight text-aubergine md:text-[46px]">Tests spirituels</h1>
-        <p className="mt-3 text-[15px] text-ink/80">
-          Quinze tests écrits par Elena, offerts. Votre résultat reste ici, daté. Refaites-les quand vous voulez : six mois plus tard, un test raconte un chemin.
+      <header className="mb-10 max-w-2xl">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Quinze tests, offerts</p>
+        <h1 className="mt-1 font-serif text-4xl font-semibold leading-tight text-aubergine md:text-[46px]">Tests spirituels</h1>
+        <p className="mt-3 font-serif text-xl italic leading-relaxed text-mention">
+          Quelques questions, et une page sur vous. Votre résultat reste ici, daté. Refaites-les quand vous voulez : six mois plus tard, un test raconte un chemin.
         </p>
+        {charge && faits > 0 && (
+          <p className="mt-3 text-[13px] text-ink/80">
+            <span className="mr-2 text-gold">✦</span>{faits} test{faits > 1 ? "s" : ""} déjà fait{faits > 1 ? "s" : ""} sur quinze.
+          </p>
+        )}
       </header>
 
-      <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {CATALOGUE.map((e, i) => {
-          const fait = dernierPar.get(e.slug);
-          const actif = Boolean(e.test);
-          return (
-            <li key={e.slug} className={`flex flex-col rounded-[20px] border px-5 py-4 ${TEINTES[i % TEINTES.length]} ${actif ? "" : "opacity-80"}`}>
-              <p className="font-serif text-xl font-semibold leading-tight text-aubergine">{e.titre}</p>
-              <p className="mt-1 font-serif text-[15px] italic text-mention">{e.question}</p>
-              <p className="mt-2 text-[12px] text-mention">
-                {actif ? `${e.test!.questions.length} questions · ${e.duree}` : e.duree}
-                {fait && <> · <span className="text-ink">fait le {dateCourte(fait.creeLe)}</span></>}
-              </p>
-              {actif ? (
-                <a href={`/tests/${e.slug}`} className="mt-auto inline-flex min-h-[44px] items-center gap-1.5 pt-3 text-[13px] font-semibold text-prix hover:underline">
-                  {fait ? "Refaire le test →" : "Faire le test →"}
-                </a>
-              ) : (
-                <span className="mt-auto inline-flex min-h-[44px] items-center pt-3 text-[12px] font-semibold text-gold-dark">bientôt</span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      {THEMES.map((th, ti) => {
+        const entrees = CATALOGUE.filter((e) => e.theme === th.cle);
+        return (
+          <section key={th.cle} className={ti > 0 ? "mt-12" : ""}>
+            <div className="flex items-end gap-4">
+              <span aria-hidden className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border ${th.bordure} ${th.teinte} font-serif text-2xl text-aubergine`}>{th.glyphe}</span>
+              <div>
+                <h2 className="font-serif text-[30px] font-semibold leading-tight text-aubergine">{th.titre}</h2>
+                <p className="font-serif text-[16px] italic text-mention">{th.sous}</p>
+              </div>
+            </div>
+
+            <ul className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {entrees.map((e, i) => {
+                const fait = dernierPar.get(e.slug);
+                const actif = Boolean(e.test);
+                const corps = (
+                  <>
+                    <span aria-hidden className="absolute right-4 top-3 font-serif text-sm text-gold/80">✦</span>
+                    <span className="font-serif text-[13px] text-gold-dark/70">{String(i + 1).padStart(2, "0")}</span>
+                    <p className="mt-1 font-serif text-[21px] font-semibold leading-tight text-aubergine">{e.titre}</p>
+                    <p className="mt-1.5 font-serif text-[15px] italic leading-snug text-mention">{e.question}</p>
+                    <div className="mt-auto flex items-center justify-between gap-3 pt-5">
+                      <span className="rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-ink/70 ring-1 ring-black/5">
+                        {actif ? `${e.test!.questions.length} questions · ${e.duree}` : e.duree}
+                      </span>
+                      {actif ? (
+                        <span className="text-[13px] font-semibold text-prix">{fait ? "Refaire →" : "Faire le test →"}</span>
+                      ) : (
+                        <span className="text-[12px] font-semibold text-gold-dark">bientôt</span>
+                      )}
+                    </div>
+                    {fait && (
+                      <p className="mt-3 border-t border-black/5 pt-2.5 text-[12px] text-ink/75">
+                        Fait le {dateCourte(fait.creeLe)} · <span className="font-semibold text-aubergine">{fait.titreProfil}</span>
+                      </p>
+                    )}
+                  </>
+                );
+                const classes = `relative flex h-full flex-col rounded-[22px] border px-5 pb-5 pt-4 ${th.bordure} ${th.teinte}`;
+                return (
+                  <li key={e.slug}>
+                    {actif ? (
+                      <a href={`/tests/${e.slug}`} className={`${classes} transition hover:-translate-y-1 hover:shadow-soft`}>{corps}</a>
+                    ) : (
+                      <div className={`${classes} opacity-75`}>{corps}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        );
+      })}
 
       <Filet />
 
       <section className="max-w-2xl">
-        <h2 className="font-serif text-[28px] font-semibold leading-tight text-aubergine">Mes résultats</h2>
+        <h2 className="font-serif text-[30px] font-semibold leading-tight text-aubergine">Mes résultats</h2>
         {!charge ? (
           <p className="mt-2 text-[14px] text-mention">Chargement…</p>
         ) : resultats.length === 0 ? (
-          <p className="mt-2 text-[14px] text-mention">Aucun test fait pour l&apos;instant. Votre premier résultat s&apos;inscrira ici.</p>
+          <p className="mt-2 font-serif text-[16px] italic text-mention">Aucun test fait pour l&apos;instant. Votre premier résultat s&apos;inscrira ici.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-greige rounded-[20px] border border-greige bg-ivory">
+          <ul className="mt-4 divide-y divide-greige rounded-[22px] border border-greige bg-ivory">
             {resultats.map((r) => {
               const e = CATALOGUE.find((x) => x.slug === r.test);
+              const th = THEMES.find((t) => t.cle === e?.theme);
               return (
                 <li key={r.id} className="flex items-center gap-4 px-5 py-3.5">
+                  <span aria-hidden className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${th?.teinte ?? "bg-blush"} font-serif text-aubergine`}>{th?.glyphe ?? "✦"}</span>
                   <div className="min-w-0 flex-1">
                     <p className="text-[12px] text-mention">{dateCourte(r.creeLe)} · {e?.titre ?? r.test}</p>
                     <p className="font-serif text-[18px] font-semibold text-aubergine">{r.titreProfil}</p>
