@@ -47,7 +47,7 @@ export const GROUPES_ESPACE: GroupeEspace[] = [
       { href: "/profil", label: "Mon profil", court: "Profil", icone: "profil" },
       { href: "/etudes", label: "Mes études", court: "Études", icone: "livre" },
       { href: "/tirages", label: "Mes tirages", court: "Tirages", icone: "reserver" },
-      { href: "/tests", label: "Mes tests", court: "Tests", icone: "clientes" },
+      { href: "/tests", label: "Tests spirituels", court: "Tests", icone: "clientes" },
     ],
   },
   {
