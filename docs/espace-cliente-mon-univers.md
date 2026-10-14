@@ -264,11 +264,11 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   féminin / masculin. Grille arrêtée le 14 octobre au soir : **la Licorne**
   (croire encore), **la Colombe** (apaiser), **le Papillon** (se
   transformer), **le Cerf** (porter la forêt sur la tête), **le Cygne** (la
-  grâce, sans effort), **le Loup** (protéger les siens — le dessin de la
-  bibliothèque, au masculin), **le Sphinx** (garder la question — un chat
+  grâce, sans effort), **le Loup** (protéger les siens — dessiné avec le renard de la
+  bibliothèque, plus doux que son loup), **le Sphinx** (garder la question — un chat
   assis en attendant), **le Dauphin** (jouer avec les profondeurs),
   **l'Aigle** (voir de haut). Écartées mais sous la main sur la maquette :
-  la Sirène, la Fée, la Chouette, la Renarde, l'Ourse, et une Louve
+  la Sirène, la Fée, la Chouette, l'Ourse, le loup de la bibliothèque, et une Louve
   dessinée maison (yeux fermés, sourire). Retirés : la Lionne, le Pégase,
   le Dragon, le Phénix. Elle sert de petit logo dans le menu et dans sa
   carte. Pas de photo demandée ni stockée. Pas d'émoticônes. **Graphisme
