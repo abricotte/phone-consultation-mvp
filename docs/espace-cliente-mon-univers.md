@@ -15,31 +15,25 @@ est le plan de l'après-lancement ; rien ici n'est construit.
 MON UNIVERS             ← intertitre doré : ce qu'elle a, seule
 ◷ Mon profil            Ma journée · Mon profil · Mes affinités · Mon prénom (menu horizontal)
 ▤ Mes tirages           ce qu'Elena tire à la main (Pythie, Grand Tableau)
-▥ Mes études            page titrée « La méthode Wolska » ; calculées, relues, signées
+▥ Méthode Wolska        ses études — le nom de la gamme, comme « Hans Decoz » ; calculées, relues, signées
 ◇ Tests spirituels      les six tests du site, gratuits, résultats gardés
 ────────────────────────
 AVEC ELENA              ← ce qu'elle fait avec Elena
 ☾ Le salon              Écouter (boosts) · Lire (livres KDP) · Le jeu (menu horizontal)
 ✎ Apprendre             Le podcast (La Minute Voyance, Lenormand) · Les vidéos (à venir)
-                        · La méthode Wolska (la page qui explique : chiffres, ciel, 12 contrats)
                         — « Se former » si Elena vise un vrai cursus : à trancher
 ◷ Voyages spirituels    à venir en 2027 : Delphes, Délos ; « me prévenir »
 ────────────────────────
 ⚙ Compte & paramètres   email, numéro, mot de passe
 ```
 
-Décisions du 14 octobre : « Mes rapports » devient **« Mes études »** (le mot
-« rapport » est administratif) ; la **méthode Wolska** n'est pas un onglet,
-c'est le **titre de la page** des études et la **signature** de chaque
-calcul (« calculé d'après la méthode Wolska ») — plus présente ainsi que
-rangée dans un onglet. Le groupe du bas s'appelle **« Avec Elena »** (une
-relation, pas un lieu), en miroir de « Mon univers ».
-
-**La méthode Wolska s'explique dans Apprendre** (idée d'Elena, 14 octobre) :
-une pilule « La méthode Wolska » — les chiffres, le ciel, les douze
-contrats — et chaque signature « calculé d'après la méthode Wolska » dans
-les études **est un lien vers cette page**. La méthode est ainsi expliquée
-une fois, signée partout.
+Décisions du 14 octobre : l'onglet des études s'appelle **« Méthode
+Wolska »** — c'est le **nom de la gamme**, comme « Hans Decoz » : on n'explique
+pas ce qu'il y a derrière. **On ne donne pas les clés** (pas de page qui
+détaille numérologie + astrologie + douze contrats comme recette). Ce qui
+reste visible : le processus — calculé, relu, signé — et la signature
+« méthode Wolska » sur chaque étude. Le groupe du bas s'appelle **« Avec
+Elena »** (une relation, pas un lieu), en miroir de « Mon univers ».
 
 Règle pour la suite : **douze lignes, c'est la limite**. Toute nouveauté
 remplace ou s'abrite sous une entrée existante. Et on n'ouvre pas une pièce
@@ -134,7 +128,7 @@ bouton orange.
   « 2ᵉ de la file · Elena le tire mardi 21 » · Prêt à lire).
 - Cabinet : onglet Tirages, file « À faire », dépôt photo + PDF (+ audio).
 
-## Mes études — « La méthode Wolska » : calculé, relu, signé
+## Méthode Wolska — les études : calculé, relu, signé
 
 **Ce ne sont pas des rapports générés** (décision d'Elena, 14 octobre) :
 Elena relit chaque étude avant livraison, corrige ce qui ne ressemble pas
@@ -222,7 +216,7 @@ dans « Ma journée ».
 3. Tests spirituels (migration 014) — 1 jour.
 4. Mon profil (portage des calculs + affinités) — 2 jours.
 5. Mes tirages (migration 015, Storage, Stripe produit, file) — 2 jours.
-6. Mes études (génération PDF, relecture au cabinet) — 2 jours.
+6. Méthode Wolska (génération PDF, relecture au cabinet) — 2 jours.
 7. Avec Elena : Le salon (boosts, livres, le jeu), Apprendre (podcast, vidéos), Voyages — une journée.
 8. Votre journée / semaine, la carte du jour, puis les boosts audio.
 
