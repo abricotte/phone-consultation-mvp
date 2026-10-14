@@ -260,8 +260,8 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   avant d'appuyer ; réglée par Stripe, pas sur le crédit minutes. Une
   urgence de jour hors permanence (85 €) reste à décider.
 - **L'emblème à la place de la photo** : au premier écran de l'espace, la
-  cliente choisit une figure parmi douze (six féminines : la Sirène, la
-  Fée, la Louve, la Lionne, la Biche, le Phénix ; six masculines : le
+  cliente choisit une figure parmi douze, **sans colonnes féminin / masculin** (la Sirène, la
+  Fée, la Louve, la Lionne, la Biche, le Phénix, le
   Sphinx, le Dauphin, le Dragon, l'Aigle, le Cerf, le Pégase). Elle sert
   de petit logo dans le menu et dans sa carte. Pas de photo demandée ni
   stockée. Pas d'émoticônes : des silhouettes. Provisoirement celles de
