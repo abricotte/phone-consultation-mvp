@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetShell from "@/components/CabinetShell";
+import { signeAstrologique } from "@/lib/astro";
 import {
   chargerReglages,
   rafraichirReglages,
@@ -17,6 +18,7 @@ interface Cliente {
   nom: string;
   email: string | null;
   telephone: string | null;
+  dateNaissance?: string | null;
   inscriteLe: string;
   solde: number;
   nbConsultations: number;
@@ -201,9 +203,33 @@ export default function ClientesPage() {
         </p>
       </div>
 
-      {/* Angles de lecture — pas des statuts : voir le commentaire des
-          FILTRES. Ce sont des façons de relire ma clientèle, pour moi. */}
-      <div className="mt-5 flex flex-wrap gap-2">
+      {/* La recherche d'abord — c'est le geste le plus fréquent — puis les
+          angles de lecture (pas des statuts, voir FILTRES), et le tri. */}
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <input
+          type="search"
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
+          placeholder="Un prénom, un nom, un numéro…"
+          className="min-w-64 flex-1 rounded-full border border-greige bg-ivory px-5 py-3 text-base text-ink shadow-soft focus:border-cta-outline focus:outline-none"
+          autoFocus
+        />
+        <label className="flex items-center gap-2 text-sm text-mention">
+          Trier par
+          <select
+            value={tri}
+            onChange={(e) => setTri(e.target.value)}
+            className="rounded-full border border-greige bg-ivory px-3 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
+          >
+            {TRIS.map((t) => (
+              <option key={t.code} value={t.code}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
         {FILTRES.map((f) => {
           const actif = filtre === f.code;
           const n = comptes[f.code] ?? 0;
@@ -227,38 +253,12 @@ export default function ClientesPage() {
           );
         })}
       </div>
-
       {filtre === "dormant" && (
         <p className="mt-2 rounded-xl bg-blush px-4 py-2.5 text-xs text-mention">
           Pour information seulement — aucune relance n&apos;est envoyée, ni
           automatiquement ni autrement. Un silence s&apos;interprète.
         </p>
       )}
-
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <input
-          type="search"
-          value={recherche}
-          onChange={(e) => setRecherche(e.target.value)}
-          placeholder="Rechercher un prénom, un email, un numéro…"
-          className="min-w-64 flex-1 rounded-full border border-greige bg-ivory px-4 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
-        />
-        <label className="flex items-center gap-2 text-sm text-mention">
-          Trier par
-          <select
-            value={tri}
-            onChange={(e) => setTri(e.target.value)}
-            className="rounded-full border border-greige bg-ivory px-3 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
-          >
-            {TRIS.map((t) => (
-              <option key={t.code} value={t.code}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
       {visibles.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-10 text-center">
           <p className="text-3xl">✧</p>
@@ -269,7 +269,15 @@ export default function ClientesPage() {
           </p>
         </div>
       ) : (
-        <ul className="mt-5 space-y-2">
+        <>
+        <div className="mt-6 hidden items-center gap-x-4 px-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-mention sm:flex">
+          <span className="w-11 shrink-0" />
+          <span className="min-w-44 flex-1">Cliente</span>
+          <span className="w-28 shrink-0">Consultations</span>
+          <span className="w-28 shrink-0 text-right">Dépensé</span>
+          <span className="w-24 shrink-0 text-right">Crédit</span>
+        </div>
+        <ul className="mt-2 space-y-2">
           {visibles.map((c, i) => (
             <li key={c.id}>
               <a
@@ -281,7 +289,7 @@ export default function ClientesPage() {
                     TEINTES[i % TEINTES.length]
                   }`}
                 >
-                  {c.prenom.charAt(0).toUpperCase()}
+                  {signeAstrologique(c.dateNaissance)?.emoji ?? c.prenom.charAt(0).toUpperCase()}
                 </span>
 
                 <span className="min-w-44 flex-1">
@@ -309,8 +317,12 @@ export default function ClientesPage() {
                     )}
                   </span>
                   <span className="block truncate text-xs text-mention">
-                    {formatTel(c.telephone)}
-                    {c.email && ` · ${c.email}`}
+                    {signeAstrologique(c.dateNaissance)?.nom ?? "signe inconnu"}
+                    {" · "}
+                    {c.derniereConsultation
+                      ? `dernier appel il y a ${joursDepuis(c.derniereConsultation)} j`
+                      : "jamais consulté"}
+                    {c.telephone && ` · ${formatTel(c.telephone)}`}
                   </span>
                 </span>
 
@@ -357,6 +369,7 @@ export default function ClientesPage() {
             </li>
           ))}
         </ul>
+        </>
       )}
     </CabinetShell>
   );

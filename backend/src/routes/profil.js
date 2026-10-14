@@ -360,4 +360,52 @@ router.delete('/tests/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// ── Les commandes de tirages (migration 015) ──
+// La cliente dépose sa commande et sa question ; Elena la voit au cabinet.
+// Les prix sont ceux de la page Mes tirages (Elena, 12-14 octobre).
+const TIRAGES = { pythie: 55, grand_tableau: 149 };
+
+// GET /api/profil/commandes — mes commandes, les plus récentes d'abord
+router.get('/commandes', authMiddleware, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('commandes_tirages')
+      .select('id, type, question, statut, montant, paye, cree_le, livre_le')
+      .eq('client_id', req.user.id)
+      .order('cree_le', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    res.json({
+      commandes: (data || []).map((c) => ({
+        id: c.id, type: c.type, question: c.question, statut: c.statut, montant: parseFloat(c.montant), paye: c.paye, creeLe: c.cree_le, livreLe: c.livre_le,
+      })),
+    });
+  } catch (err) {
+    console.error('Erreur commandes:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/profil/commandes — { type: 'pythie' | 'grand_tableau', question? }
+router.post('/commandes', authMiddleware, async (req, res) => {
+  try {
+    const { type, question } = req.body || {};
+    if (!Object.prototype.hasOwnProperty.call(TIRAGES, type)) return res.status(400).json({ error: 'Tirage invalide.' });
+    const q = typeof question === 'string' ? question.trim().slice(0, 2000) : '';
+    if (type === 'pythie' && !q) return res.status(400).json({ error: 'Écrivez votre question pour la Petite Pythie.' });
+    const { data, error } = await supabase
+      .from('commandes_tirages')
+      .insert({ client_id: req.user.id, type, question: q || null, montant: TIRAGES[type] })
+      .select('id, type, question, statut, montant, paye, cree_le, livre_le')
+      .single();
+    if (error) throw error;
+    res.status(201).json({
+      commande: { id: data.id, type: data.type, question: data.question, statut: data.statut, montant: parseFloat(data.montant), paye: data.paye, creeLe: data.cree_le, livreLe: data.livre_le },
+    });
+  } catch (err) {
+    console.error('Erreur commande:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

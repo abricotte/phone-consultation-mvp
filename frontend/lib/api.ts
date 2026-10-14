@@ -90,6 +90,13 @@ export const api = {
   saveTest: (body: { test: string; profil: string; titreProfil: string; score: number | null }) =>
     request("/profil/tests", { method: "POST", body: JSON.stringify(body) }),
   deleteTest: (id: string) => request(`/profil/tests/${id}`, { method: "DELETE" }),
+  // Les commandes de tirages (migration 015)
+  getCommandes: () => request("/profil/commandes"),
+  commanderTirage: (body: { type: "pythie" | "grand_tableau"; question?: string }) =>
+    request("/profil/commandes", { method: "POST", body: JSON.stringify(body) }),
+  adminGetCommandes: () => request("/admin/commandes"),
+  adminMajCommande: (id: string, body: { statut?: string; paye?: boolean; noteElena?: string }) =>
+    request(`/admin/commandes/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   updateProfil: (body: {
     dateNaissance?: string | null;
     ascendant?: string | null;

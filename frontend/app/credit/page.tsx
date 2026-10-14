@@ -57,6 +57,8 @@ function heureDe(iso: string): string {
 
 export default function CreditPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  // L'attention va à la recharge : l'historique se déroule à la demande (Elena, 14 octobre).
+  const [onglet, setOnglet] = useState<"recharger" | "mouvements">("recharger");
   const [solde, setSolde] = useState<number | null>(null);
   const [prixMinute, setPrixMinute] = useState(2.9);
 
@@ -150,7 +152,7 @@ export default function CreditPage() {
         Mon crédit
       </h1>
       <p className="mt-1 text-sm text-mention">
-        Vos recharges et le détail de ce qui a été utilisé.
+        Des minutes pour appeler Elena quand elle est en ligne, sans rendez-vous.
       </p>
 
       {/* 1. COMBIEN ME RESTE-T-IL — la première question, en grand.
@@ -194,9 +196,15 @@ export default function CreditPage() {
         </p>
       )}
 
+      <div className="mt-6 flex gap-2">
+        {([["recharger", "Recharger"], ["mouvements", `Mes mouvements${transactions.length ? ` · ${transactions.length}` : ""}`]] as const).map(([c, l]) => (
+          <button key={c} type="button" onClick={() => setOnglet(c)} aria-pressed={onglet === c} className={`rounded-full px-4 py-2 text-sm font-semibold transition ${onglet === c ? "bg-aubergine text-cream shadow-card" : "border border-greige/60 bg-ivory text-mention hover:border-gold/60"}`}>{l}</button>
+        ))}
+      </div>
+
       {/* LA RECHARGE — paliers + curseur. Elle vit ici, et seulement ici. */}
-      {config && (
-        <div className="mt-6 rounded-3xl border border-greige/60 bg-ivory p-6 shadow-soft sm:p-7">
+      {onglet === "recharger" && config && (
+        <div className="mt-4 rounded-3xl border border-gold/40 bg-ivory p-6 shadow-soft sm:p-7">
           <BlocRecharge
             prixMinuteCents={config.prixMinuteCents}
             suggestionsMinutes={config.suggestionsMinutes}
@@ -207,8 +215,8 @@ export default function CreditPage() {
         </div>
       )}
 
-      {/* 2. OÙ EST PASSÉ MON ARGENT — l'historique, groupé par mois */}
-      {!chargement && transactions.length === 0 && (
+      {/* 2. OÙ EST PASSÉ MON ARGENT — l'historique, groupé par mois, replié dans son onglet */}
+      {onglet === "mouvements" && !chargement && transactions.length === 0 && (
         <div className="mt-6 rounded-2xl border border-greige/60 bg-ivory p-8 text-center shadow-soft">
           <p className="text-ink">Aucun mouvement pour l&apos;instant.</p>
           <p className="mt-1 text-sm text-mention">
@@ -217,7 +225,7 @@ export default function CreditPage() {
         </div>
       )}
 
-      {parMois.map(([mois, lignes]) => (
+      {onglet === "mouvements" && parMois.map(([mois, lignes]) => (
         <div
           key={mois}
           className="mt-6 rounded-2xl border border-greige/60 bg-ivory p-6 shadow-soft"
@@ -273,7 +281,7 @@ export default function CreditPage() {
       {/* 3. COMBIEN EN TOUT — discret, en pied. Une information de
              contrôle, pas un jugement : aucun commentaire sur le
              montant, aucune comparaison, aucun encouragement à dépenser. */}
-      {transactions.length > 0 && (
+      {onglet === "mouvements" && transactions.length > 0 && (
         <p className="mt-6 text-center text-xs text-mention">
           Depuis votre inscription : {euros(totalRecharge)} rechargés ·{" "}
           {euros(totalUtilise)} utilisés en consultations.

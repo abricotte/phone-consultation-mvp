@@ -514,3 +514,27 @@ Recommandé en premier : 1, 2 et 3. Les trois tiennent dans le cabinet
 qui existe (un choix de couleur, une carte tirée, une phrase à déposer)
 et n'exigent aucun texte long.
 
+## Décisions du 14 octobre, tard le soir
+
+- **Voyages spirituels en off** : hors menu tant que ce n'est pas abouti ;
+  la page reste (`/voyages`), rien n'est supprimé.
+- **Commandes** : nouvel onglet du cabinet (`/cabinet-ew/commandes`) —
+  les tirages commandés depuis l'espace, à faire / livrées, statut,
+  « réglé », note pour Elena ; migration **015_commandes_tirages**. Côté
+  cliente, « Je commande mon tirage » ouvre la question et envoie la
+  commande ; la carte montre « commande reçue le … ». Le paiement en
+  ligne viendra par **Stripe** (déjà en place pour le crédit), pas PayPal.
+- **La fiche cliente** : tout d'un coup en haut — identité, signe,
+  ascendant, date, **Ses nombres**, **Ses tests** — puis les fiches à
+  remplir (carnet, notes, dates). La liste des clientes : la recherche
+  d'abord, en-têtes de colonnes, le signe dans le médaillon, « dernier
+  appel il y a n j ».
+- **Mon crédit** : l'attention sur la recharge ; l'historique derrière
+  l'onglet « Mes mouvements ». Et au-dessus du menu, dans la colonne de
+  gauche : « Mon crédit · 5 € · Recharger ».
+- **Consultations** : un fil par mois (date à gauche, formule, durée,
+  montant), la règle des minutes repliée.
+- **Menu** : « Mes études » remplace « Méthode Wolska » dans l'onglet
+  (cohérent avec Mes tirages, Mes tests) ; la page garde « Méthode
+  Wolska » comme titre de gamme.
+

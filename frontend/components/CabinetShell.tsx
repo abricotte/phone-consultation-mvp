@@ -28,6 +28,7 @@ const ONGLETS: { href: string; label: string; court: string; icone: NomIcone }[]
   { href: "/cabinet-ew/permanences", label: "Permanences", court: "Permanences", icone: "permanences" },
   { href: "/cabinet-ew/calendly", label: "Calendly", court: "Calendly", icone: "reserver" },
   { href: "/cabinet-ew/clientes", label: "Clientes", court: "Clientes", icone: "clientes" },
+  { href: "/cabinet-ew/commandes", label: "Commandes", court: "Commandes", icone: "livre" },
   { href: "/cabinet-ew/journal", label: "Journal", court: "Journal", icone: "lune" },
   { href: "/cabinet-ew/revenus", label: "Revenus", court: "Revenus", icone: "revenus" },
   { href: "/cabinet-ew/profil", label: "Profil", court: "Profil", icone: "compte" },

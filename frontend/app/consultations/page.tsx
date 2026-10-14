@@ -120,13 +120,14 @@ export default function ConsultationsPage() {
 
       {/* Règle de facturation — annoncée clairement, elle rassure autant
           qu'elle informe : une communication écourtée n'est jamais due. */}
-      <p className="mt-4 rounded-2xl bg-blush px-4 py-3 text-sm text-ink">
-        <span aria-hidden className="mr-1.5">
-          ✦
-        </span>
-        La facturation démarre à la première minute de communication. Un appel
-        interrompu avant 60&nbsp;secondes ne vous est jamais facturé.
-      </p>
+      <details className="mt-3 text-[13px] text-mention">
+        <summary className="cursor-pointer hover:text-ink">Comment sont comptées les minutes ?</summary>
+        <p className="mt-2 rounded-2xl bg-blush px-4 py-3 text-ink">
+          <span aria-hidden className="mr-1.5">✦</span>
+          La facturation démarre à la première minute de communication. Un appel
+          interrompu avant 60&nbsp;secondes ne vous est jamais facturé.
+        </p>
+      </details>
 
       {chargement && (
         <p className="mt-10 text-center text-mention">Chargement…</p>
@@ -150,56 +151,52 @@ export default function ConsultationsPage() {
         </div>
       )}
 
-      {!chargement && !erreur && tenues.length > 0 && (
-        <div className="mt-8 space-y-3">
-          {tenues.map((c) => (
-            <div
-              key={c.id}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-greige/60 bg-ivory p-5 shadow-soft"
-            >
-              <div>
-                <p className="font-serif text-lg font-semibold text-aubergine">
-                  {c.formule}
-                </p>
-                <p className="mt-0.5 text-sm text-mention">
-                  {formatDate(c.startedAt || c.createdAt)}
-                </p>
-                <p className="mt-1 text-sm text-ink">
-                  Durée : {formatDuree(c.durationSeconds)}
-                </p>
-                {/* TRANSPARENCE DU CALCUL — sans cette ligne, une cliente
-                    lit « 9 min 49 » puis « 29,00 € » et conclut à une
-                    erreur : 29 € pour dix minutes, alors qu'elle n'a pas
-                    parlé dix minutes. La règle de la minute entamée est
-                    annoncée avant l'appel ; elle doit être rappelée là où
-                    le montant apparaît, pas seulement en amont. */}
-                {detailFacturation(c) && (
-                  <p className="mt-0.5 text-xs text-mention">
-                    {detailFacturation(c)}
-                  </p>
-                )}
-              </div>
-              <div className="shrink-0 text-right">
-                {c.montant === 0 ? (
-                  // Franchise de connexion : appel coupé sous 60 s → 0 €
-                  <>
-                    <span className="inline-block rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700">
-                      Non facturée
-                    </span>
-                    <p className="mt-1 text-xs text-mention">
-                      moins d&apos;une minute
-                    </p>
-                  </>
-                ) : (
-                  <span className="font-serif text-xl font-semibold text-prix">
-                    {c.montant != null ? euros(c.montant) : "—"}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {!chargement && !erreur && tenues.length > 0 && (() => {
+        // Groupées par mois, en fil : la date à gauche, le reste à droite.
+        const parMois = new Map<string, Consultation[]>();
+        for (const c of tenues) {
+          const d = new Date(c.startedAt || c.createdAt);
+          const cle = d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+          if (!parMois.has(cle)) parMois.set(cle, []);
+          parMois.get(cle)!.push(c);
+        }
+        return (
+          <div className="mt-8">
+            {[...parMois.entries()].map(([mois, lignes]) => (
+              <section key={mois} className="mt-6 first:mt-0">
+                <h2 className="font-serif text-[22px] font-semibold capitalize text-aubergine">{mois}</h2>
+                <ol className="mt-3 border-l border-greige/80 pl-5">
+                  {lignes.map((c) => {
+                    const d = new Date(c.startedAt || c.createdAt);
+                    return (
+                      <li key={c.id} className="relative py-3">
+                        <span aria-hidden className="absolute -left-[25px] top-[18px] h-2.5 w-2.5 rounded-full bg-gold ring-2 ring-cream" />
+                        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                          <span className="w-24 shrink-0 text-[13px] text-mention">
+                            {d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" })} · {d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="font-serif text-[18px] font-semibold text-aubergine">{c.formule}</span>
+                            <span className="ml-2 text-[13px] text-ink/70">{formatDuree(c.durationSeconds)}</span>
+                            {detailFacturation(c) && <span className="block text-[12px] text-mention">{detailFacturation(c)}</span>}
+                          </span>
+                          <span className="shrink-0 text-right">
+                            {c.montant === 0 ? (
+                              <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-[12px] font-medium text-green-700" title="moins d'une minute">non facturée</span>
+                            ) : (
+                              <span className="font-serif text-[18px] font-semibold tabular-nums text-aubergine">{c.montant != null ? euros(c.montant) : "—"}</span>
+                            )}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </section>
+            ))}
+          </div>
+        );
+      })()}
       </div>
     </EspaceShell>
   );

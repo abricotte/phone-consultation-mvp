@@ -589,7 +589,7 @@ router.get('/clientes', async (req, res) => {
     // comme tout carnet de cabinet. Jamais exposés côté public.
     const { data: clientes, error } = await supabase
       .from('users')
-      .select('id, first_name, last_name, email, phone, created_at')
+      .select('id, first_name, last_name, email, phone, date_naissance, created_at')
       .eq('role', 'client')
       .order('created_at', { ascending: false })
       .limit(200);
@@ -670,6 +670,7 @@ router.get('/clientes', async (req, res) => {
         nom: c.last_name || '',
         email: c.email || null,
         telephone: c.phone || null,
+        dateNaissance: c.date_naissance || null,
         inscriteLe: c.created_at,
         solde: walletsParId[c.id] ?? 0,
         nbConsultations: sessionsParId[c.id]?.nb ?? 0,
@@ -2620,6 +2621,63 @@ router.get('/autotest', async (req, res) => {
     controles,
     testeLe: new Date().toISOString(),
   });
+});
+
+// ── Les commandes de tirages, côté cabinet (migration 015) ──
+// GET /api/admin/commandes — toutes, les plus anciennes à faire d'abord
+router.get('/commandes', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('commandes_tirages')
+      .select('id, client_id, type, question, statut, montant, paye, note_elena, cree_le, livre_le, users:client_id (first_name, last_name)')
+      .order('cree_le', { ascending: true })
+      .limit(500);
+    if (error) throw error;
+    res.json({
+      commandes: (data || []).map((c) => ({
+        id: c.id, clientId: c.client_id,
+        prenom: c.users?.first_name || 'Cliente', nom: c.users?.last_name || '',
+        type: c.type, question: c.question, statut: c.statut, montant: parseFloat(c.montant), paye: c.paye,
+        noteElena: c.note_elena, creeLe: c.cree_le, livreLe: c.livre_le,
+      })),
+    });
+  } catch (err) {
+    console.error('Erreur commandes cabinet:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PATCH /api/admin/commandes/:id — { statut?, paye?, noteElena? }
+router.patch('/commandes/:id', async (req, res) => {
+  try {
+    const maj = {};
+    const { statut, paye, noteElena } = req.body || {};
+    if (statut !== undefined) {
+      if (!['recue', 'en_cours', 'livree', 'annulee'].includes(statut)) return res.status(400).json({ error: 'Statut invalide.' });
+      maj.statut = statut;
+      maj.livre_le = statut === 'livree' ? new Date().toISOString() : null;
+    }
+    if (paye !== undefined) {
+      if (typeof paye !== 'boolean') return res.status(400).json({ error: 'Valeur invalide.' });
+      maj.paye = paye;
+    }
+    if (noteElena !== undefined) {
+      if (typeof noteElena !== 'string') return res.status(400).json({ error: 'Note invalide.' });
+      maj.note_elena = noteElena.trim().slice(0, 2000) || null;
+    }
+    if (Object.keys(maj).length === 0) return res.status(400).json({ error: 'Rien à modifier.' });
+    const { data, error } = await supabase
+      .from('commandes_tirages')
+      .update(maj)
+      .eq('id', req.params.id)
+      .select('id, statut, paye, note_elena, livre_le')
+      .single();
+    if (error) throw error;
+    res.json({ commande: { id: data.id, statut: data.statut, paye: data.paye, noteElena: data.note_elena, livreLe: data.livre_le } });
+  } catch (err) {
+    console.error('Erreur maj commande:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
 });
 
 module.exports = router;

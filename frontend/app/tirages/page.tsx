@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 import EspaceShell from "@/components/EspaceShell";
 import { Eventail } from "@/components/Ornements";
 
@@ -32,28 +33,73 @@ function Tableau() {
   );
 }
 
-type Tirage = "pythie" | "tableau";
+type Tirage = "pythie" | "grand_tableau";
 
 export default function TiragesPage() {
-  // Le bouton existe ; le paiement arrive. En attendant il dit comment faire.
-  const [commande, setCommande] = useState<Tirage | null>(null);
+  const [ouvert, setOuvert] = useState<Tirage | null>(null);
+  const [question, setQuestion] = useState("");
+  const [envoi, setEnvoi] = useState(false);
+  const [erreur, setErreur] = useState("");
+  const [recues, setRecues] = useState<{ type: Tirage; creeLe: string; statut: string }[]>([]);
+
+  useEffect(() => {
+    api.getCommandes().then((d: { commandes: { type: Tirage; creeLe: string; statut: string }[] }) => setRecues((d?.commandes ?? []).filter((c) => c.statut !== "annulee"))).catch(() => {});
+  }, []);
+
+  async function commander(type: Tirage) {
+    setEnvoi(true); setErreur("");
+    try {
+      const d = await api.commanderTirage({ type, question: question.trim() || undefined });
+      setRecues((r) => [{ type, creeLe: d.commande.creeLe, statut: d.commande.statut }, ...r]);
+      setOuvert(null); setQuestion("");
+    } catch (e) {
+      setErreur(e instanceof Error ? e.message : "Une erreur est survenue.");
+    } finally {
+      setEnvoi(false);
+    }
+  }
 
   function BoutonCommande({ quoi }: { quoi: Tirage }) {
+    const derniere = recues.find((r) => r.type === quoi);
     return (
       <div className="mt-6">
-        <button
-          type="button"
-          onClick={() => setCommande(commande === quoi ? null : quoi)}
-          className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-aubergine px-6 py-3 text-[14px] font-semibold text-cream hover:bg-aubergine/90"
-        >
-          Je commande mon tirage <span aria-hidden>→</span>
-        </button>
-        {commande === quoi && (
-          <p className="mt-3 rounded-[16px] border border-gold/30 bg-ivory px-4 py-3 text-[13px] leading-relaxed text-ink/80">
+        {derniere && (
+          <p className="mb-3 rounded-[16px] border border-gold/30 bg-ivory px-4 py-3 text-[13px] leading-relaxed text-ink/80">
             <span className="mr-2 text-gold">✦</span>
-            Le paiement en ligne arrive. D&apos;ici là, demandez votre tirage à Elena lors d&apos;une consultation, ou par{" "}
-            <a href="https://elena-wolska.com/contact" className="font-semibold text-prix hover:underline">le site</a>.
+            Commande reçue le {new Date(derniere.creeLe).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
+            {derniere.statut === "livree" ? " · livrée" : derniere.statut === "en_cours" ? " · Elena s'y consacre" : " · Elena vous appellera pour le règlement"}.
           </p>
+        )}
+        {ouvert !== quoi ? (
+          <button
+            type="button"
+            onClick={() => { setOuvert(quoi); setErreur(""); }}
+            className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-aubergine px-6 py-3 text-[14px] font-semibold text-cream hover:bg-aubergine/90"
+          >
+            Je commande mon tirage <span aria-hidden>→</span>
+          </button>
+        ) : (
+          <div className="rounded-[20px] border border-gold/30 bg-ivory p-4">
+            <label className="block text-[13px] font-semibold text-ink">
+              {quoi === "pythie" ? "Votre question, pour les trois cartes" : "Ce que vous voulez que je regarde (facultatif)"}
+              <textarea
+                rows={3}
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                maxLength={2000}
+                placeholder={quoi === "pythie" ? "Est-ce que je dois lui écrire ?" : "L'amour, le travail, cette personne…"}
+                className="mt-2 w-full rounded-[14px] border border-greige bg-white px-3 py-2.5 text-[14px] font-normal text-ink"
+              />
+            </label>
+            {erreur && <p className="mt-2 text-[13px] text-red-600">{erreur}</p>}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button type="button" disabled={envoi} onClick={() => commander(quoi)} className="rounded-full bg-aubergine px-5 py-2.5 text-[14px] font-semibold text-cream hover:bg-aubergine/90 disabled:opacity-50">
+                {envoi ? "Envoi…" : "Envoyer ma commande"}
+              </button>
+              <button type="button" onClick={() => setOuvert(null)} className="text-[13px] text-mention hover:underline">Annuler</button>
+            </div>
+            <p className="mt-3 text-[12px] text-mention">Le paiement en ligne arrive. Elena reçoit votre commande dans son cabinet et vous appelle pour le règlement.</p>
+          </div>
         )}
       </div>
     );
@@ -116,7 +162,7 @@ export default function TiragesPage() {
           </p>
           <p className="mt-5 font-serif text-3xl font-semibold tabular-nums text-aubergine">149 €</p>
           <div className="mt-auto">
-            <BoutonCommande quoi="tableau" />
+            <BoutonCommande quoi="grand_tableau" />
           </div>
         </section>
       </div>

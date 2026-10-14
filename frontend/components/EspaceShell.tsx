@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 import { usePathname } from "next/navigation";
 import { GROUPES_ESPACE, ONGLETS_ESPACE, SOUS_LE_POUCE } from "@/lib/espace";
 import { capitaliser } from "@/lib/format";
@@ -101,11 +102,20 @@ function CarteElenaMenu({ compact = false }: { compact?: boolean }) {
 export default function EspaceShell({ prenom, signe, ascendant, children }: Props) {
   const pathname = usePathname() ?? "";
   const [prenomLocal, setPrenomLocal] = useState("");
+  // Le solde, en une ligne au-dessus du menu : « Mon crédit · 5 € » (Elena, 14 octobre).
+  const [soldeEuros, setSoldeEuros] = useState<number | null>(null);
   const [plusOuvert, setPlusOuvert] = useState(false);
 
   // L'espace cliente est réservé aux CLIENTES : le compte praticienne y
   // est redirigé vers son cabinet. Le vécu a montré le danger — connectée
   // ici, modifier "son" numéro écrase celui de la ligne professionnelle.
+  useEffect(() => {
+    if (typeof window === "undefined" || !localStorage.getItem("token")) return;
+    api.getWallet().then((w: { balance?: number | string } | null) => {
+      const b = w?.balance; if (b !== undefined && b !== null) setSoldeEuros(Number(b));
+    }).catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (!localStorage.getItem("token")) {
       window.location.replace("/login");
@@ -160,6 +170,13 @@ export default function EspaceShell({ prenom, signe, ascendant, children }: Prop
         </a>
 
         <CarteElenaMenu />
+
+        {soldeEuros !== null && (
+          <a href="/credit" className="mb-3 flex items-center justify-between rounded-2xl border border-greige/70 bg-cream px-3.5 py-2.5 text-[13px] hover:border-gold/60">
+            <span className="text-ink">Mon crédit <span className="ml-1 font-semibold tabular-nums text-aubergine">{soldeEuros.toFixed(2).replace(".", ",").replace(",00", "")} €</span></span>
+            <span className="rounded-full bg-aubergine px-2.5 py-1 text-[11px] font-semibold text-cream">Recharger</span>
+          </a>
+        )}
 
         <nav aria-label="Espace cliente" className="flex flex-col">
           {GROUPES_ESPACE.map((g, gi) => (

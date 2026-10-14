@@ -45,7 +45,7 @@ export const GROUPES_ESPACE: GroupeEspace[] = [
     onglets: [
       { href: "/profil", label: "Mon profil", court: "Profil", icone: "profil" },
       { href: "/tirages", label: "Mes tirages", court: "Tirages", icone: "reserver" },
-      { href: "/etudes", label: "Méthode Wolska", court: "Méthode", icone: "livre" },
+      { href: "/etudes", label: "Mes études", court: "Études", icone: "livre" },
       { href: "/tests", label: "Tests spirituels", court: "Tests", icone: "clientes" },
     ],
   },
@@ -54,7 +54,8 @@ export const GROUPES_ESPACE: GroupeEspace[] = [
     onglets: [
       { href: "/salon", label: "Le salon", court: "Salon", icone: "casque" },
       { href: "/apprendre", label: "Apprendre", court: "Apprendre", icone: "modifier" },
-      { href: "/voyages", label: "Voyages spirituels", court: "Voyages", icone: "boussole" },
+      // Voyages spirituels : en off tant que ce n'est pas abouti (Elena, 14 octobre) — la page reste, hors menu.
+      // { href: "/voyages", label: "Voyages spirituels", court: "Voyages", icone: "boussole" },
     ],
   },
   {

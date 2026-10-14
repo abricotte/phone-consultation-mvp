@@ -503,6 +503,79 @@ export default function FicheClientePage() {
         </div>
       </section>
 
+      {/* Ses nombres — pour Elena seule : la cliente ne voit jamais de
+          numérologie dans son espace (décision du 14 octobre). Calculés
+          d'après sa date de naissance et son nom, règles du moteur du site. */}
+      {(() => {
+        const n = fiche.dateNaissance ? nombres(fiche.dateNaissance, `${fiche.prenom} ${fiche.nom}`.trim()) : null;
+        const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+        const Nb = ({ v, label, sous }: { v: number | null; label: string; sous?: string }) => (
+          <li className="flex items-baseline gap-3 rounded-xl border border-greige/50 bg-cream px-4 py-2.5">
+            <span className="w-10 shrink-0 font-serif text-[28px] font-semibold leading-none text-aubergine">{v ?? "—"}</span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-ink">{label}</span>
+              <span className="block text-xs text-mention">{sous ?? (v ? MOT_DU_NOMBRE[v] : "renseigner le nom")}</span>
+            </span>
+          </li>
+        );
+        return (
+          <section className="mt-5 rounded-3xl border border-gold/40 bg-gradient-to-br from-gold/[0.07] to-ivory p-7 shadow-soft">
+            <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">Ses nombres</h2>
+            <p className="mt-0.5 text-sm text-mention">
+              Pour vous seule — elle ne les voit pas dans son espace. D&apos;après sa date de naissance{n?.expression != null ? " et son nom" : ""}.
+            </p>
+            {!n ? (
+              <p className="mt-3 text-sm text-mention">Pas de date de naissance renseignée.</p>
+            ) : (
+              <>
+                <ul className="mt-4 grid gap-2 sm:grid-cols-3">
+                  <Nb v={n.moisPersonnel} label={`Mois personnel · ${MOIS[n.moisCivil - 1]}`} />
+                  <Nb v={n.anneePersonnelle} label={`Année personnelle ${n.anneeCivile}`} />
+                  <Nb v={n.cheminDeVie} label="Chemin de vie" />
+                  <Nb v={n.expression} label="Expression" />
+                  <Nb v={n.elan} label="Élan de l'âme" />
+                  <Nb v={n.personnalite} label="Personnalité" />
+                </ul>
+                <p className="mt-3 text-xs text-mention">
+                  Dettes karmiques : <span className="text-ink">{n.dettes.length ? n.dettes.join(", ") : "aucune"}</span>
+                  {n.lecons.length > 0 && <> · Leçons karmiques : <span className="text-ink">{n.lecons.join(", ")}</span></>}
+                  {n.passion.length > 0 && <> · Passion cachée : <span className="text-ink">{n.passion.join(", ")}</span></>}
+                </p>
+              </>
+            )}
+          </section>
+        );
+      })()}
+
+      {/* Ses tests spirituels — elle sait qu'Elena les voit ici */}
+      <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
+        <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
+          Ses tests spirituels
+        </h2>
+        <p className="mt-0.5 text-sm text-mention">
+          Le profil obtenu et la date — pas ses réponses. Elle peut effacer un résultat.
+        </p>
+        {!fiche.resultatsTests || fiche.resultatsTests.length === 0 ? (
+          <p className="mt-3 text-sm text-mention">Aucun test fait pour l&apos;instant.</p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {fiche.resultatsTests.map((r) => (
+              <li
+                key={r.id}
+                className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 rounded-xl border border-greige/50 bg-cream px-4 py-2.5"
+              >
+                <span className="font-medium text-ink">{r.titreProfil}</span>
+                <span className="text-xs text-mention">
+                  {CATALOGUE.find((e) => e.slug === r.test)?.titre ?? r.test} ·{" "}
+                  {new Date(r.creeLe).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+
       {/* Indicateurs de fidélité — pour toi seule */}
       {tenues.length > 0 && (
         <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-6 shadow-soft">
@@ -996,78 +1069,6 @@ export default function FicheClientePage() {
                 </li>
               );
             })}
-          </ul>
-        )}
-      </section>
-
-      {/* Ses nombres — pour Elena seule : la cliente ne voit jamais de
-          numérologie dans son espace (décision du 14 octobre). Calculés
-          d'après sa date de naissance et son nom, règles du moteur du site. */}
-      {(() => {
-        const n = fiche.dateNaissance ? nombres(fiche.dateNaissance, `${fiche.prenom} ${fiche.nom}`.trim()) : null;
-        const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
-        const Nb = ({ v, label, sous }: { v: number | null; label: string; sous?: string }) => (
-          <li className="flex items-baseline gap-3 rounded-xl border border-greige/50 bg-cream px-4 py-2.5">
-            <span className="w-10 shrink-0 font-serif text-[28px] font-semibold leading-none text-aubergine">{v ?? "—"}</span>
-            <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink">{label}</span>
-              <span className="block text-xs text-mention">{sous ?? (v ? MOT_DU_NOMBRE[v] : "renseigner le nom")}</span>
-            </span>
-          </li>
-        );
-        return (
-          <section className="mt-5 rounded-3xl border border-gold/40 bg-gradient-to-br from-gold/[0.07] to-ivory p-7 shadow-soft">
-            <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">Ses nombres</h2>
-            <p className="mt-0.5 text-sm text-mention">
-              Pour vous seule — elle ne les voit pas dans son espace. D&apos;après sa date de naissance{n?.expression != null ? " et son nom" : ""}.
-            </p>
-            {!n ? (
-              <p className="mt-3 text-sm text-mention">Pas de date de naissance renseignée.</p>
-            ) : (
-              <>
-                <ul className="mt-4 grid gap-2 sm:grid-cols-3">
-                  <Nb v={n.moisPersonnel} label={`Mois personnel · ${MOIS[n.moisCivil - 1]}`} />
-                  <Nb v={n.anneePersonnelle} label={`Année personnelle ${n.anneeCivile}`} />
-                  <Nb v={n.cheminDeVie} label="Chemin de vie" />
-                  <Nb v={n.expression} label="Expression" />
-                  <Nb v={n.elan} label="Élan de l'âme" />
-                  <Nb v={n.personnalite} label="Personnalité" />
-                </ul>
-                <p className="mt-3 text-xs text-mention">
-                  Dettes karmiques : <span className="text-ink">{n.dettes.length ? n.dettes.join(", ") : "aucune"}</span>
-                  {n.lecons.length > 0 && <> · Leçons karmiques : <span className="text-ink">{n.lecons.join(", ")}</span></>}
-                  {n.passion.length > 0 && <> · Passion cachée : <span className="text-ink">{n.passion.join(", ")}</span></>}
-                </p>
-              </>
-            )}
-          </section>
-        );
-      })()}
-
-      {/* Ses tests spirituels — elle sait qu'Elena les voit ici */}
-      <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
-        <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
-          Ses tests spirituels
-        </h2>
-        <p className="mt-0.5 text-sm text-mention">
-          Le profil obtenu et la date — pas ses réponses. Elle peut effacer un résultat.
-        </p>
-        {!fiche.resultatsTests || fiche.resultatsTests.length === 0 ? (
-          <p className="mt-3 text-sm text-mention">Aucun test fait pour l&apos;instant.</p>
-        ) : (
-          <ul className="mt-4 space-y-2">
-            {fiche.resultatsTests.map((r) => (
-              <li
-                key={r.id}
-                className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 rounded-xl border border-greige/50 bg-cream px-4 py-2.5"
-              >
-                <span className="font-medium text-ink">{r.titreProfil}</span>
-                <span className="text-xs text-mention">
-                  {CATALOGUE.find((e) => e.slug === r.test)?.titre ?? r.test} ·{" "}
-                  {new Date(r.creeLe).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
-                </span>
-              </li>
-            ))}
           </ul>
         )}
       </section>
