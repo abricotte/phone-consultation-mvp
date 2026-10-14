@@ -250,3 +250,29 @@ dans « Ma journée ».
 
 Principe qui tranche tout : *ce n'est pas une plateforme de voyance, c'est
 le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
+
+## Décisions du 14 octobre (soir)
+
+- **Urgence de nuit : 199 €**, 20 minutes, entre 23 h et 7 h, en premium
+  sur l'accueil (« Réveiller Elena »). Règles : Elena décroche dans les
+  trois sonneries ou la cliente n'est pas débitée ; une par nuit ;
+  seulement quand Elena l'a allumée depuis le cabinet ; prix affiché
+  avant d'appuyer ; réglée par Stripe, pas sur le crédit minutes. Une
+  urgence de jour hors permanence (85 €) reste à décider.
+- **L'emblème à la place de la photo** : au premier écran de l'espace, la
+  cliente choisit une figure parmi douze (six féminines : la Sirène, la
+  Fée, la Louve, la Lionne, la Biche, le Phénix ; six masculines : le
+  Sphinx, le Dauphin, le Dragon, l'Aigle, le Cerf, le Pégase). Elle sert
+  de petit logo dans le menu et dans sa carte. Pas de photo demandée ni
+  stockée. Pas d'émoticônes : des silhouettes. Provisoirement celles de
+  game-icons.net (CC BY 3.0, à créditer dans les mentions légales ;
+  phénix manquant, placeholder) ; **à terme, Elena peint les siennes**,
+  comme ses cartes. Maquette : `frontend/app/apercu-tmp/avatar/page.tsx`,
+  fichiers `frontend/public/images/avatars/*.svg`.
+- **Accueil revu** d'après la maquette d'Elena : bonjour daté, un mot
+  d'elle en exergue, dernières consultations à relire, formules sur une
+  ligne (Découverte 58 · Complète 129 · Grand Tableau 149 · Urgence de
+  nuit 199), l'univers en images. Laissé : crédit en euros, grille de
+  créneaux, cloche, « nous écrire », étiquettes Voyance/Tarot/Astrologie,
+  menu à quinze lignes. Maquette : `frontend/app/apercu-tmp/accueil/page.tsx`.
+
