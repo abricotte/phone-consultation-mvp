@@ -43,10 +43,11 @@ export const GROUPES_ESPACE: GroupeEspace[] = [
   {
     titre: "Mon univers",
     onglets: [
+      // Ordre d'Elena (14 octobre) : profil, études, tirages, tests.
       { href: "/profil", label: "Mon profil", court: "Profil", icone: "profil" },
-      { href: "/tirages", label: "Mes tirages", court: "Tirages", icone: "reserver" },
       { href: "/etudes", label: "Mes études", court: "Études", icone: "livre" },
-      { href: "/tests", label: "Tests spirituels", court: "Tests", icone: "clientes" },
+      { href: "/tirages", label: "Mes tirages", court: "Tirages", icone: "reserver" },
+      { href: "/tests", label: "Mes tests", court: "Tests", icone: "clientes" },
     ],
   },
   {
