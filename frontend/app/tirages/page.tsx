@@ -61,7 +61,7 @@ export default function TiragesPage() {
           <p className="mt-3 text-[14px] text-mention">
             Vous recevez la photo de vos trois cartes et une lecture d&apos;une à deux pages, sous trois jours.
           </p>
-          <p className="mt-5 font-serif text-3xl font-semibold tabular-nums text-aubergine">39 €</p>
+          <p className="mt-5 font-serif text-3xl font-semibold tabular-nums text-aubergine">55 €</p>
         </div>
       </section>
 

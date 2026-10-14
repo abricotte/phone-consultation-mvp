@@ -98,7 +98,7 @@ de temps qu'une Complète et laisse un document.
 
 | | Prix suggéré |
 |---|---|
-| Petite Pythie (3 cartes) | 29–39 € |
+| Petite Pythie (3 cartes) | 55 € |
 | Rider-Waite (croix celtique) | 59–69 € |
 | Grand Tableau Lenormand | 119–149 € |
 | **Option « on en parle »** : 20 min au téléphone après lecture | + 39 € (au lieu de 58) |
@@ -217,7 +217,7 @@ Dans **Revenus** : une troisième source d'encaissement, « tirages écrits »,
   sommaire, **et l'audio d'Elena** (qu'elle faisait déjà sans le facturer).
   Aujourd'hui vendu 89 € hors espace : la nouvelle formule arrive avec
   l'espace, pas une « augmentation ». Repère : la Complète (45 min) = 129 €.
-- Rider-Waite 69 € (89 € avec audio) · Petite Pythie 39 € · option « on en
+- Rider-Waite 69 € (89 € avec audio) · Petite Pythie 55 € · option « on en
   parle » (20 min après lecture) +39 €.
 - La place se réserve **au paiement** (Stripe, en euros — jamais avec le
   crédit de minutes). Annulation remboursée tant qu'Elena n'a pas tiré.

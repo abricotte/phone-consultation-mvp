@@ -107,7 +107,7 @@ trois cartes de la Pythie ; coin de Grand Tableau), filets dorés ✦, un seul
 bouton orange.
 
 - **La Petite Pythie** — « Une question » : 3 cartes, photo + lecture d'une
-  à deux pages, sous 3 jours. **39 €.**
+  à deux pages, sous 3 jours. **55 €** — au-dessus de la Découverte (58 € les 20 min) ? Non : juste en dessous, pour ne pas lui faire concurrence (Elena, 14 octobre).**
 - **Le Grand Tableau Lenormand** — « Toute votre vie, en un regard » :
   photo + étude de 30 à 40 pages avec sommaire **+ l'audio d'Elena**, sous
   7 jours. **149 € tout compris.** Lien « voir deux pages d'exemple » (la
@@ -193,7 +193,7 @@ univers » qui est celle de la cliente.
 
 **Pas de générateur de tirage gratuit dans l'espace** (décision d'Elena,
 14 octobre) : les tirages automatiques restent sur le site public, pour
-attirer ; dans l'espace ils dévaloriseraient la Pythie à 39 € et le Grand
+attirer ; dans l'espace ils dévaloriseraient la Pythie à 55 € et le Grand
 Tableau à 149 €. L'exception qui suffit : **la carte du jour**, une seule,
 dans « Ma journée ».
 
