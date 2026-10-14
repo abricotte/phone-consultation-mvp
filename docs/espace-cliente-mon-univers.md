@@ -263,15 +263,17 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   cliente choisit une figure parmi **huit**, ensemble, sans colonnes
   féminin / masculin (décision du 14 octobre, soir) : la Sirène
   (l'attirance), la Fée (la réparation), la Louve (la protection), la
-  Biche (l'intuition), le Phénix (la renaissance), le Sphinx (la
-  question), le Dauphin (le jeu avec les profondeurs), l'Aigle (la
-  hauteur). Retirés pour doublon : la Lionne, le Cerf, le Pégase, et le
-  Dragon (trop féroce). La Louve est la version qui hurle à la lune,
+  Biche (l'intuition), la Chouette (voir dans la nuit — remplace le
+  Phénix, qu'on ne comprenait pas), le Sphinx (la question), le Dauphin
+  (le jeu avec les profondeurs), l'Aigle (la hauteur). Retirés : la
+  Lionne, le Cerf, le Pégase (doublons), le Dragon (trop féroce), le
+  Phénix (illisible). La Louve est la version qui hurle à la lune,
   pas la gueule ouverte. Elle
   sert de petit logo dans le menu et dans sa carte. Pas de photo demandée
   ni stockée. Pas d'émoticônes. **Graphisme retenu : au trait** (décision
   du 14 octobre, soir) — dessins fins recolorés en aubergine, trait épaissi
-  à 3,2 pour rester lisible en petit dans le menu ; provisoirement ceux
+  à 3,8 pour rester lisible en petit dans le menu, chaque dessin recentré
+  dans un carré autour de son vrai contour ; provisoirement ceux
   d'OpenMoji (CC BY-SA 4.0, à créditer dans les mentions légales ; le
   Sphinx est un chat assis en attendant). Les silhouettes de game-icons.net
   restent disponibles sur la maquette, en second choix. **À terme, Elena
@@ -284,4 +286,27 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   nuit 199), l'univers en images. Laissé : crédit en euros, grille de
   créneaux, cloche, « nous écrire », étiquettes Voyance/Tarot/Astrologie,
   menu à quinze lignes. Maquette : `frontend/app/apercu-tmp/accueil/page.tsx`.
+
+## Tests spirituels — décision du 14 octobre (soir)
+
+Elena a validé le plan. Quinze tests, tous déjà écrits dans sa voix :
+sept sur le site actuel (données propres dans `src/app/ressources-gratuites/*`),
+huit dans l'ancien WordPress (texte exporté dans
+`Downloads\WORDPRESS ELENA\pages-texte-2026\page--*.txt`, chacun codé
+à la main dans sa page : à relire un par un pour en sortir questions,
+réponses, points par profil, textes de résultat).
+
+- **Un seul composant de test** dans l'espace, quinze fichiers de données.
+- **Une table de résultats** (cliente, test, profil, date) — migration
+  additive, exécutée par Elena. On garde le minimum : le profil et la
+  date, pas les réponses une à une ; la cliente peut effacer un résultat.
+- **« Mes résultats »** dans Tests spirituels : chaque test fait, profil,
+  date, « Refaire le test ».
+- **Le résultat nourrit le reste** : Mon profil (« votre schéma amoureux :
+  … »), l'étude *Votre schéma amoureux* (le test déplié).
+- **Côté cabinet**, les résultats dans la fiche de la cliente avant
+  l'appel ; c'est écrit sous le test. Rien n'est partagé ailleurs.
+- Ordre : les sept du site actuel d'abord, puis les huit anciens. Le test
+  « changement majeur en 2026 » est daté : à renouveler chaque année ou à
+  retirer. Après le 1er novembre ; deux à trois jours.
 
