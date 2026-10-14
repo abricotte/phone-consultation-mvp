@@ -363,6 +363,15 @@ Maquette : `frontend/app/apercu-tmp/profil/page.tsx`.
   avec vous ; « Vous et… » prénom + date facultative), *Mon prénom* (les
   trois nombres avec le calcul montré, la question « qui a choisi votre
   prénom ? »).
+- **Pas de numérologie côté cliente** (Elena, le soir même) : « le mois
+  personnel, garde-le pour mon tableau à moi sur la cliente, pas pour
+  elle ». Donc : pas d'année ni de mois personnels, pas de chemin de vie,
+  pas de nombres du prénom dans Mon profil. La tuile sombre parle du ciel
+  du jour (Vénus en Scorpion, la lune, Mercure rétrograde) ; « Mon année
+  amoureuse », « Votre contrat d'âme » et « Mon prénom » sont des
+  invitations vers la page offerte et l'étude. Les nombres vont dans la
+  **fiche cliente du cabinet** (année et mois personnels, chemin de vie,
+  vibration, nombres du prénom), pour Elena seule.
 - Ce qu'il faut pour la vraie page : la colonne `embleme` sur `users`
   (migration 015) + l'écran de choix à la première connexion + le
   médaillon dans le menu ; le moteur de calcul porté du site
