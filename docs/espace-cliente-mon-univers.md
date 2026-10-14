@@ -12,16 +12,33 @@ est le plan de l'après-lancement ; rien ici n'est construit.
 ☾ Consultations
 ◎ Mon crédit
 ────────────────────────
-MON UNIVERS             ← intertitre doré, une respiration  (elle)
+MON UNIVERS             ← intertitre doré : ce qu'elle a, seule
 ◷ Mon profil            Ma journée · Mon profil · Mes affinités · Mon prénom (menu horizontal)
 ▤ Mes tirages           ce qu'Elena tire à la main (Pythie, Grand Tableau)
-▥ Mes rapports          les études calculées, relues et signées ; celles déjà achetées
+▥ Mes études            page titrée « La méthode Wolska » ; calculées, relues, signées
 ◇ Tests spirituels      les six tests du site, gratuits, résultats gardés
 ────────────────────────
-◈ Le salon d'Elena      Écouter · Lire · Le jeu (menu horizontal)  (elle = Elena)
+AVEC ELENA              ← ce qu'elle fait avec Elena
+☾ Le salon              Écouter (boosts) · Lire (livres KDP) · Le jeu (menu horizontal)
+✎ Apprendre             Le podcast (La Minute Voyance, Lenormand) · Les vidéos (à venir)
+                        — « Se former » si Elena vise un vrai cursus : à trancher
+◷ Voyages spirituels    à venir en 2027 : Delphes, Délos ; « me prévenir »
 ────────────────────────
 ⚙ Compte & paramètres   email, numéro, mot de passe
 ```
+
+Décisions du 14 octobre : « Mes rapports » devient **« Mes études »** (le mot
+« rapport » est administratif) ; la **méthode Wolska** n'est pas un onglet,
+c'est le **titre de la page** des études et la **signature** de chaque
+calcul (« calculé d'après la méthode Wolska ») — plus présente ainsi que
+rangée dans un onglet. Le groupe du bas s'appelle **« Avec Elena »** (une
+relation, pas un lieu), en miroir de « Mon univers ».
+
+Règle pour la suite : **douze lignes, c'est la limite**. Toute nouveauté
+remplace ou s'abrite sous une entrée existante. Et on n'ouvre pas une pièce
+vide. Le signe qu'il y a du nouveau : **une petite étoile dorée** sur
+l'entrée du menu (nouveau boost, nouvel épisode, tirage prêt), qui s'éteint
+à la visite — c'est l'espace qui s'illumine, jamais un message.
 
 **Elena en tête du menu** (décision du 14 octobre) : sa photo, le point vert
 qui pulse, « Elena est en ligne — Appeler maintenant → » ; hors ligne :
@@ -110,7 +127,7 @@ bouton orange.
   « 2ᵉ de la file · Elena le tire mardi 21 » · Prêt à lire).
 - Cabinet : onglet Tirages, file « À faire », dépôt photo + PDF (+ audio).
 
-## Mes rapports — la méthode Wolska : calculé, relu, signé
+## Mes études — « La méthode Wolska » : calculé, relu, signé
 
 **Ce ne sont pas des rapports générés** (décision d'Elena, 14 octobre) :
 Elena relit chaque étude avant livraison, corrige ce qui ne ressemble pas
@@ -151,7 +168,7 @@ résultat avec Elena »** (visible dans la fiche, à côté de « ce que je veux
 aborder ») ; tuile « Aller plus loin » vers le rapport correspondant.
 Table `tests_resultats` (migration 014).
 
-## Le salon d'Elena — Écouter · Lire · Le jeu
+## Le salon — Écouter · Lire · Le jeu
 
 Une seule entrée de menu (nom choisi par Elena le 14 octobre), trois
 pilules horizontales. C'est l'étagère *d'Elena*, par opposition à « Mon
@@ -198,8 +215,8 @@ dans « Ma journée ».
 3. Tests spirituels (migration 014) — 1 jour.
 4. Mon profil (portage des calculs + affinités) — 2 jours.
 5. Mes tirages (migration 015, Storage, Stripe produit, file) — 2 jours.
-6. Mes rapports (génération PDF) — 2 jours.
-7. Le salon d'Elena (Écouter : Spotify ; Lire ; Le jeu) — une demi-journée.
+6. Mes études (génération PDF, relecture au cabinet) — 2 jours.
+7. Avec Elena : Le salon (boosts, livres, le jeu), Apprendre (podcast, vidéos), Voyages — une journée.
 8. Votre journée / semaine, la carte du jour, puis les boosts audio.
 
 Principe qui tranche tout : *ce n'est pas une plateforme de voyance, c'est
