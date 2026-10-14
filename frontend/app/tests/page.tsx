@@ -66,23 +66,23 @@ export default function TestsPage() {
                 const actif = Boolean(e.test);
                 const ligne = (
                   <>
-                    <span aria-hidden className="w-5 shrink-0 text-center font-serif text-[13px] text-gold-dark/70">✦</span>
+                    <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/70 font-serif text-[15px] text-gold-dark ring-1 ring-black/5">✦</span>
                     <span className="min-w-0 flex-1">
-                      <span className={`block font-serif text-[19px] leading-tight ${actif ? "text-aubergine" : "text-aubergine/60"}`}>{e.titre}</span>
+                      <span className={`block font-serif text-[21px] font-semibold leading-tight ${actif ? "text-aubergine" : "text-aubergine/55"}`}>{e.titre}</span>
                       {fait && (
-                        <span className="mt-0.5 block text-[12px] text-ink/70">Fait le {dateCourte(fait.creeLe)} · <span className="font-semibold text-aubergine">{fait.titreProfil}</span></span>
+                        <span className="mt-0.5 block text-[13px] text-ink/80">Fait le {dateCourte(fait.creeLe)} · <span className="font-semibold text-aubergine">{fait.titreProfil}</span></span>
                       )}
                     </span>
-                    <span className="shrink-0 text-[12px] text-mention">{e.duree}</span>
-                    <span className={`shrink-0 text-[13px] font-semibold ${actif ? "text-prix" : "text-gold-dark"}`}>{actif ? (fait ? "Refaire →" : "→") : "bientôt"}</span>
+                    <span className="shrink-0 rounded-full bg-white/70 px-2.5 py-1 text-[12px] font-semibold text-ink/70 ring-1 ring-black/5">{e.duree}</span>
+                    <span className={`shrink-0 text-[14px] font-bold ${actif ? "text-prix" : "text-gold-dark"}`}>{actif ? (fait ? "Refaire →" : "Faire le test →") : "bientôt"}</span>
                   </>
                 );
                 return (
                   <li key={e.slug}>
                     {actif ? (
-                      <a href={`/tests/${e.slug}`} className="flex items-center gap-4 px-5 py-3.5 transition hover:bg-white/50">{ligne}</a>
+                      <a href={`/tests/${e.slug}`} className="flex items-center gap-4 px-5 py-4 transition hover:bg-white/60">{ligne}</a>
                     ) : (
-                      <div className="flex items-center gap-4 px-5 py-3.5">{ligne}</div>
+                      <div className="flex items-center gap-4 px-5 py-4">{ligne}</div>
                     )}
                   </li>
                 );
