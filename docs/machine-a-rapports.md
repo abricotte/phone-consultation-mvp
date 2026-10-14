@@ -208,6 +208,13 @@ votre enfant, votre mère, votre amie* (29 €), *L'almanach de votre année*
 thérapie). Total : 26 études, 3 tirages, l'atlas personnel, le bilan et
 deux options. Les prix affichés sont ceux d'avant la décision du 39 €.
 
+### Les prix, décidés (Elena, 14 octobre)
+**39 € l'étude d'entrée de chaque porte** (contrat d'âme solo, l'autre par
+ses dates, contrat à deux, année amoureuse, prénom en amour) ; **65 € toutes
+les autres**. Le bilan de l'âme passe à **89 € au lieu de 117**. Les
+tirages ne bougent pas (runes 55 €, Hâfez et dés 39 €) ; l'atlas
+personnel reste à 79 €, à revoir. Appliqué sur la maquette.
+
 ### Écarté — l'Amérique du Nord (troisième brief, 14 octobre)
 Le brief propose huit régions de nations vivantes, huit foyers arctiques
 et dix sites archéologiques. Il dit lui-même pourquoi on ne le fait pas :
