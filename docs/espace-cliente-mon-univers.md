@@ -261,13 +261,17 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   urgence de jour hors permanence (85 €) reste à décider.
 - **L'emblème à la place de la photo** : au premier écran de l'espace, la
   cliente choisit une figure parmi **neuf**, ensemble, sans colonnes
-  féminin / masculin. Grille arrêtée le 14 octobre au soir : **la Licorne**
-  (croire encore), **la Colombe** (apaiser), **le Papillon** (se
-  transformer), **le Cerf** (noblesse, dignité et force de caractère), **le Cygne** (la
-  grâce, sans effort), **le Loup** (protéger les siens — dessiné avec le renard de la
-  bibliothèque, plus doux que son loup), **le Sphinx** (garder la question — un chat
-  assis en attendant), **le Dauphin** (jouer avec les profondeurs),
-  **l'Aigle** (voir de haut). Écartées mais sous la main sur la maquette :
+  féminin / masculin. Grille arrêtée le 14 octobre au soir, avec les mots d'Elena :
+  **la Licorne** (animal mythologique très sacré, porteur de pureté),
+  **la Colombe** (grande spiritualité, protectrice, énergie divine),
+  **le Papillon** (l'alchimiste du monde animal, celui qui transforme le
+  plomb en or), **le Cerf** (noblesse, dignité et force de caractère),
+  **le Cygne** (la grâce, la loyauté et la fidélité noble), **le Loup**
+  (la protection, l'intelligence silencieuse et instinctive, très
+  mystique — dessiné avec le renard de la bibliothèque), **le Sphinx**
+  (connaissance sacrée, sagesse mystique — un chat assis en attendant),
+  **le Dauphin** (grande télépathie et intuition forte), **l'Aigle**
+  (agilité et vision claire, la beauté noble). Écartées mais sous la main sur la maquette :
   la Sirène, la Fée, la Chouette, l'Ourse, le loup de la bibliothèque, et une Louve
   dessinée maison (yeux fermés, sourire). Retirés : la Lionne, le Pégase,
   le Dragon, le Phénix. Elle sert de petit logo dans le menu et dans sa
