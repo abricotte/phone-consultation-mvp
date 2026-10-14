@@ -8,6 +8,7 @@ interface Consultation {
   id: string;
   status: string;
   type: string;
+  origine?: "minute" | "rendez-vous";
   formule: string;
   forfaitMinutes: number | null;
   startedAt: string | null;
@@ -69,6 +70,8 @@ function formatDate(iso: string): string {
 
 export default function ConsultationsPage() {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
+  // Une seule histoire, deux origines : à la minute, sur rendez-vous. On filtre, on ne sépare pas.
+  const [origine, setOrigine] = useState<"toutes" | "minute" | "rendez-vous">("toutes");
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState("");
 
@@ -120,6 +123,11 @@ export default function ConsultationsPage() {
 
       {/* Règle de facturation — annoncée clairement, elle rassure autant
           qu'elle informe : une communication écourtée n'est jamais due. */}
+      <div className="mt-4 flex flex-wrap gap-2">
+        {([["toutes", "Toutes"], ["minute", "À la minute"], ["rendez-vous", "Sur rendez-vous"]] as const).map(([c, l]) => (
+          <button key={c} type="button" onClick={() => setOrigine(c)} aria-pressed={origine === c} className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition ${origine === c ? "bg-aubergine text-cream shadow-card" : "border border-greige/60 bg-ivory text-mention hover:border-gold/60"}`}>{l}</button>
+        ))}
+      </div>
       <details className="mt-3 text-[13px] text-mention">
         <summary className="cursor-pointer hover:text-ink">Comment sont comptées les minutes ?</summary>
         <p className="mt-2 rounded-2xl bg-blush px-4 py-3 text-ink">
@@ -154,7 +162,7 @@ export default function ConsultationsPage() {
       {!chargement && !erreur && tenues.length > 0 && (() => {
         // Groupées par mois, en fil : la date à gauche, le reste à droite.
         const parMois = new Map<string, Consultation[]>();
-        for (const c of tenues) {
+        for (const c of tenues.filter((x) => origine === "toutes" || (x.origine ?? (x.type === "minute" ? "minute" : "rendez-vous")) === origine)) {
           const d = new Date(c.startedAt || c.createdAt);
           const cle = d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
           if (!parMois.has(cle)) parMois.set(cle, []);
@@ -178,6 +186,7 @@ export default function ConsultationsPage() {
                           <span className="min-w-0 flex-1">
                             <span className="font-serif text-[18px] font-semibold text-aubergine">{c.formule}</span>
                             <span className="ml-2 text-[13px] text-ink/70">{formatDuree(c.durationSeconds)}</span>
+                            <span className={`ml-2 rounded-full px-2 py-0.5 text-[11px] font-semibold ${(c.origine ?? (c.type === "minute" ? "minute" : "rendez-vous")) === "minute" ? "bg-blush text-aubergine" : "bg-[#FBF3E2] text-gold-dark"}`}>{(c.origine ?? (c.type === "minute" ? "minute" : "rendez-vous")) === "minute" ? "à la minute" : "sur rendez-vous"}</span>
                             {detailFacturation(c) && <span className="block text-[12px] text-mention">{detailFacturation(c)}</span>}
                           </span>
                           <span className="shrink-0 text-right">

@@ -205,10 +205,40 @@ router.get('/history', authMiddleware, async (req, res) => {
 
     if (error) throw error;
 
-    res.json(sessions.map((s) => ({
+    // Les rendez-vous Calendly honorés qui n'ont pas donné lieu à une
+    // session (appel hors plateforme) font aussi partie de son chemin :
+    // on les fond dans la même liste, marqués « sur rendez-vous ».
+    let rendezVous = [];
+    if (column === 'client_id') {
+      const { data: rdv } = await supabase
+        .from('rendez_vous')
+        .select('id, debut, fin, formule, minutes, montant_paye, statut, session_id')
+        .eq('client_id', filterValue)
+        .eq('statut', 'honore')
+        .is('session_id', null)
+        .order('debut', { ascending: false })
+        .limit(50);
+      rendezVous = (rdv || []).map((r) => ({
+        id: `rdv-${r.id}`,
+        status: 'completed',
+        type: 'forfait',
+        formule: r.formule === 'decouverte' ? 'Consultation Découverte' : r.formule === 'complete' ? 'Consultation Complète' : (r.minutes ? `Consultation ${r.minutes} min` : 'Consultation sur rendez-vous'),
+        forfaitMinutes: r.minutes || null,
+        startedAt: r.debut,
+        endedAt: r.fin,
+        durationSeconds: r.minutes ? r.minutes * 60 : null,
+        ratePerMinute: null,
+        montant: r.montant_paye != null ? parseFloat(r.montant_paye) : null,
+        createdAt: r.debut,
+        origine: 'rendez-vous',
+      }));
+    }
+
+    const lignes = sessions.map((s) => ({
       id: s.id,
       status: s.status,
       type: s.type,
+      origine: s.type === 'forfait' || s.type === 'forfait_manuel' ? 'rendez-vous' : 'minute',
       formule: nomFormule(s),
       forfaitMinutes: s.forfait_minutes,
       startedAt: s.started_at,
@@ -221,7 +251,10 @@ router.get('/history', authMiddleware, async (req, res) => {
           ? (s.montant_paye != null ? parseFloat(s.montant_paye) : null)
           : (s.total_cost != null ? parseFloat(s.total_cost) : null),
       createdAt: s.created_at,
-    })));
+    }));
+
+    const date = (x) => new Date(x.startedAt || x.createdAt).getTime();
+    res.json([...lignes, ...rendezVous].sort((a, b) => date(b) - date(a)));
   } catch (err) {
     console.error('Erreur historique sessions:', err);
     res.status(500).json({ error: 'Erreur serveur' });
