@@ -104,3 +104,60 @@ Le document contredit une formule du *Système Elena Wolska v1.0*
 **« inspirée des traditions numériques anciennes »**. Cohérent avec la
 décision de ne pas donner les clés de la méthode : on nomme le système,
 on ne le fonde pas sur une autorité qu'il n'a pas.
+
+---
+
+## Pistes retenues du brief « Atlas intime des prénoms » (14 octobre 2026)
+
+Elena a fourni un brief stratégique (Perplexity) sur une plateforme de
+prénoms. On n'en fait **pas une plateforme à part** : on en garde ce qui
+renforce l'espace, dans les pièces qui existent.
+
+**Retenu, tel quel**
+- **La fiche de provenance** : chaque affirmation d'une étude porte une
+  étiquette — *Documenté · Probable · Discuté · Traditionnel · Symbolique
+  · Personnel · Intuitif (signé Elena)*. C'est la signature éditoriale.
+- **Le gratuit doit être immédiatement intéressant, jamais frustrant** :
+  sens principal, origine probable, une variante, le nombre avec son
+  calcul, une force, une tension, une question personnelle.
+- **La transparence IA** (règlement européen, août 2026) : afficher sur
+  chaque étude *« produite avec l'assistance d'une intelligence
+  artificielle, relue et signée par Elena Wolska »* — c'est exactement
+  « calculé, relu, signé », dit en clair. Et la minimisation CNIL : on ne
+  demande que le nécessaire, on dit pourquoi, on purge.
+- **Pas de verdict** : jamais « relation impossible » ; des axes expliqués
+  (fluidité, communication, intensité, sécurité, autonomie, projet). Le
+  score 58–98 % du moteur existant reste **symbolique** et présenté comme
+  tel — jamais « calculé scientifiquement ».
+- **Demander le contexte avant l'étymologie** (pays, langue familiale,
+  prononciation, orthographe exacte) : deux prénoms identiques peuvent
+  avoir deux histoires.
+- **Le prénom de l'âme** = la signature Elena : c'est *Votre contrat
+  d'âme* (solo) enrichi du prénom — archétype, mémoire symbolique,
+  héritage familial, prénom reçu vs identité profonde, lettre « écrite
+  par l'âme du prénom ». Vies antérieures et karma présentés comme
+  **lecture narrative**, jamais comme faits.
+- **L'alchimie de deux prénoms** = *Mes affinités* / *Votre contrat d'âme
+  à deux*, ouvert à tous les liens : couple, relation naissante, amitié,
+  parent-enfant, fratrie, ex.
+
+**Retenu, pour plus tard**
+- **Le prénom transgénérationnel** (qui portait ce prénom, transmis ou
+  transformé, loyauté, réparation d'une absence) : prolonge « le sens
+  vécu » ; une petite carte familiale saisie par la cliente, synthèse
+  relue par Elena, avec la mention « d'après ce que vous avez raconté ».
+- **Carte des liens** (visualiser ses affinités), **rituel anniversaire**
+  (déjà prévu : l'année personnelle qui se renouvelle), **journal du nom**.
+
+**Écarté** — pas un cabinet, un autre public
+- Le nom choisi (pseudonyme, marque), le prénom d'un enfant (moteur de
+  recherche, listes collaboratives), le moteur SEO gratuit de
+  signification : ce sont des produits de portail. L'espace reste le
+  cabinet d'Elena entre deux consultations.
+- Renommer la méthode (« Cartographie du Nom », « Anima Nomen »…) : elle
+  a déjà un nom, **Méthode Wolska**.
+
+**Prix** : la grille d'Elena tient (contrat à deux 29 € · solo 29 € ·
+année 29 € · prénom 19 € · bilan de l'âme 69 € · + 30 € trois cartes de la
+Pythie · « on en parle » + 39 €). L'« étude accompagnée » du brief
+(99–149 €) correspond à un Grand Tableau, qui existe déjà à 149 €.
