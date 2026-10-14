@@ -118,7 +118,39 @@ provenance. Ce qu'il dit, point par point :
 Ce que ça change à la carte : la **Grèce** gagne l'onomancie des deux
 prénoms (pour « Qui est-il / elle / iels ? » et « Notre lien ») ; l'**Égypte**
 gagne le rêve, côté cabinet ; **Jérusalem**, le monde arabe et l'Afrique
-ne deviennent pas des points. Six points restent six.
+de l'Ouest ne deviennent pas des points.
+
+**Décisions d'Elena, 14 octobre (après un second brief, « atlas mondial »
+à seize points)** :
+
+- **Les runes, oui** — Elena y tient. C'est un **tirage** (trois runes
+  tirées à la main, photographiées, lues), étiqueté *tirage contemporain* :
+  les runes sont une écriture, le tirage est moderne, on ne dit pas le
+  contraire. Point **Scandinavie**, 55 € comme la Petite Pythie.
+- **Point de vue cliente, pas atlas** : elle veut découvrir, sur elle, sur
+  lui, sur eux. Seize points d'oracles d'historien, c'est une encyclopédie,
+  pas un cabinet. On garde **neuf points ouverts** (une étude ou un tirage
+  derrière chacun) et **trois « à venir »** (nommés, pas vendus : Irlande,
+  Madagascar, Andes). Pas de Rome, d'Étrurie, de Sápmi, de Japon, d'Ifá :
+  rien d'honnête à vendre, ou pas notre métier.
+- **Nouveaux points** : **Mésopotamie** remplace Babylone (le brief a
+  raison) ; **Perse** avec *le vers de Hâfez* (pratique vivante, six
+  siècles : on ouvre le Divan, le poème répond — un tirage, 39 €) ;
+  **Tibet** avec *les dés du Tibet* (trois dés, 64 réponses, manuscrits de
+  Dunhuang — attesté, un tirage, 39 €) ; **Mésoamérique** remplace
+  « Mexique ancien ».
+- **Les prix en retrait** : plus de gros chiffre en serif. L'action
+  principale de chaque carte est **« Lire ma page offerte »** ; le prix
+  est en 12 px gris sous le bouton (« L'étude complète · 12 pages · relue
+  et signée · 29 € »). Chaque carte commence par **la question qu'elle se
+  pose** (« Vous donnez trop vite, ou trop tard ? », « Pourquoi il se tait
+  quand vous parlez ? ») puis le sur-titre *Sur vous · Sur lui · Sur vous
+  deux*. Un bandeau **« Rue, votre première page est prête : chemin de vie
+  7 · vibration 5 · année 3 → Lire ma page »** ouvre chaque porte : la
+  découverte commence avant l'achat.
+- Les quatre couleurs du brief (noms / astres / oracles / nature) sont une
+  taxonomie de chercheur : on ne la montre pas. Une ligne de statut en
+  italique sous chaque sagesse suffit.
 
 Condition pour sortir du « bientôt » : l'heure et le lieu de naissance,
 des éphémérides (calcul faisable, à porter), et **des textes relus par
