@@ -186,6 +186,28 @@ les quatre couleurs, le mode sombre, les points Ifá, Japon, Étrurie,
 Celtes (décidés), le formulaire « Créer mon étude » (nos cinq portes font
 déjà ce choix).
 
+### « Et si on voyageait ensemble ? » (Elena, 14 octobre)
+La carte n'est pas qu'une vitrine : c'est un voyage. Titre de l'onglet :
+**« Et si on voyageait ensemble ? »**. Pour chaque sagesse, en plus de
+l'époque et des trois méthodes, une liste **« Pour voyager par
+vous-même »** : deux ou trois pistes réelles (la tablette du foie au
+British Museum, le papyrus Chester Beatty III, le monument-oracle de
+Kibyra, la Germania de Tacite ch. 10, les manuscrits de Dunhuang, le codex
+de Dresde…) pour que la cliente fasse ses propres recherches. En bas, le
+lien vers les vrais voyages : *Delphes et Délos avec Elena → Voyages
+spirituels*. Ce qui est gratuit (le voyage) nourrit ce qui est payant
+(l'étude), sans forcer.
+
+### La maquette complète, pour relecture (14 octobre)
+Une pilule **« Tout voir »** liste toutes les idées, porte par porte,
+sagesse par sagesse, avec accroche, pages et prix. Ajoutées pour que rien
+ne manque : *Votre schéma amoureux* (le test déplié, 19 €), *Le prénom de
+votre âme* (39 €), *Comprendre son caractère* (29 €), *Votre contrat avec
+votre enfant, votre mère, votre amie* (29 €), *L'almanach de votre année*
+(39 €), *Les serments invisibles* (29 €, **à discuter** : frôle la
+thérapie). Total : 26 études, 3 tirages, l'atlas personnel, le bilan et
+deux options. Les prix affichés sont ceux d'avant la décision du 39 €.
+
 ### Écarté — l'Amérique du Nord (troisième brief, 14 octobre)
 Le brief propose huit régions de nations vivantes, huit foyers arctiques
 et dix sites archéologiques. Il dit lui-même pourquoi on ne le fait pas :
