@@ -511,17 +511,17 @@ export default function FicheClientePage() {
         const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
         const Nb = ({ v, label, sous }: { v: number | null; label: string; sous?: string }) => (
           <li className="flex items-baseline gap-3 rounded-xl border border-greige/50 bg-cream px-4 py-2.5">
-            <span className="w-10 shrink-0 font-serif text-[28px] font-semibold leading-none text-aubergine">{v ?? "—"}</span>
+            <span className="w-12 shrink-0 font-serif text-[34px] font-bold leading-none text-aubergine">{v ?? "—"}</span>
             <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink">{label}</span>
-              <span className="block text-xs text-mention">{sous ?? (v ? MOT_DU_NOMBRE[v] : "renseigner le nom")}</span>
+              <span className="block text-[15px] font-bold text-ink">{label}</span>
+              <span className="block text-[13px] font-medium text-ink/70">{sous ?? (v ? MOT_DU_NOMBRE[v] : "renseigner le nom")}</span>
             </span>
           </li>
         );
         return (
           <section className="mt-5 rounded-3xl border border-gold/40 bg-gradient-to-br from-gold/[0.07] to-ivory p-7 shadow-soft">
             <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">Ses nombres</h2>
-            <p className="mt-0.5 text-sm text-mention">
+            <p className="mt-0.5 text-sm font-medium text-ink/70">
               Pour vous seule — elle ne les voit pas dans son espace. D&apos;après sa date de naissance{n?.expression != null ? " et son nom" : ""}.
             </p>
             {!n ? (
@@ -536,10 +536,10 @@ export default function FicheClientePage() {
                   <Nb v={n.elan} label="Élan de l'âme" />
                   <Nb v={n.personnalite} label="Personnalité" />
                 </ul>
-                <p className="mt-3 text-xs text-mention">
-                  Dettes karmiques : <span className="text-ink">{n.dettes.length ? n.dettes.join(", ") : "aucune"}</span>
-                  {n.lecons.length > 0 && <> · Leçons karmiques : <span className="text-ink">{n.lecons.join(", ")}</span></>}
-                  {n.passion.length > 0 && <> · Passion cachée : <span className="text-ink">{n.passion.join(", ")}</span></>}
+                <p className="mt-3 text-[14px] font-medium text-ink/80">
+                  Dettes karmiques : <span className="font-bold text-aubergine">{n.dettes.length ? n.dettes.join(", ") : "aucune"}</span>
+                  {n.lecons.length > 0 && <> · Leçons karmiques : <span className="font-bold text-aubergine">{n.lecons.join(", ")}</span></>}
+                  {n.passion.length > 0 && <> · Passion cachée : <span className="font-bold text-aubergine">{n.passion.join(", ")}</span></>}
                 </p>
               </>
             )}
