@@ -439,3 +439,26 @@ astres (pas de texte inventé), fragments d'Elena, par signe et ascendant,
 et un seul écran, celui de Mon profil (pas de page horoscope séparée).
 Une journée de construction après le lancement, puis les textes d'Elena.
 
+## Ma naissance, et le symbole du prénom (décisions du 14 octobre, soir)
+
+- **Heure et lieu de naissance : facultatifs, proposés.** Elena : « on
+  leur laisse la possibilité de le remplir pour que cela les aide ». Seule
+  la date est nécessaire ; l'heure, le lieu, l'ascendant (si connu) et
+  **les autres prénoms** (état civil, dans l'ordre) affinent la lecture.
+  L'horoscope du jour reste par signe et ascendant ; l'heure et le lieu
+  servent, plus tard, au ciel de naissance complet (« Les astres » sur la
+  carte) ; les autres prénoms comptent dans « Votre prénom en amour ».
+  Elena seule les voit. Maquette : carte « Ma naissance » dans l'onglet
+  Mon ciel de `apercu-tmp/profil`. À construire : migration 015
+  (`users.heure_naissance TIME`, `lieu_naissance TEXT`,
+  `prenoms_secondaires TEXT`, `embleme TEXT`), PATCH /profil, le
+  formulaire sur la vraie page, la fiche cabinet.
+- **Le symbole du prénom, dessiné par Elena** : une centaine de dessins au
+  trait (les cent prénoms les plus portés par ses clientes + vingt-six par
+  initiale pour les autres, règle à confirmer), affiché à côté du prénom
+  en tête de Mon profil, dans la carte du menu, dans la fiche cabinet, et
+  en ouverture de l'étude du prénom. « Le symbole de votre prénom, selon
+  Elena. » Tant qu'un prénom n'a pas son dessin : rien, pas de
+  remplaçant. Même esprit que les emblèmes : trait fin, papier + feutre
+  noir, photographiés, mis au propre en vectoriel. Après le 1er novembre.
+
