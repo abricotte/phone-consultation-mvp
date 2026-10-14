@@ -161,6 +161,34 @@ Cartes fines, pastel (rotation de six teintes), numéro romain, mention
 
 Plus tard : le contrat entre elle et son enfant / sa mère.
 
+### La vitrine (décision d'Elena, 14 octobre) : six portes, par question
+
+Les études ne sont pas rangées par technique, mais par **la question que
+la cliente se pose**. Six pilules en haut de la page :
+
+| Porte | Ce qu'on y trouve |
+|---|---|
+| **Qui suis-je ?** | contrat d'âme (solo), famille d'âme, symbolique sacrée des nombres |
+| **Qui est-il / elle / iels ?** | l'autre par ses dates, son année, son prénom — inclusif, c'est la question la plus posée |
+| **Notre lien** | contrat d'âme à deux, nœuds du lien, le triangle |
+| **Mon chemin** | année amoureuse, portes de la vie, le mythe traversé — jamais « mon avenir » : pour savoir, on appelle |
+| **D'où je viens ?** | prénom en amour, arbre des prénoms, mères derrière vous, archives de l'âme |
+| **Les sagesses du monde** | une **carte du monde ancienne** (fond sépia, points dorés) : on choisit une sagesse par pays — Babylone, Égypte, Grèce, Inde, Chine, Mexique ancien — et ses études apparaissent dessous |
+
+Chaque carte : numéro romain, pages, « relue et signée · sous 48 h »,
+prix, **Commander** + *lire ma page offerte* ; sinon « bientôt ». La page
+offerte est l'échantillon de chaque étude, pas une rubrique à part.
+
+Règle de la carte : chaque étude dit **la tradition, l'époque, ce qu'elle
+calculait vraiment, et ce qui est relecture d'aujourd'hui**. Les sagesses
+qui demandent l'heure et le lieu de naissance (Babylone, décans, nakshatra,
+quatre piliers, calendrier de 260 jours) restent **« bientôt »** tant que
+les textes et le calcul n'existent pas — la carte montre l'ambition, elle
+ne vend pas ce qu'on ne sait pas encore faire (voir machine-a-rapports.md).
+
+Maquette : `frontend/app/apercu-tmp/etudes/page.tsx` ; carte :
+`frontend/public/images/carte-monde.svg` (Wikimedia, domaine public).
+
 ## Tests spirituels
 
 Les six tests du site, gratuits, dans le Salon : une question par écran,

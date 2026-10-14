@@ -87,11 +87,23 @@ Le fil d'Elena : **l'amour, les liens, l'âme, les cycles**. Ce qui s'en
 | L'arbre secret des prénoms (trois générations) | saisie par la cliente | plus tard |
 | Les mères derrière vous (lignée maternelle) | saisie par la cliente | plus tard — fort, mais long |
 
+### Collection 5 — Les sagesses du monde *(la carte ; Elena, 14 octobre)*
+Elena veut une **carte du monde** dans la vitrine : on choisit sa sagesse
+par pays. Six points : Babylone (la tablette de votre destinée), Égypte
+(les étoiles de votre temple — les 36 décans), Grèce (le mythe, les
+nombres), Inde (la demeure de votre Lune — nakshatra), Chine (les huit
+caractères — quatre piliers), Mexique ancien (le gardien de votre jour —
+calendrier de 260 jours). Plus un *codex de naissance* qui les lit côte à
+côte (79 €).
+
+Condition pour sortir du « bientôt » : l'heure et le lieu de naissance,
+des éphémérides (calcul faisable, à porter), et **des textes relus par
+quelqu'un qui connaît la tradition** — sinon c'est le faux « savoir
+ancestral » que les deux documents interdisent. La Grèce part en premier
+(le mythe traversé, les nombres : pas d'éphémérides). Les autres, un par
+un, chacun avec sa fiche de provenance en tête.
+
 ### Écarté — pas Elena, ou pas sans expert
-- Astrologie babylonienne, décans égyptiens, nakshatra, BaZi, calendrier
-  mésoaméricain : demandent l'heure et le lieu de naissance, des
-  éphémérides, et une expertise qu'on n'a pas. Risque de faux « savoir
-  ancestral » — exactement ce que les deux documents interdisent.
 - Ifá : tradition religieuse vivante, pas de calculateur sans praticien.
 - Géomancie, Yijing, conseil des cinq oracles : autres métiers.
 - Maison, lieu, vocation, nom d'entreprise : autres publics.
