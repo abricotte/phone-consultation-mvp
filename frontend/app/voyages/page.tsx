@@ -43,10 +43,16 @@ export default function VoyagesPage() {
       <section className="mt-8 max-w-2xl">
         <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">À venir · 2027</p>
         <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Quelques jours, en petit groupe</h2>
+        {/* Les mots d'Elena (14 octobre 2026), tels quels */}
         <p className="mt-3 text-[15px] leading-relaxed text-ink/85">
           Un premier voyage se prépare pour 2027 : la Grèce, Delphes et Délos, quelques jours en petit cercle
-          — marcher, tirer les cartes là où elles ont été consacrées, et consulter autrement. Les dates, le
-          nombre de places et le programme viendront ici, dans votre espace, quand ils seront sûrs.
+          pour s&apos;initier à la voyance et venir se présenter à la Pythie. Vos premiers pas de médium ou de
+          voyant(e) commencent ici — l&apos;ouverture du canal s&apos;ouvre ici. Aucune magie, aucun rituel : juste
+          une présence accompagnée. Vous verrez, nous vous préparons un beau voyage.
+        </p>
+        <p className="mt-3 text-[14px] text-mention">
+          Les dates, le nombre de places et le programme viendront ici, dans votre espace, quand ils seront
+          sûrs.
         </p>
         <Bientot>Les dates et les places, quand elles seront sûres</Bientot>
       </section>
