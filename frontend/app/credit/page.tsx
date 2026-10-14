@@ -161,25 +161,25 @@ export default function CreditPage() {
              chiffre, pas dans une note de bas de page. */}
       {/* La tuile sombre, comme « Aujourd'hui » sur l'accueil : le chiffre
           qui compte, lisible d'un regard (Elena, 14 octobre). */}
-      <div className="relative mt-6 overflow-hidden rounded-3xl bg-aubergine p-7 text-cream shadow-soft">
+      <div className="relative mt-6 overflow-hidden rounded-3xl border border-gold/40 bg-gradient-to-br from-[#FBF3E2] via-[#FBF3E2] to-blush p-7 shadow-soft">
         <span aria-hidden className="pointer-events-none absolute right-7 top-5 text-lg text-gold/70">✦</span>
         <span aria-hidden className="pointer-events-none absolute right-16 top-14 text-[10px] text-gold/50">✦</span>
-        <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">
           Il vous reste
         </p>
         {chargement ? (
-          <p className="mt-2 text-2xl text-cream/60">…</p>
+          <p className="mt-2 text-2xl text-mention">…</p>
         ) : (
           <>
-            <p className="mt-2 font-serif text-[52px] font-bold leading-none">
-              {soldeMinutes !== null ? <>{soldeMinutes}<span className="ml-2 text-[26px] font-semibold text-cream/80">min</span></> : "—"}
+            <p className="mt-2 font-serif text-[52px] font-bold leading-none text-aubergine">
+              {soldeMinutes !== null ? <>{soldeMinutes}<span className="ml-2 text-[26px] font-semibold text-aubergine/70">min</span></> : "—"}
               {solde !== null && (
-                <span className="ml-4 text-[22px] font-semibold tabular-nums text-gold">
+                <span className="ml-4 text-[22px] font-semibold tabular-nums text-gold-dark">
                   {euros(solde)}
                 </span>
               )}
             </p>
-            <p className="mt-3 text-[15px] font-medium text-cream/85">
+            <p className="mt-3 text-[15px] font-medium text-ink/80">
               ☾ Votre crédit n&apos;expire jamais.
             </p>
           </>
