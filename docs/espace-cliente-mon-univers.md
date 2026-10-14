@@ -263,7 +263,7 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   cliente choisit une figure parmi **neuf**, ensemble, sans colonnes
   féminin / masculin. Grille arrêtée le 14 octobre au soir : **la Licorne**
   (croire encore), **la Colombe** (apaiser), **le Papillon** (se
-  transformer), **le Cerf** (porter la forêt sur la tête), **le Cygne** (la
+  transformer), **le Cerf** (noblesse, dignité et force de caractère), **le Cygne** (la
   grâce, sans effort), **le Loup** (protéger les siens — dessiné avec le renard de la
   bibliothèque, plus doux que son loup), **le Sphinx** (garder la question — un chat
   assis en attendant), **le Dauphin** (jouer avec les profondeurs),
