@@ -345,3 +345,29 @@ réponses, points par profil, textes de résultat).
 - La page des tests range les quinze en trois thèmes (vous et l'autre ·
   vous, en amour · votre lumière), en listes de titres à cliquer, gras.
 
+## Mon profil repensé — tableau de bord (maquette, 14 octobre soir)
+
+Elena : « on devrait déjà y voir le logo choisi par la cliente ; repenser
+cette page, plus attractive, plus visuelle, comme un tableau de bord ».
+Maquette : `frontend/app/apercu-tmp/profil/page.tsx`.
+
+- **La carte d'identité** en tête : l'emblème en grand (112 px), le
+  prénom, « Scorpion · ascendant Lion » avec les glyphes, « née le… ·
+  élément · année personnelle », le mot de l'emblème ; à droite « Changer
+  mon emblème », « Modifier ma date, mon ascendant ».
+- **Quatre pilules** (décision antérieure) : *Ma journée* (tuile sombre
+  « Mercredi 14 octobre — votre mois personnel 2 », lune et transits du
+  jour ; Mon année amoureuse ; Mes tests, trois derniers ; le carnet),
+  *Mon ciel* (signe, ascendant, élément, deux lignes d'Elena ; mes
+  nombres), *Mes affinités* (les proches avec leur signe et le contrat
+  avec vous ; « Vous et… » prénom + date facultative), *Mon prénom* (les
+  trois nombres avec le calcul montré, la question « qui a choisi votre
+  prénom ? »).
+- Ce qu'il faut pour la vraie page : la colonne `embleme` sur `users`
+  (migration 015) + l'écran de choix à la première connexion + le
+  médaillon dans le menu ; le moteur de calcul porté du site
+  (`engine.ts` : chemin de vie, vibration, année/mois personnels,
+  nombres du prénom) ; les lunes et transits (déjà écrits pour 2025-2026
+  dans le calendrier astrologique) ; et les textes courts d'Elena (signe,
+  ascendant, nombre). Les tests et le carnet existent déjà.
+
