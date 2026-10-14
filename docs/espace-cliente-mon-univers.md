@@ -334,6 +334,14 @@ réponses, points par profil, textes de résultat).
   tests spirituels ».
 - **À faire par Elena** : exécuter `014_resultats_tests.sql` dans
   Supabase avant le push (sinon les tests marchent mais rien n'est
-  gardé). Reste : extraire les huit tests de l'ancien WordPress
-  (`Downloads\WORDPRESS ELENA\pages-texte-2026`).
+  gardé).
+- **Les huit tests de l'ancien WordPress, portés le soir même** : leur HTML
+  brut ré-exporté depuis la sauvegarde (`Downloads\WORDPRESS ELENA	ests-html-2026`),
+  questions et options lues dans le balisage (`data-wound`, `data-profile`,
+  `data-score`…), textes de résultat lus dans les objets JS des pages,
+  puis générés en `lib/tests/<slug>.ts`. Leçon karmique et vie antérieure
+  sont par score (paliers 32/16 et 36/18 sur 48 et 54), les six autres par
+  profils. **Quinze tests, tous dans l'espace, plus aucun « bientôt ».**
+- La page des tests range les quinze en trois thèmes (vous et l'autre ·
+  vous, en amour · votre lumière), en listes de titres à cliquer, gras.
 

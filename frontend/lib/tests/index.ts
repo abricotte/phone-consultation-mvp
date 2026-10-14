@@ -1,6 +1,5 @@
-// Le catalogue des tests spirituels : quinze, tous écrits par Elena. Sept
-// sont portés (données dans ce dossier) ; huit viennent de l'ancien site
-// WordPress et restent « bientôt » le temps d'en extraire les données.
+// Le catalogue des tests spirituels : quinze, tous écrits par Elena, tous
+// portés (sept du site actuel, huit de l'ancien WordPress).
 
 import type { Test } from "./types";
 import amourPlacebo from "./amour-placebo";
@@ -10,6 +9,14 @@ import contratDame from "./contrat-dame";
 import relationKarmique from "./relation-karmique";
 import schemaAmoureux from "./schema-amoureux";
 import flammeJumelle from "./flamme-jumelle";
+import typeDeLien from "./type-de-lien";
+import blessuresDame from "./blessures-dame";
+import leconKarmique from "./lecon-karmique";
+import missionDeVie from "./mission-de-vie";
+import vieAnterieure from "./vie-anterieure";
+import profilCelibataire from "./profil-celibataire";
+import changement2026 from "./changement-2026";
+import liensOuAmesSoeurs from "./liens-ou-ames-soeurs";
 
 export type Theme = "lien" | "moi" | "chemin";
 export const THEMES: { cle: Theme; titre: string; sous: string; glyphe: string; teinte: string; bordure: string }[] = [
@@ -35,15 +42,15 @@ export const CATALOGUE: EntreeCatalogue[] = [
   { slug: "amour-placebo", titre: "Êtes-vous dans un amour placebo ?", question: "Un lien vrai, ou un vide comblé ?", theme: "lien", duree: "4 min", test: amourPlacebo },
   { slug: "quel-amour-vous-attend", titre: "Quel amour vous attend ?", question: "Celui que vous êtes prête à recevoir.", theme: "moi", duree: "5 min", test: quelAmour },
   { slug: "don-spirituel", titre: "Quel est mon don spirituel ?", question: "Clairvoyance, empathie, magnétisme…", theme: "chemin", duree: "8 min", test: donSpirituel },
-  // De l'ancien site — données à porter
-  { slug: "type-de-lien", titre: "Quel type de lien d'âme vivez-vous ?", question: "Flamme jumelle, âme sœur ou lien karmique.", theme: "lien", duree: "6 min" },
-  { slug: "blessures-dame", titre: "Quelles sont vos blessures d'âme ?", question: "Rejet, abandon, humiliation, trahison, injustice.", theme: "moi", duree: "10 min" },
-  { slug: "lecon-karmique", titre: "Quelle leçon karmique cette relation vous enseigne ?", question: "Ce qu'elle est venue vous apprendre.", theme: "lien", duree: "7 min" },
-  { slug: "mission-de-vie", titre: "Quelle est votre mission de vie ?", question: "Vos talents, votre dharma.", theme: "chemin", duree: "8 min" },
-  { slug: "vie-anterieure", titre: "Avez-vous déjà rencontré cette âme dans une vie antérieure ?", question: "Ce sentiment de déjà-connu.", theme: "lien", duree: "6 min" },
-  { slug: "profil-celibataire", titre: "Quel est votre profil de célibataire ?", question: "Comment vous vivez le temps entre deux.", theme: "moi", duree: "6 min" },
-  { slug: "changement-2026", titre: "Quel changement majeur arrive dans votre vie amoureuse ?", question: "Ce qui se prépare cette année.", theme: "moi", duree: "7 min" },
-  { slug: "liens-ou-ames-soeurs", titre: "Attirez-vous liens karmiques ou âmes sœurs ?", question: "Ce que vous attirez, et pourquoi.", theme: "lien", duree: "6 min" },
+  // De l'ancien site WordPress, portés le 14 octobre
+  { slug: "type-de-lien", titre: "Quel type de lien d'âme vivez-vous ?", question: "Flamme jumelle, âme sœur ou lien karmique.", theme: "lien", duree: "6 min", test: typeDeLien },
+  { slug: "blessures-dame", titre: "Quelles sont vos blessures d'âme ?", question: "Rejet, abandon, humiliation, trahison, injustice.", theme: "moi", duree: "10 min", test: blessuresDame },
+  { slug: "lecon-karmique", titre: "Quelle leçon karmique cette relation vous enseigne ?", question: "Ce qu'elle est venue vous apprendre.", theme: "lien", duree: "7 min", test: leconKarmique },
+  { slug: "mission-de-vie", titre: "Quelle est votre mission de vie ?", question: "Vos talents, votre dharma.", theme: "chemin", duree: "8 min", test: missionDeVie },
+  { slug: "vie-anterieure", titre: "Avez-vous déjà rencontré cette âme dans une vie antérieure ?", question: "Ce sentiment de déjà-connu.", theme: "lien", duree: "6 min", test: vieAnterieure },
+  { slug: "profil-celibataire", titre: "Quel est votre profil de célibataire ?", question: "Comment vous vivez le temps entre deux.", theme: "moi", duree: "6 min", test: profilCelibataire },
+  { slug: "changement-2026", titre: "Quel changement majeur arrive dans votre vie amoureuse ?", question: "Ce qui se prépare cette année.", theme: "moi", duree: "7 min", test: changement2026 },
+  { slug: "liens-ou-ames-soeurs", titre: "Attirez-vous liens karmiques ou âmes sœurs ?", question: "Ce que vous attirez, et pourquoi.", theme: "lien", duree: "6 min", test: liensOuAmesSoeurs },
 ];
 
 export const TESTS_PAR_SLUG: Record<string, Test> = Object.fromEntries(
