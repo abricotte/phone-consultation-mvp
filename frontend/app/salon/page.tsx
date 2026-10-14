@@ -2,15 +2,26 @@
 
 import { useState } from "react";
 import EspaceShell from "@/components/EspaceShell";
-import { Eventail, Pilules, Bientot } from "@/components/Ornements";
+import { Eventail, Pilules } from "@/components/Ornements";
 
-// LE SALON — ma voix, mes livres, mon jeu. Trois pilules : Écouter (les
-// boosts, offerts, pas d'abonnement), Lire (les livres : la couverture et
-// le lien Amazon, rien d'autre), Le jeu (la Petite Pythie). Les boosts,
+// LE SALON — ma voix, mes livres, mon oracle. Trois pilules : Écouter (les
+// boosts, offerts, pas d'abonnement), Lire (Les Carnets d'Elena Wolska :
+// la couverture et le lien Amazon, rien d'autre), L'oracle de l'amour (la
+// Petite Pythie). Les boosts,
 // les couvertures et les liens sont fournis par Elena : en attendant,
 // chaque rayon dit ce qui vient. Décisions : 14 octobre 2026.
 
 const PYTHIE = ["/images/pythie/la-vision.webp", "/images/pythie/le-grand-amour.webp", "/images/pythie/le-rendez-vous.webp"];
+
+// Les Carnets : la couverture, le titre, le lien — rien d'autre (Elena, 14 octobre).
+const LIVRES = [
+  {
+    titre: "L'Amour Karmique",
+    sousTitre: "Reconnaître le lien qui vous unit",
+    amazon: "https://www.amazon.co.uk/LAmour-Karmique-Carnets-dElena-Wolska/dp/B0H7PTQKGR",
+    teinte: "from-[#F1EDF8] to-[#DED6EC]",
+  },
+];
 
 const BOOSTS_A_VENIR = [
   "La vulnérabilité",
@@ -38,7 +49,7 @@ export default function SalonPage() {
         label="Le salon"
         valeur={onglet}
         onChange={setOnglet}
-        options={[["ecouter", "Écouter"], ["lire", "Lire"], ["jeu", "Le jeu"]] as const}
+        options={[["ecouter", "Écouter"], ["lire", "Lire"], ["jeu", "L'oracle de l'amour"]] as const}
       />
 
       {onglet === "ecouter" && (
@@ -75,13 +86,34 @@ export default function SalonPage() {
 
       {onglet === "lire" && (
         <section>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Mes livres et manuels</p>
-          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">À lire, et à garder</h2>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Mes livres</p>
+          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les Carnets d&apos;Elena Wolska</h2>
           <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
-            Mes livres — les douze contrats d&apos;âme, le Lenormand — sont sur Amazon. Leurs couvertures
-            arrivent ici, avec le lien pour chacun.
+            Ce que dix-neuf ans de consultations m&apos;ont appris, carnet par carnet — à lire, et à garder.
           </p>
-          <Bientot>Les couvertures et les liens, bientôt</Bientot>
+          <ul className="mt-6 grid gap-8 sm:grid-cols-3">
+            {LIVRES.map((l) => (
+              <li key={l.titre} className="group">
+                {/* La couverture : l'objet. Un aplat tant qu'Elena n'a pas fourni la vraie. */}
+                <a
+                  href={l.amazon}
+                  className={`block aspect-[2/3] rounded-r-xl rounded-l-sm bg-gradient-to-br p-6 shadow-[0_24px_40px_-20px_rgba(35,43,69,0.5)] ring-1 ring-white/60 transition group-hover:-translate-y-1.5 group-hover:rotate-[-1deg] ${l.teinte}`}
+                >
+                  <span className="block h-full border border-white/50 p-4">
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-aubergine/70">
+                      Les Carnets d&apos;Elena Wolska
+                    </span>
+                    <span className="mt-6 block font-serif text-2xl font-semibold leading-tight text-aubergine">{l.titre}</span>
+                    <span className="mt-2 block font-serif text-sm italic text-aubergine/70">{l.sousTitre}</span>
+                  </span>
+                </a>
+                <p className="mt-4 font-semibold text-aubergine">{l.titre}</p>
+                <a href={l.amazon} className="mt-1 inline-flex items-center gap-1.5 text-[13px] font-semibold text-prix hover:underline">
+                  Sur Amazon →
+                </a>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
