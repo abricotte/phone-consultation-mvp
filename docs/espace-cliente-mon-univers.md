@@ -260,12 +260,15 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   avant d'appuyer ; réglée par Stripe, pas sur le crédit minutes. Une
   urgence de jour hors permanence (85 €) reste à décider.
 - **L'emblème à la place de la photo** : au premier écran de l'espace, la
-  cliente choisit une figure parmi douze, **sans colonnes féminin / masculin** (la Sirène, la
-  Fée, la Louve, la Lionne, la Biche, le Phénix, le
-  Sphinx, le Dauphin, le Dragon, l'Aigle, le Cerf, le Pégase). Elle sert
-  de petit logo dans le menu et dans sa carte. Pas de photo demandée ni
-  stockée. Pas d'émoticônes : des silhouettes. Provisoirement celles de
-  game-icons.net (CC BY 3.0, à créditer dans les mentions légales ;
+  cliente choisit une figure parmi **huit**, ensemble, sans colonnes
+  féminin / masculin (décision du 14 octobre, soir) : la Sirène
+  (l'attirance), la Fée (la réparation), la Louve (la protection), la
+  Biche (l'intuition), le Phénix (la renaissance), le Sphinx (la
+  question), le Dragon (la garde du trésor), l'Aigle (la hauteur).
+  Retirés pour doublon : la Lionne, le Cerf, le Dauphin, le Pégase. Elle
+  sert de petit logo dans le menu et dans sa carte. Pas de photo demandée
+  ni stockée. Pas d'émoticônes : des silhouettes. Provisoirement celles
+  de game-icons.net (CC BY 3.0, à créditer dans les mentions légales ;
   phénix manquant, placeholder) ; **à terme, Elena peint les siennes**,
   comme ses cartes. Maquette : `frontend/app/apercu-tmp/avatar/page.tsx`,
   fichiers `frontend/public/images/avatars/*.svg`.
