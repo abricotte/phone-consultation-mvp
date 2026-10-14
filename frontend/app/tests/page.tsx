@@ -60,40 +60,29 @@ export default function TestsPage() {
               </div>
             </div>
 
-            <ul className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {entrees.map((e, i) => {
+            <ul className={`mt-4 divide-y divide-black/5 overflow-hidden rounded-[22px] border ${th.bordure} ${th.teinte}`}>
+              {entrees.map((e) => {
                 const fait = dernierPar.get(e.slug);
                 const actif = Boolean(e.test);
-                const corps = (
+                const ligne = (
                   <>
-                    <span aria-hidden className="absolute right-4 top-3 font-serif text-sm text-gold/80">✦</span>
-                    <span className="font-serif text-[13px] text-gold-dark/70">{String(i + 1).padStart(2, "0")}</span>
-                    <p className="mt-1 font-serif text-[21px] font-semibold leading-tight text-aubergine">{e.titre}</p>
-                    <p className="mt-1.5 font-serif text-[15px] italic leading-snug text-mention">{e.question}</p>
-                    <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-                      <span className="rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-ink/70 ring-1 ring-black/5">
-                        {actif ? `${e.test!.questions.length} questions · ${e.duree}` : e.duree}
-                      </span>
-                      {actif ? (
-                        <span className="text-[13px] font-semibold text-prix">{fait ? "Refaire →" : "Faire le test →"}</span>
-                      ) : (
-                        <span className="text-[12px] font-semibold text-gold-dark">bientôt</span>
+                    <span aria-hidden className="w-5 shrink-0 text-center font-serif text-[13px] text-gold-dark/70">✦</span>
+                    <span className="min-w-0 flex-1">
+                      <span className={`block font-serif text-[19px] leading-tight ${actif ? "text-aubergine" : "text-aubergine/60"}`}>{e.titre}</span>
+                      {fait && (
+                        <span className="mt-0.5 block text-[12px] text-ink/70">Fait le {dateCourte(fait.creeLe)} · <span className="font-semibold text-aubergine">{fait.titreProfil}</span></span>
                       )}
-                    </div>
-                    {fait && (
-                      <p className="mt-3 border-t border-black/5 pt-2.5 text-[12px] text-ink/75">
-                        Fait le {dateCourte(fait.creeLe)} · <span className="font-semibold text-aubergine">{fait.titreProfil}</span>
-                      </p>
-                    )}
+                    </span>
+                    <span className="shrink-0 text-[12px] text-mention">{e.duree}</span>
+                    <span className={`shrink-0 text-[13px] font-semibold ${actif ? "text-prix" : "text-gold-dark"}`}>{actif ? (fait ? "Refaire →" : "→") : "bientôt"}</span>
                   </>
                 );
-                const classes = `relative flex h-full flex-col rounded-[22px] border px-5 pb-5 pt-4 ${th.bordure} ${th.teinte}`;
                 return (
                   <li key={e.slug}>
                     {actif ? (
-                      <a href={`/tests/${e.slug}`} className={`${classes} transition hover:-translate-y-1 hover:shadow-soft`}>{corps}</a>
+                      <a href={`/tests/${e.slug}`} className="flex items-center gap-4 px-5 py-3.5 transition hover:bg-white/50">{ligne}</a>
                     ) : (
-                      <div className={`${classes} opacity-75`}>{corps}</div>
+                      <div className="flex items-center gap-4 px-5 py-3.5">{ligne}</div>
                     )}
                   </li>
                 );
