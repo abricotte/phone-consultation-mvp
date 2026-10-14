@@ -159,6 +159,33 @@ ancestral » que les deux documents interdisent. La Grèce part en premier
 (le mythe traversé, les nombres : pas d'éphémérides). Les autres, un par
 un, chacun avec sa fiche de provenance en tête.
 
+### Pris dans la maquette « Atlas des Sagesses » (14 octobre)
+Elena a fourni une maquette HTML d'un site « Atlas des Sagesses » (bâtie
+sur une capture de notre propre carte). On ne fait **pas un site à part**
+(une troisième marque diluerait ; la carte est un onglet de Méthode
+Wolska, dans l'espace). On en garde :
+- **Le panneau de la sagesse** : une ligne d'époque (« IIIe–Ier millénaire
+  av. J.-C. »), trois méthodes en deux colonnes (« Les osselets · cinq os,
+  56 réponses »), la ligne de statut en italique. Fait.
+- **« Votre atlas personnel »**, l'étude signature de la carte : prénom,
+  date, question lus par trois sagesses choisies sur la carte, jamais
+  mélangées ; 30 pages, 79 €. Remplace le « codex de naissance ». Fait,
+  bandeau aubergine sous la carte.
+- **Le titre** « Les anciens savaient lire les signes. » et l'image
+  d'archives (tablette, osselets, graines, astrolabe) en en-tête de
+  l'onglet. Fait (`public/images/etudes/archives.webp`, image générée,
+  à remplacer si Elena en veut une autre).
+- Le quatrième statut **« Création — propre à la Méthode Wolska, annoncée
+  comme telle »** : utile pour la famille d'âme et les archives de l'âme.
+- Une idée à garder sous le coude : **« La question aux anciens »**, un
+  seul produit à 39 € où l'on choisit le système (Hâfez, dés, runes) —
+  plus simple que trois tirages séparés, si Elena préfère.
+
+Laissé : la recherche et les filtres (douze points n'en ont pas besoin),
+les quatre couleurs, le mode sombre, les points Ifá, Japon, Étrurie,
+Celtes (décidés), le formulaire « Créer mon étude » (nos cinq portes font
+déjà ce choix).
+
 ### Écarté — l'Amérique du Nord (troisième brief, 14 octobre)
 Le brief propose huit régions de nations vivantes, huit foyers arctiques
 et dix sites archéologiques. Il dit lui-même pourquoi on ne le fait pas :
