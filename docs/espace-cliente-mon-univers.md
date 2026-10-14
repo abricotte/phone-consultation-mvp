@@ -271,7 +271,8 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   mystique — dessiné avec le renard de la bibliothèque), **le Sphinx**
   (connaissance sacrée, sagesse mystique — un chat assis en attendant),
   **le Dauphin** (grande télépathie et intuition forte), **l'Aigle**
-  (agilité et vision claire, la beauté noble). Écartées mais sous la main sur la maquette :
+  (agilité et vision claire, celui qui regarde avec du recul, la beauté
+  silencieuse noble). Écartées mais sous la main sur la maquette :
   la Sirène, la Fée, la Chouette, l'Ourse, le loup de la bibliothèque, et une Louve
   dessinée maison (yeux fermés, sourire). Retirés : la Lionne, le Pégase,
   le Dragon, le Phénix. Elle sert de petit logo dans le menu et dans sa
