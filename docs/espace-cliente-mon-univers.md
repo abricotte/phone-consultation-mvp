@@ -270,7 +270,7 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   (la protection, l'intelligence silencieuse et instinctive, très
   mystique — dessiné avec le renard de la bibliothèque), **le Sphinx**
   (connaissance sacrée, sagesse mystique et le porteur de savoirs anciens — un chat assis en attendant),
-  **le Dauphin** (grande télépathie et intuition forte), **l'Aigle**
+  **le Dauphin** (l'ambassadeur des océans, grande télépathie et intuition forte, voyance décuplée), **l'Aigle**
   (agilité et vision claire, celui qui regarde avec du recul, la beauté
   silencieuse noble). Écartées mais sous la main sur la maquette :
   la Sirène, la Fée, la Chouette, l'Ourse, le loup de la bibliothèque, et une Louve
