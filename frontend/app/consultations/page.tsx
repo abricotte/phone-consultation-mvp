@@ -128,6 +128,20 @@ export default function ConsultationsPage() {
           <button key={c} type="button" onClick={() => setOrigine(c)} aria-pressed={origine === c} className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition ${origine === c ? "bg-aubergine text-cream shadow-card" : "border border-greige/60 bg-ivory text-mention hover:border-gold/60"}`}>{l}</button>
         ))}
       </div>
+      {origine === "rendez-vous" && (
+        <p className="mt-3 rounded-2xl bg-[#FBF3E2] px-4 py-3 text-[14px] leading-relaxed text-ink">
+          <span aria-hidden className="mr-1.5 text-gold">✦</span>
+          Vos consultations sur rendez-vous se réservent depuis{" "}
+          <a href="/dashboard" className="font-semibold text-prix hover:underline">votre espace</a>, « Réserver un rendez-vous ». Une fois
+          la consultation passée, elle s&apos;inscrit ici, avec sa formule et son montant.
+        </p>
+      )}
+      {origine === "minute" && (
+        <p className="mt-3 rounded-2xl bg-blush px-4 py-3 text-[14px] leading-relaxed text-ink">
+          <span aria-hidden className="mr-1.5 text-gold">✦</span>
+          À la minute : vous appelez Elena quand elle est en ligne, votre crédit se décompte à la minute entamée.
+        </p>
+      )}
       <details className="mt-3 text-[13px] text-mention">
         <summary className="cursor-pointer hover:text-ink">Comment sont comptées les minutes ?</summary>
         <p className="mt-2 rounded-2xl bg-blush px-4 py-3 text-ink">
