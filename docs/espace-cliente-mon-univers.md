@@ -158,8 +158,9 @@ pilules horizontales. C'est l'étagère *d'Elena*, par opposition à « Mon
 univers » qui est celle de la cliente.
 
 - **Écouter** : *La Minute Voyance* (lecteur Spotify intégré, derniers
-  épisodes, « écouter sur Spotify ») · *Les boosts* (réflexions courtes par
-  besoin, lecteur dans l'espace, fichiers dans Supabase Storage ; les
+  épisodes, « écouter sur Spotify ») · *Les boosts* — « Deux minutes avec
+  Elena » : *une réflexion qui ouvre une perspective, bouscule une
+  certitude — ou, simplement, apaise* (par besoin, lecteur dans l'espace, fichiers dans Supabase Storage ; les
   premiers offerts, le reste pour les clientes actives ou « le cercle ») ·
   *Pour s'apaiser* (hypnose douce, relaxation — **en veille**, le rayon
   n'apparaît pas tant qu'il est vide). Les boosts ressortent aussi au bon
