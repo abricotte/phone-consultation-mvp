@@ -159,6 +159,18 @@ ancestral » que les deux documents interdisent. La Grèce part en premier
 (le mythe traversé, les nombres : pas d'éphémérides). Les autres, un par
 un, chacun avec sa fiche de provenance en tête.
 
+### Écarté — l'Amérique du Nord (troisième brief, 14 octobre)
+Le brief propose huit régions de nations vivantes, huit foyers arctiques
+et dix sites archéologiques. Il dit lui-même pourquoi on ne le fait pas :
+pas de faux « oracle inuit », pas de roue de médecine universelle, pas de
+peintures de sable en générateur, des contenus « réservés, sensibles ou
+transmis uniquement avec autorisation », des fiches « rédigées ou validées
+avec des chercheurs autochtones ». Rien ne se calcule d'une date ou d'un
+prénom ; tout relève de nations vivantes qui n'ont rien demandé. Ce n'est
+pas une étude Méthode Wolska, c'est un musée. **Aucun point** en Amérique
+du Nord hors Mésoamérique. Si un jour Elena veut en parler, c'est dans
+*Apprendre*, comme lecture, avec les sources — jamais comme produit.
+
 ### Écarté — pas Elena, ou pas sans expert
 - Ifá : tradition religieuse vivante, pas de calculateur sans praticien.
 - Géomancie, Yijing, conseil des cinq oracles : autres métiers.
