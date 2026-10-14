@@ -21,6 +21,7 @@ MON UNIVERS             ← intertitre doré : ce qu'elle a, seule
 AVEC ELENA              ← ce qu'elle fait avec Elena
 ☾ Le salon              Écouter (boosts) · Lire (livres KDP) · Le jeu (menu horizontal)
 ✎ Apprendre             Le podcast (La Minute Voyance, Lenormand) · Les vidéos (à venir)
+                        · La méthode Wolska (la page qui explique : chiffres, ciel, 12 contrats)
                         — « Se former » si Elena vise un vrai cursus : à trancher
 ◷ Voyages spirituels    à venir en 2027 : Delphes, Délos ; « me prévenir »
 ────────────────────────
@@ -33,6 +34,12 @@ c'est le **titre de la page** des études et la **signature** de chaque
 calcul (« calculé d'après la méthode Wolska ») — plus présente ainsi que
 rangée dans un onglet. Le groupe du bas s'appelle **« Avec Elena »** (une
 relation, pas un lieu), en miroir de « Mon univers ».
+
+**La méthode Wolska s'explique dans Apprendre** (idée d'Elena, 14 octobre) :
+une pilule « La méthode Wolska » — les chiffres, le ciel, les douze
+contrats — et chaque signature « calculé d'après la méthode Wolska » dans
+les études **est un lien vers cette page**. La méthode est ainsi expliquée
+une fois, signée partout.
 
 Règle pour la suite : **douze lignes, c'est la limite**. Toute nouveauté
 remplace ou s'abrite sous une entrée existante. Et on n'ouvre pas une pièce
