@@ -47,8 +47,8 @@ export default function VoyagesPage() {
         <p className="mt-3 text-[15px] leading-relaxed text-ink/85">
           Un premier voyage se prépare pour 2027 : la Grèce, Delphes et Délos, quelques jours en petit cercle
           pour s&apos;initier à la voyance et venir se présenter à la Pythie. Vos premiers pas de médium ou de
-          voyant(e) commencent ici — l&apos;ouverture du canal s&apos;ouvre ici. Aucune magie, aucun rituel : juste
-          une présence accompagnée. Vous verrez, nous vous préparons un beau voyage.
+          voyant(e) commencent ici — l&apos;ouverture du canal commence ici. Juste une présence accompagnée.
+          Vous verrez, nous vous préparons un beau voyage.
         </p>
         <p className="mt-3 text-[14px] text-mention">
           Les dates, le nombre de places et le programme viendront ici, dans votre espace, quand ils seront
