@@ -474,3 +474,43 @@ Une journée de construction après le lancement, puis les textes d'Elena.
   remplaçant. Même esprit que les emblèmes : trait fin, papier + feutre
   noir, photographiés, mis au propre en vectoriel. Après le 1er novembre.
 
+## Ce qui n'appartient qu'à Elena — pistes (14 octobre, soir)
+
+Proposées à Elena après les emblèmes et les symboles de prénoms. Ce qui
+ne se copie pas : sa main, sa voix, ses cartes, ses vingt ans d'oreille.
+
+1. **La couleur de votre aura.** Elle est « médium aux couleurs de
+   l'aura » (son titre, 2 608 avis). Après une consultation, elle pose
+   une couleur sur la cliente depuis le cabinet (un choix parmi douze,
+   une date) ; la cliente la voit en halo autour de son emblème, avec
+   « Elena a vu votre couleur le 14 octobre ». Elle peut changer avec le
+   temps : l'historique raconte un chemin. Personne d'autre ne peut la
+   donner.
+2. **La carte de la Pythie du jour.** Une des 36 cartes qu'elle a
+   peintes, tirée chaque jour pour toutes (ou par signe), avec deux
+   lignes d'elle. L'image est la sienne ; même tirée au hasard, c'est
+   son oracle qui parle, et ça fait revenir chaque matin.
+3. **Le flash d'Elena, personnel.** Sa signature, « flashs directs » :
+   après un appel, une phrase à elle, pour cette cliente, déposée dans
+   son espace depuis le cabinet (différent du mot du jour, qui est pour
+   toutes). Jamais de notification : la cliente la trouve en revenant.
+4. **La météo de l'amour.** Son ancien produit Wix, « la météo du
+   couple », ressuscité en tuile hebdomadaire : « période propice aux
+   retours », « semaine de rencontres », d'après son calendrier des
+   transits. C'est son angle à elle, le retour d'ex, personne ne l'a.
+5. **Sa signature manuscrite.** Scannée une fois, au bas de chaque étude,
+   sous le mot du jour, sur la page de résultat des tests. Trois pixels
+   d'elle partout.
+6. **Sa voix sur la phrase du jour.** Douze enregistrements de vingt
+   secondes par mois, un par signe, ou un seul pour toutes ; le bouton
+   « écouter » sur la tuile du jour. Les boosts existent déjà ; ceci
+   est la version quotidienne, courte.
+7. **« Ce que j'entends le plus ».** Une phrase par semaine tirée de ses
+   vingt mille consultations — « la question qu'on me pose le plus en
+   octobre, c'est… » — sans rien de personnel. L'expérience, rendue
+   visible.
+
+Recommandé en premier : 1, 2 et 3. Les trois tiennent dans le cabinet
+qui existe (un choix de couleur, une carte tirée, une phrase à déposer)
+et n'exigent aucun texte long.
+
