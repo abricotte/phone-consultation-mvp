@@ -589,3 +589,51 @@ et n'exigent aucun texte long.
   les deux archives (zip du code, bundle git) sont à glisser depuis
   Téléchargements (l'outil ne téléverse pas de binaires).
 
+## Le thème astral — construit le 14 octobre, dans la nuit
+
+Elena : « oui c'est génial, peux-tu le créer ? Je vais te donner des
+fichiers pour agrémenter. » Ossature : son document *Les anciens savoirs
+du thème astral — Histoire, significations et méthode complète de
+lecture* (Downloads, 14 octobre) — trois niveaux (attesté · traditionnel
+· adaptation), sept planètes, secte, maisons en signes entiers, dignités,
+lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
+
+- **Migration 017_naissance_heure_lieu** : `users.heure_naissance` (TIME),
+  `lieu_naissance`, `latitude_naissance`, `longitude_naissance`,
+  `fuseau_naissance` (IANA). Facultatifs. Elena seule les voit (fiche
+  cliente : « née le … à 14 h 30 · Paris »).
+- **Mon profil** : section « Votre heure et votre lieu de naissance » —
+  heure (ou vide = inconnue), lieu choisi dans une liste (recherche de
+  ville par Open-Meteo, service libre sans clé : seul le nom tapé est
+  envoyé ; on garde libellé, coordonnées, fuseau).
+- **Le calcul** (`lib/theme-astral.ts`, dans le navigateur, rien en base) :
+  `astronomy-engine` (MIT) ; zodiaque tropical (écliptique vraie de
+  date) ; heure locale → UTC par le fuseau (heure d'été historique via
+  Intl) ; ascendant = point de l'écliptique à l'horizon est (balayage +
+  bissection), MC = écliptique au méridien ; secte par la hauteur du
+  Soleil ; sept planètes + Uranus/Neptune/Pluton + nœud moyen ; maisons
+  en signes entiers ; dignités majeures (domicile, exaltation, exil,
+  chute) ; cazimi/combuste/sous les rayons ; aspects par signe entier
+  avec orbe (serré : 8°, 10° luminaire) ; lots de Fortune et d'Esprit
+  selon la secte ; profection annuelle. **Sans heure : planètes à midi,
+  ni ascendant ni maisons ni secte** (on n'invente pas). Contrôle : ASC à
+  hauteur 0 vers l'est, MC plein sud, décalages 1985 corrects.
+- **La page** `/etudes/theme-astral` (`components/ThemeAstralVue.tsx`,
+  `components/RoueAstrale.tsx`) : la roue, les trois entrées, la fiche
+  technique, l'architecture (secte, ascendant, maître de l'ascendant),
+  les sept planètes en cinq blocs (donnée · tradition · combinaison ·
+  polarité · question) avec l'étiquette de niveau, les douze lieux par
+  leurs maîtres, les aspects, les dignités, lots et profection, les
+  modernes à part, les repères historiques, la méthode et les limites.
+  Les tables de référence : `lib/astro-savoirs.ts` (portées du document).
+  **Les blocs « adaptation » sont des gabarits** : Elena les réécrira
+  dans sa voix, avec les fichiers qu'elle apportera.
+- Aperçu avec un ciel d'exemple calculé pour de vrai (Rue, 11 novembre
+  1985, 14 h 30, Paris) : `apercu-tmp/theme-astral`. Dans Mes études, la
+  tuile « Votre thème astral » mène à la page quand date, heure et lieu
+  sont là, sinon dit ce qui manque.
+- Reste à faire : les termes et les faces (tables égyptienne /
+  ptolémaïque), application/séparation et réceptions, les textes d'Elena
+  par placement, l'heure et le lieu des proches (pour les affinités), et
+  l'export en étude signée.
+

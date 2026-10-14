@@ -51,6 +51,50 @@ function validerDateNaissance(input) {
   return { value: input };
 }
 
+// Heure de naissance FACULTATIVE, 'HH:MM' (migration 017). Sans elle : pas
+// d'ascendant ni de maisons dans le thème astral — on n'invente pas.
+function validerHeureNaissance(input) {
+  if (input === null || input === undefined || input === '') return { value: null };
+  if (typeof input !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(input)) {
+    return { error: 'Heure de naissance invalide (format attendu : HH:MM).' };
+  }
+  return { value: input + ':00' };
+}
+
+// Lieu de naissance FACULTATIF : le libellé choisi par la cliente, ses
+// coordonnées et son fuseau IANA, les trois ensemble ou rien.
+function validerLieuNaissance(body) {
+  const { lieuNaissance, latitude, longitude, fuseau } = body;
+  const vide = (lieuNaissance === null || lieuNaissance === undefined || lieuNaissance === '');
+  if (vide) return { value: { lieu_naissance: null, latitude_naissance: null, longitude_naissance: null, fuseau_naissance: null } };
+  if (typeof lieuNaissance !== 'string' || lieuNaissance.trim().length > 160) return { error: 'Lieu de naissance invalide.' };
+  const lat = Number(latitude), lon = Number(longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return { error: 'Coordonnées du lieu invalides.' };
+  }
+  if (typeof fuseau !== 'string' || !/^[A-Za-z_]+(\/[A-Za-z_+\-]+){0,2}$/.test(fuseau) || fuseau.length > 64) {
+    return { error: 'Fuseau horaire invalide.' };
+  }
+  return {
+    value: {
+      lieu_naissance: lieuNaissance.trim(),
+      latitude_naissance: Math.round(lat * 100000) / 100000,
+      longitude_naissance: Math.round(lon * 100000) / 100000,
+      fuseau_naissance: fuseau,
+    },
+  };
+}
+
+function serialiserNaissance(u) {
+  return {
+    heureNaissance: u.heure_naissance ? String(u.heure_naissance).slice(0, 5) : null,
+    lieuNaissance: u.lieu_naissance || null,
+    latitude: u.latitude_naissance === null || u.latitude_naissance === undefined ? null : parseFloat(u.latitude_naissance),
+    longitude: u.longitude_naissance === null || u.longitude_naissance === undefined ? null : parseFloat(u.longitude_naissance),
+    fuseau: u.fuseau_naissance || null,
+  };
+}
+
 function serialiserProche(p) {
   return {
     id: p.id,
@@ -68,7 +112,7 @@ router.get('/', authMiddleware, async (req, res) => {
       await Promise.all([
         supabase
           .from('users')
-          .select('first_name, date_naissance, ascendant, a_aborder, a_aborder_maj_le')
+          .select('first_name, date_naissance, ascendant, a_aborder, a_aborder_maj_le, heure_naissance, lieu_naissance, latitude_naissance, longitude_naissance, fuseau_naissance')
           .eq('id', req.user.id)
           .single(),
         supabase
@@ -88,6 +132,7 @@ router.get('/', authMiddleware, async (req, res) => {
       // Écrit par la cliente POUR Elena — l'inverse du carnet privé.
       aAborder: user?.a_aborder || '',
       aAborderMajLe: user?.a_aborder_maj_le || null,
+      ...serialiserNaissance(user || {}),
       proches: (proches || []).map(serialiserProche),
     });
   } catch (err) {
@@ -157,6 +202,18 @@ router.patch('/', authMiddleware, async (req, res) => {
       maj.ascendant = value;
     }
 
+    if (Object.prototype.hasOwnProperty.call(req.body, 'heureNaissance')) {
+      const { value, error: hError } = validerHeureNaissance(req.body.heureNaissance);
+      if (hError) return res.status(400).json({ error: hError });
+      maj.heure_naissance = value;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(req.body, 'lieuNaissance')) {
+      const { value, error: lError } = validerLieuNaissance(req.body);
+      if (lError) return res.status(400).json({ error: lError });
+      Object.assign(maj, value);
+    }
+
     if (Object.prototype.hasOwnProperty.call(req.body, 'aAborder')) {
       const brut = req.body.aAborder;
       if (typeof brut !== 'string') {
@@ -186,6 +243,7 @@ router.patch('/', authMiddleware, async (req, res) => {
       ascendant: 'ascendant' in maj ? maj.ascendant : undefined,
       aAborder: 'a_aborder' in maj ? maj.a_aborder || '' : undefined,
       aAborderMajLe: 'a_aborder_maj_le' in maj ? maj.a_aborder_maj_le : undefined,
+      ...('heure_naissance' in maj || 'lieu_naissance' in maj ? serialiserNaissance(maj) : {}),
       message: 'Profil mis à jour.',
     });
   } catch (err) {

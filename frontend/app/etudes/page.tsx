@@ -102,15 +102,17 @@ function CarteEtude({ e, teinte }: { e: Etude; teinte: string }) {
 }
 
 export default function EtudesPage() {
-  const [profil, setProfil] = useState<{ prenom: string | null; dateNaissance: string | null; ascendant: string | null } | null>(null);
+  type ProfilEtudes = { prenom: string | null; dateNaissance: string | null; ascendant: string | null; heureNaissance?: string | null; lieuNaissance?: string | null };
+  const [profil, setProfil] = useState<ProfilEtudes | null>(null);
   const [autre, setAutre] = useState<string>("");
   const [pays, setPays] = useState<string>("grece");
 
   useEffect(() => {
     api.getProfil()
-      .then((d: { prenom: string | null; dateNaissance: string | null; ascendant: string | null }) => setProfil(d))
+      .then((d: ProfilEtudes) => setProfil(d))
       .catch(() => setProfil({ prenom: null, dateNaissance: null, ascendant: null }));
   }, []);
+  const themePret = !!(profil?.dateNaissance && profil?.heureNaissance && profil?.lieuNaissance);
 
   const signe = signeAstrologique(profil?.dateNaissance);
   const ascendant = signeParCode(profil?.ascendant);
@@ -189,13 +191,28 @@ export default function EtudesPage() {
             )}
             <p className="mt-2 text-[12px] italic text-mention">La lecture par élément — celle que l&apos;on trouve partout. Ce qui n&apos;est qu&apos;à vous deux, c&apos;est l&apos;étude.</p>
           </li>
-          <li className="rounded-[20px] border border-dashed border-gold/40 bg-ivory/60 p-5 sm:col-span-2 lg:col-span-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Votre thème astral · bientôt</p>
+          <li className={`rounded-[20px] border p-5 sm:col-span-2 lg:col-span-4 ${themePret ? "border-gold/40 bg-gradient-to-br from-[#FBF3E2] to-ivory" : "border-dashed border-gold/40 bg-ivory/60"}`}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Votre thème astral</p>
             <p className="mt-2 text-[14px] leading-relaxed text-ink/85">
               On l&apos;appelle aussi <span className="font-semibold text-aubergine">la carte du ciel</span> : la position du Soleil, de la Lune et des planètes à
-              l&apos;heure et au lieu exacts de votre naissance. Il arrive ici dès que votre heure et votre lieu de naissance pourront
-              être notés dans Mon profil.
+              l&apos;heure et au lieu exacts de votre naissance — les sept astres des Anciens, l&apos;ascendant, les douze lieux, les aspects.
             </p>
+            {themePret ? (
+              <a href="/etudes/theme-astral" className="mt-3 inline-flex items-center gap-2 rounded-full bg-aubergine px-5 py-2.5 text-[14px] font-semibold text-cream hover:bg-aubergine/90">
+                Voir mon thème astral <span aria-hidden>→</span>
+              </a>
+            ) : profil?.dateNaissance ? (
+              <p className="mt-3 text-[14px] text-ink/80">
+                Il vous manque {!profil?.heureNaissance && !profil?.lieuNaissance ? "votre heure et votre lieu" : !profil?.heureNaissance ? "votre heure" : "votre lieu"} de naissance :{" "}
+                <a href="/profil" className="font-semibold text-prix hover:underline">les noter dans Mon profil</a>.{" "}
+                <a href="/etudes/theme-astral" className="text-mention hover:underline">Sans l&apos;heure, voir les planètes en signes →</a>
+              </p>
+            ) : (
+              <p className="mt-3 text-[14px] text-ink/80">
+                Votre date de naissance d&apos;abord, puis l&apos;heure et le lieu, dans{" "}
+                <a href="/profil" className="font-semibold text-prix hover:underline">Mon profil</a>.
+              </p>
+            )}
           </li>
         </ul>
       </section>

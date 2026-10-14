@@ -694,7 +694,7 @@ router.get('/clientes/:id', async (req, res) => {
 
     const { data: cliente, error } = await supabase
       .from('users')
-      .select('id, first_name, last_name, email, phone, date_naissance, ascendant, a_aborder, a_aborder_maj_le, created_at, role')
+      .select('id, first_name, last_name, email, phone, date_naissance, ascendant, a_aborder, a_aborder_maj_le, created_at, role, heure_naissance, lieu_naissance')
       .eq('id', req.params.id)
       .eq('role', 'client')
       .maybeSingle();
@@ -811,6 +811,9 @@ router.get('/clientes/:id', async (req, res) => {
       telephone: cliente.phone || null,
       inscriteLe: cliente.created_at,
       dateNaissance: cliente.date_naissance || null,
+      // Le thème astral (migration 017) : l'heure et le lieu, pour Elena seule
+      heureNaissance: cliente.heure_naissance ? String(cliente.heure_naissance).slice(0, 5) : null,
+      lieuNaissance: cliente.lieu_naissance || null,
       ascendant: cliente.ascendant || null,
       // Écrit par la cliente POUR être lu : l'inverse exact du carnet.
       // La date compte autant que le texte — un mot vieux de six mois ne

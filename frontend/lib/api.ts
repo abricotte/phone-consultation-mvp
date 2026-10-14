@@ -107,6 +107,13 @@ export const api = {
   updateProfil: (body: {
     dateNaissance?: string | null;
     ascendant?: string | null;
+    /** Heure de naissance 'HH:MM', ou null si inconnue (migration 017) */
+    heureNaissance?: string | null;
+    /** Lieu de naissance : libellé + coordonnées + fuseau IANA, ou lieuNaissance null pour effacer */
+    lieuNaissance?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    fuseau?: string | null;
     /** « Ce que je veux aborder » — écrit par la cliente, lu par Elena */
     aAborder?: string;
   }) => request("/profil", { method: "PATCH", body: JSON.stringify(body) }),

@@ -63,6 +63,19 @@ export default function ProfilPage() {
   const [aAborderMsg, setAAborderMsg] = useState("");
   const [ascEnCours, setAscEnCours] = useState(false);
 
+  // L'heure et le lieu de naissance (migration 017) — pour le thème astral.
+  // Facultatifs. Le lieu est choisi dans une liste (coordonnées + fuseau),
+  // jamais tapé librement : c'est ce qui permet de calculer le ciel.
+  const [heureNaissance, setHeureNaissance] = useState<string>("");
+  const [lieu, setLieu] = useState<{ nom: string; latitude: number; longitude: number; fuseau: string } | null>(null);
+  const [naissanceEnregistree, setNaissanceEnregistree] = useState<{ heure: string; lieu: string }>({ heure: "", lieu: "" });
+  const [editionNaissance, setEditionNaissance] = useState(false);
+  const [rechercheLieu, setRechercheLieu] = useState("");
+  const [propositions, setPropositions] = useState<{ nom: string; latitude: number; longitude: number; fuseau: string }[]>([]);
+  const [rechercheEnCours, setRechercheEnCours] = useState(false);
+  const [naissanceEnCours, setNaissanceEnCours] = useState(false);
+  const [naissanceMsg, setNaissanceMsg] = useState("");
+
   // Formulaire d'ajout de proche
   const [ajoutOuvert, setAjoutOuvert] = useState(false);
   const [pPrenom, setPPrenom] = useState("");
@@ -86,12 +99,22 @@ export default function ProfilPage() {
           dateNaissance: string | null;
           ascendant: string | null;
           aAborder?: string;
+          heureNaissance?: string | null;
+          lieuNaissance?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          fuseau?: string | null;
           proches: Proche[];
         }) => {
           setPrenom(data.prenom);
           setDateNaissance(data.dateNaissance || "");
           setDateEnregistree(data.dateNaissance);
           setAscendant(data.ascendant || "");
+          setHeureNaissance(data.heureNaissance || "");
+          if (data.lieuNaissance && typeof data.latitude === "number" && typeof data.longitude === "number" && data.fuseau) {
+            setLieu({ nom: data.lieuNaissance, latitude: data.latitude, longitude: data.longitude, fuseau: data.fuseau });
+          }
+          setNaissanceEnregistree({ heure: data.heureNaissance || "", lieu: data.lieuNaissance || "" });
           setAAborder(data.aAborder || "");
           setAAborderEnregistre(data.aAborder || "");
           setProches(data.proches || []);
@@ -152,6 +175,49 @@ export default function ProfilPage() {
       setAscendant(precedent);
     } finally {
       setAscEnCours(false);
+    }
+  }
+
+  // Le lieu : une recherche de ville (Open-Meteo, service libre, sans clé —
+  // seul le nom tapé est envoyé). On garde le libellé, les coordonnées et
+  // le fuseau horaire, pour calculer le ciel sans rien redemander.
+  async function chercherLieu(e: React.FormEvent) {
+    e.preventDefault();
+    const q = rechercheLieu.trim();
+    if (q.length < 2) return;
+    setRechercheEnCours(true); setPropositions([]); setNaissanceMsg("");
+    try {
+      const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=fr&format=json`);
+      const d = await r.json();
+      const liste = ((d?.results ?? []) as { name: string; admin1?: string; country?: string; latitude: number; longitude: number; timezone: string }[]).map((x) => ({
+        nom: [x.name, x.admin1, x.country].filter(Boolean).join(", "),
+        latitude: x.latitude, longitude: x.longitude, fuseau: x.timezone,
+      }));
+      setPropositions(liste);
+      if (liste.length === 0) setNaissanceMsg("Aucune ville trouvée — essayez une autre orthographe, ou la grande ville la plus proche.");
+    } catch {
+      setNaissanceMsg("La recherche de ville n'a pas répondu. Réessayez dans un instant.");
+    } finally {
+      setRechercheEnCours(false);
+    }
+  }
+
+  async function enregistrerNaissance() {
+    setNaissanceEnCours(true); setNaissanceMsg("");
+    try {
+      await api.updateProfil({
+        heureNaissance: heureNaissance || null,
+        lieuNaissance: lieu?.nom ?? null,
+        latitude: lieu?.latitude ?? null,
+        longitude: lieu?.longitude ?? null,
+        fuseau: lieu?.fuseau ?? null,
+      });
+      setNaissanceEnregistree({ heure: heureNaissance, lieu: lieu?.nom ?? "" });
+      setEditionNaissance(false); setPropositions([]); setRechercheLieu("");
+    } catch (err) {
+      setNaissanceMsg(err instanceof Error ? err.message : "Une erreur est survenue");
+    } finally {
+      setNaissanceEnCours(false);
     }
   }
 
@@ -413,6 +479,96 @@ export default function ProfilPage() {
             ))}
           </select>
         </div>
+      </section>
+
+      {/* L'heure et le lieu de naissance — pour le thème astral */}
+      <section className="mt-6 rounded-3xl border border-greige/60 bg-ivory p-7 shadow-soft">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-serif text-2xl font-semibold text-aubergine">Votre heure et votre lieu de naissance</h2>
+            <p className="mt-1 text-sm text-mention">
+              Facultatifs. Avec eux, votre thème astral se calcule — l&apos;ascendant et les maisons demandent l&apos;heure.
+              Elena seule les voit.
+            </p>
+          </div>
+          {!editionNaissance && (
+            <button type="button" onClick={() => setEditionNaissance(true)} className="text-sm font-medium text-prix transition-colors hover:text-cta">
+              {naissanceEnregistree.heure || naissanceEnregistree.lieu ? "Modifier" : "Renseigner"}
+            </button>
+          )}
+        </div>
+
+        {!editionNaissance ? (
+          <p className="mt-4 text-[15px] text-ink">
+            {naissanceEnregistree.heure || naissanceEnregistree.lieu ? (
+              <>
+                {naissanceEnregistree.heure ? <span className="font-semibold text-aubergine">à {naissanceEnregistree.heure.replace(":", " h ")}</span> : <span className="text-mention">heure inconnue</span>}
+                {naissanceEnregistree.lieu && <span> · {naissanceEnregistree.lieu}</span>}
+                {naissanceEnregistree.heure && naissanceEnregistree.lieu && dateEnregistree && (
+                  <a href="/etudes/theme-astral" className="ml-3 font-semibold text-prix hover:underline">Voir mon thème astral →</a>
+                )}
+              </>
+            ) : (
+              <span className="text-mention">Rien pour l&apos;instant.</span>
+            )}
+          </p>
+        ) : (
+          <div className="mt-4 space-y-4">
+            <label className="block">
+              <span className="text-sm font-medium text-aubergine">Heure de naissance</span>
+              <span className="block text-xs text-mention">Sur votre acte de naissance, ou de mémoire familiale. Laissez vide si vous ne la connaissez pas.</span>
+              <input
+                type="time"
+                value={heureNaissance}
+                onChange={(e) => setHeureNaissance(e.target.value)}
+                className="mt-1.5 rounded-xl border border-greige bg-white px-3 py-2.5 text-ink focus:border-cta-outline focus:outline-none"
+              />
+            </label>
+            <div>
+              <span className="text-sm font-medium text-aubergine">Lieu de naissance</span>
+              {lieu && (
+                <p className="mt-1 text-[14px] text-ink">
+                  <span className="mr-1.5 text-gold">✦</span>{lieu.nom}
+                  <button type="button" onClick={() => setLieu(null)} className="ml-2 text-xs text-mention hover:underline">changer</button>
+                </p>
+              )}
+              {!lieu && (
+                <form onSubmit={chercherLieu} className="mt-1.5 flex flex-col gap-2 sm:flex-row">
+                  <input
+                    type="text"
+                    value={rechercheLieu}
+                    onChange={(e) => setRechercheLieu(e.target.value)}
+                    placeholder="La ville, ou la plus proche"
+                    className="w-full rounded-xl border border-greige bg-white px-3 py-2.5 text-ink focus:border-cta-outline focus:outline-none"
+                  />
+                  <button type="submit" disabled={rechercheEnCours} className="whitespace-nowrap rounded-full border border-greige bg-white px-4 py-2.5 text-sm font-semibold text-aubergine hover:border-gold disabled:opacity-50">
+                    {rechercheEnCours ? "…" : "Chercher"}
+                  </button>
+                </form>
+              )}
+              {propositions.length > 0 && !lieu && (
+                <ul className="mt-2 divide-y divide-greige/50 rounded-xl border border-greige/60 bg-white">
+                  {propositions.map((p) => (
+                    <li key={`${p.latitude}-${p.longitude}`}>
+                      <button type="button" onClick={() => { setLieu(p); setPropositions([]); }} className="w-full px-3 py-2 text-left text-[14px] text-ink hover:bg-blush">
+                        {p.nom}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {naissanceMsg && <p className="rounded-lg bg-blush p-2 text-sm text-ink">{naissanceMsg}</p>}
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={enregistrerNaissance} disabled={naissanceEnCours} className="rounded-full bg-cta px-5 py-2.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50">
+                {naissanceEnCours ? "…" : "Enregistrer"}
+              </button>
+              <button type="button" onClick={() => { setEditionNaissance(false); setPropositions([]); setNaissanceMsg(""); }} className="rounded-full px-4 py-2.5 text-sm text-mention hover:text-aubergine">
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Les personnes qui comptent */}

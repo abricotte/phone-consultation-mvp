@@ -34,6 +34,8 @@ interface ProcheFiche {
   prenom: string;
   dateNaissance: string | null;
   ascendant: string | null;
+  heureNaissance?: string | null;
+  lieuNaissance?: string | null;
   lien: string;
 }
 
@@ -88,6 +90,8 @@ interface Fiche {
   inscriteLe: string;
   dateNaissance: string | null;
   ascendant: string | null;
+  heureNaissance?: string | null;
+  lieuNaissance?: string | null;
   /** Écrit par la cliente pour être lu — l'inverse du carnet privé */
   aAborder: string | null;
   aAborderMajLe: string | null;
@@ -400,6 +404,8 @@ export default function FicheClientePage() {
                 {signe.emoji} {signe.nom}
                 {asc && <span className="font-semibold text-ink"> · ascendant {asc.nom}</span>}
                 {fiche.dateNaissance && <span className="font-semibold text-ink"> · née le {formatDateNaissance(fiche.dateNaissance)}</span>}
+                {fiche.heureNaissance && <span className="font-semibold text-ink"> à {fiche.heureNaissance.replace(":", " h ")}</span>}
+                {fiche.lieuNaissance && <span className="font-medium text-ink/80"> · {fiche.lieuNaissance}</span>}
               </p>
             ) : (
               <p className="mt-1 text-[15px] font-semibold text-ink/70">
