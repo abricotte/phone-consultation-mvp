@@ -86,7 +86,7 @@ Trois sources, par ordre de complétude :
    14 octobre dans `Downloads\WORDPRESS ELENA\`.
 2. **Wayback Machine** : captures du 8 novembre 2025 et du 7 février 2026
    de toutes les pages (`web.archive.org/web/2025*/elena-wolska.com/*`).
-3. **`Downloads\Excel Documentsudit_elena_wolska.xlsx`** (février 2026) :
+3. **`Downloads\Excel Documents\audit_elena_wolska.xlsx`** (février 2026) :
    l'inventaire des **56 pages** avec score SEO, et
    `pages_wordpress_elena_wolska.xlsx`, `menu_final_elena_wolska.xlsx`,
    `elena_wolska_strategie_contenu.xlsx` (270 articles planifiés : 22
