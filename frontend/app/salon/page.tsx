@@ -89,14 +89,6 @@ export default function SalonPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-[13px] text-mention">
-            Offerts à mes clientes — pas d&apos;abonnement, jamais. Un nouveau boost de temps en temps, quand
-            j&apos;ai quelque chose à vous dire. Le podcast sur le Lenormand a sa place dans{" "}
-            <a href="/apprendre" className="font-semibold text-prix hover:underline">
-              Apprendre
-            </a>
-            .
-          </p>
         </section>
       )}
 
