@@ -408,4 +408,46 @@ router.post('/commandes', authMiddleware, async (req, res) => {
   }
 });
 
+
+// ── La boîte à idées du salon (migration 016) ──
+// Sous les boosts, la cliente souffle un thème à Elena. Elena le lit au cabinet.
+
+// GET /api/profil/suggestions — mes idées, les plus récentes d'abord
+router.get('/suggestions', authMiddleware, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('suggestions_clientes')
+      .select('id, sujet, texte, cree_le')
+      .eq('client_id', req.user.id)
+      .order('cree_le', { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    res.json({ suggestions: (data || []).map((s) => ({ id: s.id, sujet: s.sujet, texte: s.texte, creeLe: s.cree_le })) });
+  } catch (err) {
+    console.error('Erreur suggestions:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/profil/suggestions — { texte, sujet? }
+router.post('/suggestions', authMiddleware, async (req, res) => {
+  try {
+    const { texte, sujet } = req.body || {};
+    const t = typeof texte === 'string' ? texte.trim().slice(0, 600) : '';
+    if (!t) return res.status(400).json({ error: 'Écrivez votre idée.' });
+    const s = sujet === undefined ? 'boost' : sujet;
+    if (s !== 'boost') return res.status(400).json({ error: 'Sujet invalide.' });
+    const { data, error } = await supabase
+      .from('suggestions_clientes')
+      .insert({ client_id: req.user.id, sujet: s, texte: t })
+      .select('id, sujet, texte, cree_le')
+      .single();
+    if (error) throw error;
+    res.status(201).json({ suggestion: { id: data.id, sujet: data.sujet, texte: data.texte, creeLe: data.cree_le } });
+  } catch (err) {
+    console.error('Erreur suggestion:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

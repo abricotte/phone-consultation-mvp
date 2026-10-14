@@ -97,6 +97,13 @@ export const api = {
   adminGetCommandes: () => request("/admin/commandes"),
   adminMajCommande: (id: string, body: { statut?: string; paye?: boolean; noteElena?: string }) =>
     request(`/admin/commandes/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  // La boîte à idées du salon (migration 016) : un thème de boost soufflé à Elena
+  getSuggestions: () => request("/profil/suggestions"),
+  suggerer: (body: { texte: string; sujet?: "boost" }) =>
+    request("/profil/suggestions", { method: "POST", body: JSON.stringify(body) }),
+  adminGetSuggestions: () => request("/admin/suggestions"),
+  adminMajSuggestion: (id: string, body: { lue: boolean }) =>
+    request(`/admin/suggestions/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   updateProfil: (body: {
     dateNaissance?: string | null;
     ascendant?: string | null;

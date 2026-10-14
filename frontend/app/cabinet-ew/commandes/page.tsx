@@ -16,6 +16,8 @@ type Commande = {
   statut: "recue" | "en_cours" | "livree" | "annulee";
   montant: number; paye: boolean; noteElena: string | null; creeLe: string; livreLe: string | null;
 };
+// Les idées de boosts soufflées depuis le salon (migration 016)
+type Suggestion = { id: string; clientId: string; prenom: string; nom: string; texte: string; lue: boolean; creeLe: string };
 
 const TYPES: Record<Commande["type"], string> = { pythie: "La Petite Pythie", grand_tableau: "Le Grand Tableau" };
 const STATUTS: { code: Commande["statut"]; label: string; teinte: string }[] = [
@@ -38,13 +40,26 @@ export default function CommandesPage() {
   const [accesRefuse, setAccesRefuse] = useState(false);
   const [onglet, setOnglet] = useState<"a_faire" | "livrees">("a_faire");
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [idees, setIdees] = useState<Suggestion[]>([]);
+  const [toutesIdees, setToutesIdees] = useState(false);
 
   useEffect(() => {
     api.adminGetCommandes()
       .then((d: { commandes: Commande[] }) => setCommandes(d?.commandes ?? []))
       .catch((err) => { if (err instanceof Error && /(403|interdit|Token)/i.test(err.message)) setAccesRefuse(true); })
       .finally(() => setChargement(false));
+    api.adminGetSuggestions()
+      .then((d: { suggestions: Suggestion[] }) => setIdees(d?.suggestions ?? []))
+      .catch(() => {});
   }, []);
+
+  async function marquerLue(id: string, lue: boolean) {
+    const d = await api.adminMajSuggestion(id, { lue }).catch(() => null);
+    if (!d?.suggestion) return;
+    setIdees((is) => is.map((i) => (i.id === id ? { ...i, lue } : i)));
+  }
+  const ideesVisibles = toutesIdees ? idees : idees.filter((i) => !i.lue);
+  const ideesNonLues = idees.filter((i) => !i.lue).length;
 
   const aFaire = useMemo(() => commandes.filter((c) => c.statut === "recue" || c.statut === "en_cours"), [commandes]);
   const livrees = useMemo(() => commandes.filter((c) => c.statut === "livree" || c.statut === "annulee").slice().reverse(), [commandes]);
@@ -131,6 +146,45 @@ export default function CommandesPage() {
           })}
         </ul>
       )}
+
+      {/* ── Les idées de boosts, soufflées depuis le salon ── */}
+      <section className="mt-12">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="font-jakarta text-2xl font-bold tracking-tight text-aubergine">Idées de boosts</h2>
+            <p className="mt-1 text-sm text-mention">
+              Ce que vos clientes aimeraient vous entendre dire. {ideesNonLues > 0 ? `${ideesNonLues} à lire.` : "Rien de nouveau."}
+            </p>
+          </div>
+          {idees.some((i) => i.lue) && (
+            <button type="button" onClick={() => setToutesIdees((v) => !v)} className="text-xs text-mention hover:underline">
+              {toutesIdees ? "Masquer les idées lues" : `Voir aussi les idées lues (${idees.filter((i) => i.lue).length})`}
+            </button>
+          )}
+        </div>
+        {ideesVisibles.length === 0 ? (
+          <p className="mt-4 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-6 text-center text-sm text-mention">
+            {idees.length === 0 ? "Aucune idée pour l'instant — la boîte est dans le salon, sous les boosts." : "Tout est lu."}
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {ideesVisibles.map((i) => (
+              <li key={i.id} className={`flex flex-wrap items-start justify-between gap-3 rounded-2xl border px-5 py-4 ${i.lue ? "border-greige/40 bg-cream/50" : "border-gold/30 bg-ivory shadow-soft"}`}>
+                <div className="min-w-0 flex-1">
+                  <p className="font-serif text-[16px] italic leading-relaxed text-ink">« {i.texte} »</p>
+                  <p className="mt-1.5 text-xs text-mention">
+                    <a href={`/cabinet-ew/clientes/${i.clientId}`} className="font-medium text-prix hover:underline">{i.prenom} {i.nom}</a>
+                    {" · "}{dateCourte(i.creeLe)}
+                  </p>
+                </div>
+                <label className="flex items-center gap-1.5 text-xs text-ink">
+                  <input type="checkbox" checked={i.lue} onChange={(e) => marquerLue(i.id, e.target.checked)} /> lue
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </CabinetShell>
   );
 }

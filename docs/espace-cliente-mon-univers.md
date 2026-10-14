@@ -538,3 +538,54 @@ et n'exigent aucun texte long.
   (cohérent avec Mes tirages, Mes tests) ; la page garde « Méthode
   Wolska » comme titre de gamme.
 
+## Décisions du 14 octobre, dans la nuit
+
+- **Le salon en cinq rayons** : Écouter · Lire · Se découvrir · S'amuser ·
+  L'oracle de l'amour.
+  - *Écouter* : les boosts, et dessous **la boîte à idées** — la cliente
+    souffle un thème à Elena (600 caractères). Migration
+    **016_suggestions_clientes** ; routes `GET/POST /api/profil/suggestions`,
+    `GET /api/admin/suggestions`, `PATCH /api/admin/suggestions/:id`
+    (lue). Au cabinet : section **« Idées de boosts »** en bas de l'onglet
+    Commandes, non lues d'abord, case « lue ». Rien n'est envoyé.
+  - *Lire* : les dix-sept textes d'Elena, en trois rubriques, liens vers
+    le site (`elena-wolska.com/ressources-gratuites/<slug>`).
+  - *Se découvrir* : **la collection des Carnets d'Elena**, une couleur par
+    thème — retrouvée dans `Downloads\SERIE CARNET ELENA WOLSKA\PROMPT_MAITRE_CARNETS_ELENA.md` :
+    **rose** L'Amour karmique (paru, Amazon) · **bleu** L'Intuition et la
+    Voyance (écrit en juillet 2026, à paraître) · **violet** La Mission de
+    vie · **doré** L'Abondance · **vert** La Guérison familiale · **blanc**
+    Le Deuil et le lâcher-prise (à venir). Couvertures en aplat de couleur
+    tant que les vraies ne sont pas fournies.
+  - *S'amuser* : **les mots cachés du Carnet rose** (25 mots, grille 16×16,
+    `components/MotsCaches.tsx`, générateur déterministe, « nouvelle
+    grille »). Le jeu vit **dans le salon, pas dans Apprendre** : Apprendre,
+    c'est Elena qui enseigne (podcast, vidéos) ; le salon, c'est ce qu'elle
+    laisse entre deux consultations. Les mots croisés par signe viendront
+    (générateur `Downloads\KDP QUIZ ELENA\generate_mots_croises_astro.py`).
+- **Mes études, en plus simple** (Elena) : la phrase d'invitation — *« Je
+  vous propose d'apprendre à mieux vous connaître, et à mieux connaître
+  vos proches, suivant la méthode Wolska »* ; **« Qui suis-je ? » offert**
+  (ce qui se trouve partout en ligne : le signe, l'ascendant, les
+  compatibilités par élément, et **le thème astral** — la « carte du
+  ciel » — annoncé pour quand l'heure et le lieu de naissance seront dans
+  Mon profil) ; puis **tout le reste est payant** : les études complètes
+  rangées par question (Qui suis-je · Qui est-il, elle, iels · Notre lien
+  · Mon chemin · D'où je viens), **sans prix affiché — Elena réfléchit aux
+  tarifs** (les 39/65 € du 14 octobre sont suspendus) ; puis la carte des
+  sagesses du monde avec son texte : *« Vous connaissez ma passion pour
+  les civilisations anciennes et les croyances mystiques. Alors je vous
+  emmène vers mes découvertes — je mets régulièrement mes recherches à
+  jour. »* Les six portes en pilules et « Tout voir » restent sur la
+  maquette `apercu-tmp/etudes`, pas sur la vraie page.
+- **« Déposer » la méthode, comme Hans Decoz** : une méthode ne se dépose
+  pas ; ce qui se protège, c'est **le nom** — « Méthode Wolska » en marque
+  à l'INPI — et **les textes**, protégés par le droit d'auteur dès leur
+  écriture (une enveloppe e-Soleau date une version pour prouver
+  l'antériorité). Décision à prendre par Elena.
+- **Sauvegarde Dropbox** du 14 octobre : dossier
+  `/Elena Wolska Plateforme - Backups/2026-10-14/` — les neuf documents de
+  `docs/` en texte, les migrations 014 et 015 à exécuter, un LISEZ-MOI ;
+  les deux archives (zip du code, bundle git) sont à glisser depuis
+  Téléchargements (l'outil ne téléverse pas de binaires).
+

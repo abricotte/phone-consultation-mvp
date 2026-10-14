@@ -2680,4 +2680,48 @@ router.patch('/commandes/:id', async (req, res) => {
   }
 });
 
+
+// ── La boîte à idées, côté cabinet (migration 016) ──
+// GET /api/admin/suggestions — les idées des clientes, non lues d'abord
+router.get('/suggestions', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('suggestions_clientes')
+      .select('id, client_id, sujet, texte, lue, cree_le, users:client_id (first_name, last_name)')
+      .order('lue', { ascending: true })
+      .order('cree_le', { ascending: false })
+      .limit(300);
+    if (error) throw error;
+    res.json({
+      suggestions: (data || []).map((s) => ({
+        id: s.id, clientId: s.client_id,
+        prenom: s.users?.first_name || 'Cliente', nom: s.users?.last_name || '',
+        sujet: s.sujet, texte: s.texte, lue: s.lue, creeLe: s.cree_le,
+      })),
+    });
+  } catch (err) {
+    console.error('Erreur suggestions cabinet:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// PATCH /api/admin/suggestions/:id — { lue }
+router.patch('/suggestions/:id', async (req, res) => {
+  try {
+    const { lue } = req.body || {};
+    if (typeof lue !== 'boolean') return res.status(400).json({ error: 'Valeur invalide.' });
+    const { data, error } = await supabase
+      .from('suggestions_clientes')
+      .update({ lue })
+      .eq('id', req.params.id)
+      .select('id, lue')
+      .single();
+    if (error) throw error;
+    res.json({ suggestion: { id: data.id, lue: data.lue } });
+  } catch (err) {
+    console.error('Erreur maj suggestion:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;
