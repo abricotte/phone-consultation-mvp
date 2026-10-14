@@ -1,29 +1,72 @@
-// L'ESPACE CLIENTE — ses cinq routes et ses cinq onglets, en un seul
-// endroit : le shell les affiche, le header et le footer globaux
-// s'effacent dessus (le shell porte déjà le logo, un deuxième ferait
-// doublon).
+// L'ESPACE CLIENTE — ses routes et son menu, en un seul endroit : le shell
+// les affiche, le header et le footer globaux s'effacent dessus (le shell
+// porte déjà le logo, un deuxième ferait doublon).
 //
-// La règle qui distribue Profil et Compte, énoncée par Elena : « le
-// profil, c'est ce qu'Elena regarde ; le compte, c'est ce que le système
-// utilise. » Profil = signe, proches, ce qu'elle veut aborder. Compte =
-// email, numéro, mot de passe — la page qu'on visite deux fois par an.
-// « Mon crédit » reste à part : l'argent est un registre différent.
+// Le menu en trois registres (décision d'Elena, 14 octobre 2026) :
+//
+//   consulter        Mon espace · Consultations · Mon crédit
+//   MON UNIVERS      ce qu'elle a, seule : son profil, ses tirages, ses
+//                    études (« Méthode Wolska »), ses tests
+//   AVEC ELENA       ce qu'elle fait avec Elena : le salon, apprendre,
+//                    les voyages
+//   le compte        Paramètres — ce que le système utilise (compte, numéro, mot de passe)
+//
+// Douze lignes, c'est la limite : toute nouveauté remplace ou s'abrite
+// sous une entrée existante. Et on n'ouvre pas une pièce vide — une page
+// « bientôt » dit au moins ce qui vient.
 
-export type IconeOnglet = "etoile" | "lune" | "credit" | "profil" | "compte";
+import type { NomIcone } from "@/components/IconesEspace";
 
-export const ONGLETS_ESPACE: {
+export interface OngletEspace {
   href: string;
   label: string;
   /** Libellé de la barre d'onglets téléphone — court, sinon ça déborde */
   court: string;
-  icone: IconeOnglet;
-}[] = [
-  { href: "/dashboard", label: "Mon espace", court: "Espace", icone: "etoile" },
-  { href: "/consultations", label: "Consultations", court: "Consultations", icone: "lune" },
-  { href: "/credit", label: "Mon crédit", court: "Crédit", icone: "credit" },
-  { href: "/profil", label: "Profil", court: "Profil", icone: "profil" },
-  { href: "/compte", label: "Compte", court: "Compte", icone: "compte" },
+  icone: NomIcone;
+}
+
+export interface GroupeEspace {
+  /** Intertitre doré au-dessus du groupe ; null pour le premier et le dernier */
+  titre: string | null;
+  onglets: OngletEspace[];
+}
+
+export const GROUPES_ESPACE: GroupeEspace[] = [
+  {
+    titre: null,
+    onglets: [
+      { href: "/dashboard", label: "Mon espace", court: "Espace", icone: "etoile" },
+      { href: "/consultations", label: "Consultations", court: "Consult.", icone: "lune" },
+      { href: "/credit", label: "Mon crédit", court: "Crédit", icone: "credit" },
+    ],
+  },
+  {
+    titre: "Mon univers",
+    onglets: [
+      { href: "/profil", label: "Mon profil", court: "Profil", icone: "profil" },
+      { href: "/tirages", label: "Mes tirages", court: "Tirages", icone: "reserver" },
+      { href: "/etudes", label: "Méthode Wolska", court: "Méthode", icone: "livre" },
+      { href: "/tests", label: "Tests spirituels", court: "Tests", icone: "clientes" },
+    ],
+  },
+  {
+    titre: "Avec Elena",
+    onglets: [
+      { href: "/salon", label: "Le salon", court: "Salon", icone: "casque" },
+      { href: "/apprendre", label: "Apprendre", court: "Apprendre", icone: "modifier" },
+      { href: "/voyages", label: "Voyages spirituels", court: "Voyages", icone: "boussole" },
+    ],
+  },
+  {
+    titre: null,
+    onglets: [{ href: "/compte", label: "Paramètres", court: "Réglages", icone: "compte" }],
+  },
 ];
+
+export const ONGLETS_ESPACE: OngletEspace[] = GROUPES_ESPACE.flatMap((g) => g.onglets);
+
+/** Sous le pouce, sur téléphone : quatre entrées ; le reste dans « Plus » */
+export const SOUS_LE_POUCE = ["/dashboard", "/profil", "/tirages", "/credit"];
 
 /** Vrai sur les pages de l'espace cliente */
 export function estRouteEspace(pathname: string | null): boolean {

@@ -112,7 +112,7 @@ export default function ComptePage() {
     <EspaceShell>
       <div className="max-w-2xl">
       <h1 className="font-serif text-3xl font-semibold text-aubergine">
-        Mon compte
+        Paramètres
       </h1>
 
       {/* Informations du compte */}

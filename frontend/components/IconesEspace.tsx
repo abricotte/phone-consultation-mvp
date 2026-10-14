@@ -18,7 +18,11 @@ export type NomIcone =
   | "clientes"
   | "revenus"
   | "plus"
-  | "croix";
+  | "croix"
+  // l'espace, après le lancement
+  | "livre"
+  | "casque"
+  | "boussole";
 
 export function Icone({
   nom,
@@ -135,6 +139,28 @@ export function Icone({
       return (
         <svg {...commun}>
           <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      );
+    // ── l'espace, après le lancement ──
+    case "livre":
+      return (
+        <svg {...commun}>
+          <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5zM4 19a2 2 0 0 1 2-2h13v4H6a2 2 0 0 1-2-2z" />
+        </svg>
+      );
+    case "casque":
+      return (
+        <svg {...commun}>
+          <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
+          <rect x="3" y="13" width="4" height="7" rx="1.5" />
+          <rect x="17" y="13" width="4" height="7" rx="1.5" />
+        </svg>
+      );
+    case "boussole":
+      return (
+        <svg {...commun}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M15.5 8.5l-2 5-5 2 2-5z" />
         </svg>
       );
   }
