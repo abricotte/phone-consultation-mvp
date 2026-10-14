@@ -434,6 +434,18 @@ service payant de questions aux astres (The Void).
 - La question aux astres par chat : « pour savoir, vous m'appelez ».
 - Le ton brutal : Elena est directe, pas robotique.
 
+**La maquette « Ma journée », dans la gamme Co–Star** (`apercu-tmp/profil`,
+onglet Ma journée) : une tuile sombre avec la date, le signe et
+l'ascendant, les positions du jour en une ligne (Lune, Vénus, Mercure),
+**la phrase du jour** en grand (« Arrêtez d'attendre un message qui dit
+ce que vous savez déjà. »), trois lignes d'explication, puis deux
+colonnes **À faire / À laisser** ; dessous, quatre rubriques (Amour ·
+Vous · Vos liens — avec les proches et leur signe · Intuition) ; puis
+**« Cette semaine, dans votre ciel »**, trois dates ; et le carnet. Une
+ligne d'honnêteté : « Positions réelles des astres, calculées chaque
+jour · les mots sont ceux d'Elena ». Textes d'exemple à réécrire par
+Elena.
+
 **Un horoscope chaque jour ?** Oui, à ces conditions : calcul réel des
 astres (pas de texte inventé), fragments d'Elena, par signe et ascendant,
 et un seul écran, celui de Mon profil (pas de page horoscope séparée).
