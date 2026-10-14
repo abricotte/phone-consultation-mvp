@@ -96,6 +96,30 @@ caractères — quatre piliers), Mexique ancien (le gardien de votre jour —
 calendrier de 260 jours). Plus un *codex de naissance* qui les lit côte à
 côte (79 €).
 
+**Le document d'Elena** (*Méthodes ésotériques, calculs et divinations des
+anciennes civilisations*, 14 pages, 14 octobre) donne la règle de la carte :
+chaque méthode porte un des quatre statuts **Attesté · Reconstitué ·
+Adapté · Moderne à habillage ancien** — on les ajoute à la fiche de
+provenance. Ce qu'il dit, point par point :
+
+| Point | Ce qui est attesté | Ce qu'on peut calculer honnêtement | Statut du produit |
+|---|---|---|---|
+| Babylone | présages conditionnels (Enūma Anu Enlil), foie, huile — pour le roi, pas pour un prénom | un « présage contextuel » : phénomène + moment + question | **Adapté**, dit comme tel |
+| Égypte | le nom *rn* comme part de l'être, le nom secret de Rê, le manuel des rêves (Chester Beatty III) | les **trois noms** (public · intime · secret, choisi par elle) ; **« Elena lit votre rêve »** avec la grille égyptienne (scène, action, rencontre, direction, sensation) | nom : exercice inspiré ; rêve : **produit du cabinet**, pas de la machine |
+| Grèce | **isopséphie** et **onomancie** (lettres → nombres, comparer deux noms), oracle aux **astragales** (5 osselets, 56 réponses conservées) | la translittération grecque affichée et corrigeable, le total, la **carte des résonances** de deux prénoms (égalités, complémentarités) — jamais « un nom gagne » | **Attesté** pour le calcul, **Adapté** pour le portrait |
+| Jérusalem | guématria (mispar hekhreḥi, sidduri, katan) | seulement sur une graphie hébraïque réelle — une conversion depuis l'alphabet latin « détruit la structure » | **écarté** pour les prénoms français |
+| Monde arabe | abjad, science des lettres, **géomancie** (16 figures, algorithme transparent) | la géomancie : un tirage, pas une étude — et un autre métier | **plus tard**, si Elena le veut dans Mes tirages |
+| Inde | nāmakaraṇa : la Lune sidérale → nakṣatra → pāda → **syllabe initiale** du prénom | avec heure, lieu, ayanāṃśa affichés : la syllabe est mieux fondée que les longs portraits | **Reconstitué** — heure et lieu obligatoires |
+| Chine | os oraculaires, Yijing, **huit caractères** (quatre piliers) | les quatre piliers demandent un moteur calendérique sérieux ; jamais réduit à l'animal de l'année | **Attesté**, calcul lourd |
+| Mexique ancien | tzolk'in : 13 nombres × 20 signes | le signe du jour de naissance, **en affichant la corrélation** grégorien → maya ; l'interprétation psychologique est en partie moderne | **Reconstitué** |
+| Afrique de l'Ouest | Ifá, 256 odù — tradition religieuse vivante | rien d'automatique ; présenter l'histoire, renvoyer à des praticiens | **hors machine** |
+| Rome, Étrurie, Germains | augures, foie de Plaisance, lots de Tacite ; les runes sont une écriture, le tirage runique est moderne (1982) | rien d'honnête à vendre comme ancien | **écarté** |
+
+Ce que ça change à la carte : la **Grèce** gagne l'onomancie des deux
+prénoms (pour « Qui est-il / elle / iels ? » et « Notre lien ») ; l'**Égypte**
+gagne le rêve, côté cabinet ; **Jérusalem**, le monde arabe et l'Afrique
+ne deviennent pas des points. Six points restent six.
+
 Condition pour sortir du « bientôt » : l'heure et le lieu de naissance,
 des éphémérides (calcul faisable, à porter), et **des textes relus par
 quelqu'un qui connaît la tradition** — sinon c'est le faux « savoir
