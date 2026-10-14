@@ -4,20 +4,22 @@ import { useState } from "react";
 import EspaceShell from "@/components/EspaceShell";
 import { Eventail, Pilules } from "@/components/Ornements";
 
-// LE SALON — ma voix, mes livres, mon oracle. Trois pilules : Écouter (les
-// boosts, offerts, pas d'abonnement), Lire (Les Carnets d'Elena Wolska :
-// la couverture et le lien Amazon, rien d'autre), L'oracle de l'amour (la
-// Petite Pythie). Les boosts,
+// LE SALON — ma voix, mes carnets et mes livres, mon oracle. Trois pilules :
+// Écouter (les boosts, offerts, pas d'abonnement), Lire et grandir (les
+// Carnets d'Elena Wolska et les livres : la couverture et le lien Amazon,
+// rien d'autre), L'oracle de l'amour (la Petite Pythie). Les boosts,
 // les couvertures et les liens sont fournis par Elena : en attendant,
 // chaque rayon dit ce qui vient. Décisions : 14 octobre 2026.
 
 const PYTHIE = ["/images/pythie/la-vision.webp", "/images/pythie/le-grand-amour.webp", "/images/pythie/le-rendez-vous.webp"];
 
-// Les Carnets : la couverture, le titre, le lien — rien d'autre (Elena, 14 octobre).
+// Carnets et livres : la couverture, le titre, le lien — rien d'autre (Elena, 14 octobre).
+// `collection` : la série du livre (« Les Carnets d'Elena Wolska »), affichée sur la couverture.
 const LIVRES = [
   {
     titre: "L'Amour Karmique",
     sousTitre: "Reconnaître le lien qui vous unit",
+    collection: "Les Carnets d'Elena Wolska",
     amazon: "https://www.amazon.co.uk/LAmour-Karmique-Carnets-dElena-Wolska/dp/B0H7PTQKGR",
     teinte: "from-[#F1EDF8] to-[#DED6EC]",
   },
@@ -86,10 +88,10 @@ export default function SalonPage() {
 
       {onglet === "lire" && (
         <section>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Mes livres</p>
-          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les Carnets d&apos;Elena Wolska</h2>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Lire et grandir</p>
+          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Mes carnets et mes livres</h2>
           <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
-            Ce que dix-neuf ans de consultations m&apos;ont appris, carnet par carnet — à lire, et à garder.
+            Ce que dix-neuf ans de consultations m&apos;ont appris — les Carnets, et les livres. À lire, et à garder.
           </p>
           <ul className="mt-6 grid gap-8 sm:grid-cols-3">
             {LIVRES.map((l) => (
@@ -101,7 +103,7 @@ export default function SalonPage() {
                 >
                   <span className="block h-full border border-white/50 p-4">
                     <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-aubergine/70">
-                      Les Carnets d&apos;Elena Wolska
+                      {l.collection}
                     </span>
                     <span className="mt-6 block font-serif text-2xl font-semibold leading-tight text-aubergine">{l.titre}</span>
                     <span className="mt-2 block font-serif text-sm italic text-aubergine/70">{l.sousTitre}</span>

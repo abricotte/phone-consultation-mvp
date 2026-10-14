@@ -42,7 +42,7 @@ export default function ApprendrePage() {
         <p className="mt-3 text-[13px] text-mention">
           Pour aller plus loin que la minute :{" "}
           <a href="/salon" className="font-semibold text-prix hover:underline">
-            Les Carnets d&apos;Elena Wolska
+            mes carnets et mes livres
           </a>
           , dans le salon.
         </p>
