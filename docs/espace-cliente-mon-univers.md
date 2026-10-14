@@ -401,3 +401,41 @@ cabinet (`app/cabinet-ew/clientes/[id]/page.tsx`) :
 - **« Ses tests spirituels »** juste en dessous, le signe et l'ascendant
   déjà en tête de fiche. Côté cliente : rien de tout cela.
 
+## Ce qu'on prend de Co–Star (14 octobre, soir)
+
+Co–Star : thème natal à partir de la date, l'heure et le lieu ; positions
+des astres tirées des données NASA JPL ; des fragments de texte écrits
+par des humains, assemblés selon les transits de chacun ; une journée en
+rubriques (amour, routine, vie sociale, soi, spiritualité, pensée,
+pouvoir) avec des listes « à faire / à éviter » ; une notification
+quotidienne courte au ton brut ; la comparaison avec les amis ; un
+service payant de questions aux astres (The Void).
+
+**On prend**
+- **Le principe de fabrication** : des positions réelles (une bibliothèque
+  d'éphémérides, `astronomy-engine`, MIT — la Lune, son signe, sa phase,
+  les planètes, calculés chaque jour dans le navigateur) + **des
+  fragments écrits par Elena**, assemblés. Jamais un texte généré chaque
+  jour : son ton reste le sien, et c'est honnête.
+- **« Votre journée »** sur Mon profil : la Lune du jour (signe, phase),
+  le transit majeur en cours (déjà écrits dans le calendrier astrologique
+  2025-2026), croisés avec le signe de la cliente → trois lignes d'Elena
+  et une courte liste « à faire / à laisser ». Ce qu'il faut d'Elena :
+  12 lignes pour la Lune dans chaque signe, 4 lignes par transit majeur
+  selon l'élément de la cliente, 12 « à laisser » par signe.
+- **La notification quotidienne** → c'est **le mot d'Elena**, déjà en
+  place, sans notification : l'espace s'illumine quand elle vient.
+- **Les amis** → *Mes affinités*, déjà prévu, à partir d'un prénom.
+
+**On ne prend pas**
+- L'heure et le lieu de naissance obligatoires (les clientes donnent une
+  date, et l'ascendant si elles le connaissent) : l'horoscope reste par
+  signe + ascendant, pas par maison.
+- La question aux astres par chat : « pour savoir, vous m'appelez ».
+- Le ton brutal : Elena est directe, pas robotique.
+
+**Un horoscope chaque jour ?** Oui, à ces conditions : calcul réel des
+astres (pas de texte inventé), fragments d'Elena, par signe et ascendant,
+et un seul écran, celui de Mon profil (pas de page horoscope séparée).
+Une journée de construction après le lancement, puis les textes d'Elena.
+
