@@ -71,14 +71,60 @@ du système, `vibrations-ame-elena-wolska.md` (12 textes longs),
 | **La Minute Voyance** (podcast, audios) | `14_ELENA WOLSKA\Podcast La Minute Voyance\` | intro, épisodes, la voix d'Elena (dont essais ElevenLabs) | *Apprendre* (déjà en lien Spotify) ; **ne pas** utiliser la voix synthétique pour les boosts : « la voix que personne ne peut copier » |
 | **Illustrations** (36 visuels nommés) | `…HOSTINGER-WORDPRESS\illustrations\` | âme sœur, âme miroir, flamme jumelle, ghosting, leçon karmique, don spirituel, tests, avant/pendant/après consultation, voyage Islande… | les visuels des tests et des articles dans l'espace |
 
+## 2 bis. Le vrai gisement : l'ancien WordPress (56 pages, 2025 → mars 2026)
+
+Elena a précisé (14 octobre) : « il y avait aussi de l'astrologie, le ciel
+calculé sur 2 ans complet… une multitude de tests… c'était en 2025 ».
+Ce n'est pas le site actuel : c'est le **WordPress elena-wolska.com**
+qui a tourné toute l'année 2025 jusqu'à la bascule vers Next (mars 2026).
+Trois sources, par ordre de complétude :
+
+1. **Dropbox — `/Elena Wolska Wordpress Site initial/`** :
+   `elena-wolska-com-20260301-154446-….wpress` (All-in-One WP Migration,
+   **3,3 Go, 1er mars 2026 = le site complet, base + uploads**), plus
+   24 pages enregistrées en HTML (`page html/`). Téléchargée le
+   14 octobre dans `Downloads\WORDPRESS ELENA\`.
+2. **Wayback Machine** : captures du 8 novembre 2025 et du 7 février 2026
+   de toutes les pages (`web.archive.org/web/2025*/elena-wolska.com/*`).
+3. **`Downloads\Excel Documentsudit_elena_wolska.xlsx`** (février 2026) :
+   l'inventaire des **56 pages** avec score SEO, et
+   `pages_wordpress_elena_wolska.xlsx`, `menu_final_elena_wolska.xlsx`,
+   `elena_wolska_strategie_contenu.xlsx` (270 articles planifiés : 22
+   arcanes, 12 signes chinois, 24 heures miroirs…).
+
+### Ce qu'il y avait, en plus du site actuel
+| Page WordPress | Ce que c'est | Pour l'espace |
+|---|---|---|
+| **Calendrier astrologique de l'amour 2025-2026** (98/100, 1 300 mots) | *le « ciel calculé sur 2 ans »* : chaque transit daté à la minute (Mars en Sagittaire 4 nov. 14h01, Vénus en Scorpion, Mercure rétrograde 9–29 nov., Jupiter rétrograde en Cancer jusqu'au 11 mars 2026, Vénus en Poissons 10 fév., **Saturne en Bélier 14 fév. 2026 pour 3 ans**, Vénus rétrograde 3 oct.–14 nov. 2026 « la période la plus puissante pour les retours d'ex ») ; pour chacun : ce qu'il fait, l'impact sur vos relations, « mon conseil ». Sources citées : Swiss Ephemeris, NASA JPL | **Mon chemin** : la base de *Votre année amoureuse* et de l'*almanach* — les transits sont déjà écrits dans sa voix pour 2025-2026 ; à rendre personnel (par signe, par année personnelle) et à prolonger chaque année |
+| **Les 7 lois universelles hermétiques** (3 100 mots) | sommaire, les 7 lois, les intégrer au quotidien, 5 obstacles, lectures | **Apprendre** / Lire et grandir |
+| **Lexique spirituel** (1 300 mots) | 4 familles (relations & karma, énergies, guidance, transformation), chaque terme avec « exemple tiré de mes consultations » | **Apprendre** — et les info-bulles de l'espace |
+| **Découvrir sa mission de vie** + **Outils & références** | hubs de guides, la plupart « bientôt » : chemin de vie, nœud nord, 12 animaux chinois, arcane de naissance, chiromancie, animal totem, ennéagramme, runes | la liste de ce qu'elle voulait écrire — les runes y étaient déjà |
+| **Tests** (en plus des 7 du site actuel) | *Quel type de lien d'âme vivez-vous ?* · *Quelle leçon karmique cette relation vous enseigne ?* · *Quelle est votre mission de vie ?* · *Quelles sont vos blessures d'âme ?* · *Avez-vous rencontré cette âme dans une vie antérieure ?* · *Quel est mon profil de célibataire ?* · *Quel changement majeur arrive dans ma vie amoureuse en 2026 ?* · *Attirez-vous liens karmiques ou amis-lovers ?* | **Tests spirituels** : 7 + 8 = **quinze tests**, tous écrits |
+| **Articles** non repris sur le site actuel | Pourquoi il/elle revient puis repart · Attachement ou amour véritable · Où rencontrer votre profil idéal · Percevoir les signes d'un défunt · Donner-recevoir · Vibrations & fréquences · Bibliographie spirituelle · Les 12 premiers jours (page + PDF) · Météo du couple (époque Wix, 2023) | **Le salon** · Lire et grandir |
+
+### Hors site, sur Dropbox (`/BUREAU 2025 Windows eva (juillet 2025)/`)
+- **`Eva_YearFore_….pdf`** : un *Personal Numerology Forecast* de Hans
+  Decoz acheté pour elle-même (cycles de période, pinacles, transits par
+  lettres, essence, année et mois personnels, **dualités**). C'est le
+  **gabarit exact** de « L'almanach de votre année » — la structure à
+  reprendre, dans sa voix, sans copier.
+- `100_sujets_spirituels_corrected.pdf` (100 sujets YouTube),
+  `strategie_voyance_conscience.txt` (2025 : marque mère-fille avec
+  Marie-Laure, programme 21 jours, Annales akashiques),
+  `La Colomancie par Elena Wolska.docx` (2014), `Oracle_Egyptien_Resume_Divinites_Final.pdf`,
+  `PROMPT EDGAR CAYCE.pdf`, `211216 Questions sur la spiritualité….pdf`.
+
 ## 3. Ce que ça change au plan
 
-1. **Tests spirituels** : rien à écrire — sept tests complets à porter
-   (migration 014 prévue), plus quinze dans les Carnets si elle veut.
+1. **Tests spirituels** : rien à écrire — **quinze tests** complets (sept
+   sur le site actuel, huit dans l'ancien WordPress), plus quinze dans les
+   Carnets si elle veut.
 2. **Le salon** : dix-sept articles prêts pour *Lire et grandir* ; trois
    boosts déjà écrits, à enregistrer.
 3. **Mon chemin** : *Les 12 jours sacrés* devient le rituel de janvier,
-   offert ; son almanach de l'année en est le prolongement payant.
+   offert ; le **calendrier astrologique de l'amour** (les transits
+   2025-2026 déjà écrits) devient *Votre année amoureuse*, personnalisée ;
+   l'almanach suit le gabarit Decoz.
 4. **Mes tirages** : le tirage astrologique Lenormand, 12 cartes, est un
    troisième produit possible (prix à fixer, entre 55 et 149).
 5. **Méthode Wolska** : les textes des contrats et des vibrations existent
