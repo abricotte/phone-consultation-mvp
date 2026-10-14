@@ -269,7 +269,7 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   **le Cygne** (la grâce, la loyauté majestueuse et la fidélité noble), **le Loup**
   (la protection, l'intelligence silencieuse et instinctive, très
   mystique — dessiné avec le renard de la bibliothèque), **le Sphinx**
-  (connaissance sacrée, sagesse mystique — un chat assis en attendant),
+  (connaissance sacrée, sagesse mystique et le porteur de savoirs anciens — un chat assis en attendant),
   **le Dauphin** (grande télépathie et intuition forte), **l'Aigle**
   (agilité et vision claire, celui qui regarde avec du recul, la beauté
   silencieuse noble). Écartées mais sous la main sur la maquette :
