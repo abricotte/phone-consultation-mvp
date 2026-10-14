@@ -265,7 +265,7 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   **la Licorne** (animal mythologique très sacré, porteur de pureté),
   **la Colombe** (grande spiritualité, protectrice, énergie divine),
   **le Papillon** (l'alchimiste du monde animal, celui qui transforme le
-  plomb en or), **le Cerf** (noblesse, dignité et force de caractère),
+  plomb en or), **le Cerf** (noblesse et sagesse de la forêt, dignité et force de caractère),
   **le Cygne** (la grâce, la loyauté et la fidélité noble), **le Loup**
   (la protection, l'intelligence silencieuse et instinctive, très
   mystique — dessiné avec le renard de la bibliothèque), **le Sphinx**
