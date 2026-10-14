@@ -293,4 +293,71 @@ router.delete('/proches/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// ── Les tests spirituels : les résultats gardés (migration 014) ──
+// On garde le profil et la date, jamais les réponses. Chaque passage
+// est une ligne ; la cliente peut en effacer une.
+const TEST_SLUG = /^[a-z0-9-]{1,60}$/;
+
+// GET /api/profil/tests — mes résultats, les plus récents d'abord
+router.get('/tests', authMiddleware, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('resultats_tests')
+      .select('id, test, profil, titre_profil, score, cree_le')
+      .eq('client_id', req.user.id)
+      .order('cree_le', { ascending: false })
+      .limit(200);
+    if (error) throw error;
+    res.json({
+      resultats: (data || []).map((r) => ({
+        id: r.id, test: r.test, profil: r.profil, titreProfil: r.titre_profil, score: r.score, creeLe: r.cree_le,
+      })),
+    });
+  } catch (err) {
+    console.error('Erreur résultats tests:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/profil/tests — enregistrer un résultat { test, profil, titreProfil, score? }
+router.post('/tests', authMiddleware, async (req, res) => {
+  try {
+    const { test, profil, titreProfil, score } = req.body || {};
+    if (typeof test !== 'string' || !TEST_SLUG.test(test)) return res.status(400).json({ error: 'Test invalide.' });
+    if (typeof profil !== 'string' || profil.length < 1 || profil.length > 60) return res.status(400).json({ error: 'Profil invalide.' });
+    if (typeof titreProfil !== 'string' || titreProfil.length < 1 || titreProfil.length > 120) return res.status(400).json({ error: 'Profil invalide.' });
+    const scoreOk = score === null || score === undefined ? null : Number.isInteger(score) ? score : NaN;
+    if (Number.isNaN(scoreOk)) return res.status(400).json({ error: 'Score invalide.' });
+
+    const { data, error } = await supabase
+      .from('resultats_tests')
+      .insert({ client_id: req.user.id, test, profil, titre_profil: titreProfil, score: scoreOk })
+      .select('id, test, profil, titre_profil, score, cree_le')
+      .single();
+    if (error) throw error;
+    res.status(201).json({
+      resultat: { id: data.id, test: data.test, profil: data.profil, titreProfil: data.titre_profil, score: data.score, creeLe: data.cree_le },
+    });
+  } catch (err) {
+    console.error('Erreur enregistrement test:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// DELETE /api/profil/tests/:id — effacer un de mes résultats
+router.delete('/tests/:id', authMiddleware, async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('resultats_tests')
+      .delete()
+      .eq('id', req.params.id)
+      .eq('client_id', req.user.id);
+    if (error) throw error;
+    res.status(204).end();
+  } catch (err) {
+    console.error('Erreur effacement test:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;

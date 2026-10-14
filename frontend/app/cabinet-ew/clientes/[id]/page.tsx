@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { notFound, useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetShell from "@/components/CabinetShell";
+import { CATALOGUE } from "@/lib/tests";
 import FilChronologique, {
   type EvenementFil,
 } from "@/components/FilChronologique";
@@ -98,6 +99,8 @@ interface Fiche {
   augures: Note[];
   datesMarquantes: DateMarquante[];
   rythme: Rythme;
+  /** Ses tests spirituels : le profil et la date, jamais les réponses (014) */
+  resultatsTests?: { id: string; test: string; profil: string; titreProfil: string; score: number | null; creeLe: string }[];
 }
 
 const LIEN_LABELS: Record<string, string> = {
@@ -992,6 +995,34 @@ export default function FicheClientePage() {
                 </li>
               );
             })}
+          </ul>
+        )}
+      </section>
+
+      {/* Ses tests spirituels — elle sait qu'Elena les voit ici */}
+      <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
+        <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
+          Ses tests spirituels
+        </h2>
+        <p className="mt-0.5 text-sm text-mention">
+          Le profil obtenu et la date — pas ses réponses. Elle peut effacer un résultat.
+        </p>
+        {!fiche.resultatsTests || fiche.resultatsTests.length === 0 ? (
+          <p className="mt-3 text-sm text-mention">Aucun test fait pour l&apos;instant.</p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {fiche.resultatsTests.map((r) => (
+              <li
+                key={r.id}
+                className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 rounded-xl border border-greige/50 bg-cream px-4 py-2.5"
+              >
+                <span className="font-medium text-ink">{r.titreProfil}</span>
+                <span className="text-xs text-mention">
+                  {CATALOGUE.find((e) => e.slug === r.test)?.titre ?? r.test} ·{" "}
+                  {new Date(r.creeLe).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                </span>
+              </li>
+            ))}
           </ul>
         )}
       </section>

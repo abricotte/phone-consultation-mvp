@@ -312,5 +312,28 @@ réponses, points par profil, textes de résultat).
   l'appel ; c'est écrit sous le test. Rien n'est partagé ailleurs.
 - Ordre : les sept du site actuel d'abord, puis les huit anciens. Le test
   « changement majeur en 2026 » est daté : à renouveler chaque année ou à
-  retirer. Après le 1er novembre ; deux à trois jours.
+  retirer.
+
+**Construit le 14 octobre au soir (Elena a demandé de ne pas attendre)** :
+- `frontend/lib/tests/` : les sept tests portés tels quels depuis le site
+  (`types.ts`, un fichier par test, `index.ts` = le catalogue des quinze,
+  les huit anciens en « bientôt ») ; les liens du site remplacés par les
+  routes de l'espace ; deux cartes de la Pythie ajoutées
+  (`la-flamme-jumelle`, `le-contrat-d-ame`).
+- `components/TestSpirituel.tsx` : le moteur (intro → une question à la
+  fois → résultat), deux familles : par profils (lettre dominante,
+  repli, tendance secondaire) et par score (paliers) — mêmes règles que
+  le site.
+- `app/tests/page.tsx` (catalogue + « Mes résultats », effacer) et
+  `app/tests/[slug]/page.tsx` (le test ; le résultat est enregistré dès
+  qu'il s'affiche ; « vous l'avez déjà fait le … »).
+- Backend : migration **014_resultats_tests** (table `resultats_tests` :
+  client, test, profil, titre, score, date — jamais les réponses) ;
+  routes `GET/POST /api/profil/tests`, `DELETE /api/profil/tests/:id` ;
+  la fiche cliente du cabinet reçoit `resultatsTests` et affiche « Ses
+  tests spirituels ».
+- **À faire par Elena** : exécuter `014_resultats_tests.sql` dans
+  Supabase avant le push (sinon les tests marchent mais rien n'est
+  gardé). Reste : extraire les huit tests de l'ancien WordPress
+  (`Downloads\WORDPRESS ELENA\pages-texte-2026`).
 

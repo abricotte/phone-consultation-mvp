@@ -1,0 +1,301 @@
+// Test porté du site elena-wolska.com (ressources gratuites, page « quel-est-mon-don-spirituel »), texte d'Elena.
+// Les données seulement : le composant est components/TestSpirituel.tsx.
+/* eslint-disable */
+import type { TestProfils, TestScore, QuestionProfil } from './types';
+
+const quizConfig: TestProfils = {
+  mode: 'profils',
+  slug: 'don-spirituel',
+  title: 'Quel est mon Don Spirituel ?',
+  subtitle: 'Découvrez le don intuitif qui vibre le plus fort en vous',
+  tag: 'Test Spirituel',
+
+
+  intro: [
+    '<strong>Chaque âme possède des capacités intuitives uniques qui ne demandent qu\u2019à s\u2019éveiller.</strong>',
+    "Certaines personnes voient des images, d'autres ressentent les énergies dans leur corps, d'autres encore captent les émotions ou communiquent avec l'invisible. Et certaines ont le don de guérir par leurs mains.",
+    "Ce test va vous aider à identifier votre don spirituel dominant \u2014 celui qui est naturellement le plus développé en vous. Répondez spontanément, sans trop réfléchir : votre première réponse est souvent la plus juste.",
+  ],
+  spiritualMessage:
+    "Votre don spirituel n'est pas un hasard. C'est un cadeau de l'âme, une partie de votre mission de vie. Plus vous l'honorez et le développez, plus vous vous alignez avec qui vous êtes vraiment. N'ayez pas peur de votre lumière.",
+  spiritualMessageFallback:
+    "Le fait de chercher à vous connaître est déjà un premier pas sur le chemin spirituel. Votre curiosité vous a mené(e) ici, et c'est le signe que quelque chose en vous désire s'éveiller. Soyez patient(e) avec vous-même.",
+  fallbackCategory: 'N',
+  questions: [
+    {
+      title: "Quand vous rencontrez quelqu'un pour la première fois, que percevez-vous en premier ?",
+      options: [
+        { letter: 'A', text: "Je capte immédiatement son état émotionnel, parfois avant même qu'il parle", category: 'E' },
+        { letter: 'B', text: 'J\'ai des réactions physiques spontanées : frissons, tension ou détente', category: 'S' },
+        { letter: 'C', text: 'Je me fie à ce que la personne dit et fait, rien de particulier', category: 'N' },
+        { letter: 'D', text: "J'ai souvent envie de m'approcher pour aider ou réconforter", category: 'G' },
+        { letter: 'E', text: 'Des images ou des impressions visuelles me viennent spontanément', category: 'C' },
+        { letter: 'F', text: 'Je perçois quelque chose autour de la personne, comme une atmosphère particulière', category: 'M' },
+      ],
+    },
+    {
+      title: 'Comment recevez-vous le plus souvent vos intuitions ?',
+      options: [
+        { letter: 'A', text: 'Des pensées ou des mots surgissent dans ma tête, comme dictés', category: 'M' },
+        { letter: 'B', text: 'Par des rêves marquants ou des flashs visuels soudains', category: 'C' },
+        { letter: 'C', text: 'Une chaleur ou une énergie circule dans mes mains ou mon corps', category: 'G' },
+        { letter: 'D', text: "Je réfléchis logiquement, je n'ai pas vraiment d'intuitions particulières", category: 'N' },
+        { letter: 'E', text: "Une émotion soudaine m'envahit sans raison apparente", category: 'E' },
+        { letter: 'F', text: 'Des sensations physiques : picotements, pression, changement de température', category: 'S' },
+      ],
+    },
+    {
+      title: "Dans un lieu ancien ou chargé d'histoire, comment réagissez-vous ?",
+      options: [
+        { letter: 'A', text: 'Mon corps réagit fortement : lourdeur, froid, malaise ou bien-être intense', category: 'S' },
+        { letter: 'B', text: "J'apprécie l'architecture et l'histoire, mais rien de plus", category: 'N' },
+        { letter: 'C', text: 'Je sens que je ne suis pas seul(e), comme des présences autour de moi', category: 'M' },
+        { letter: 'D', text: "Des émotions anciennes m'envahissent, qui ne sont pas les miennes", category: 'E' },
+        { letter: 'E', text: "Mes mains picotent, j'ai envie de toucher les murs ou les objets", category: 'G' },
+        { letter: 'F', text: 'Je vois des scènes ou des images du passé, comme un film intérieur', category: 'C' },
+      ],
+    },
+    {
+      title: "Quand un proche ne va pas bien, même à distance, comment le savez-vous ?",
+      options: [
+        { letter: 'A', text: "J'ai une envie soudaine de l'appeler ou de le serrer dans mes bras", category: 'G' },
+        { letter: 'B', text: "Je ressens sa tristesse ou son angoisse comme si c'était la mienne", category: 'E' },
+        { letter: 'C', text: 'Son visage ou une image de lui apparaît dans ma tête', category: 'C' },
+        { letter: 'D', text: "Une pensée ou un message me traverse l'esprit à son sujet", category: 'M' },
+        { letter: 'E', text: "Je ne le sais pas vraiment avant qu'il me le dise", category: 'N' },
+        { letter: 'F', text: "J'ai un malaise physique : nœud à l'estomac, oppression thoracique", category: 'S' },
+      ],
+    },
+    {
+      title: 'Pendant la méditation ou les moments de détente profonde, que se passe-t-il ?',
+      options: [
+        { letter: 'A', text: 'Des images, des couleurs ou des symboles apparaissent', category: 'C' },
+        { letter: 'B', text: 'Des émotions remontent, parfois sans lien avec ma vie actuelle', category: 'E' },
+        { letter: 'C', text: "Je me détends, c'est agréable, mais rien de spécial", category: 'N' },
+        { letter: 'D', text: 'Mes mains chauffent ou je sens une énergie circuler en moi', category: 'G' },
+        { letter: 'E', text: "J'ai l'impression d'être accompagné(e) ou guidé(e)", category: 'M' },
+        { letter: 'F', text: 'Je ressens des vibrations ou des sensations dans tout le corps', category: 'S' },
+      ],
+    },
+    {
+      title: "Enfant, quelle expérience vous semble la plus familière ?",
+      options: [
+        { letter: 'A', text: 'Je parlais à des êtres invisibles ou je sentais des présences la nuit', category: 'M' },
+        { letter: 'B', text: "Les adultes disaient que je leur faisais du bien, les animaux venaient vers moi", category: 'G' },
+        { letter: 'C', text: "Je pleurais facilement devant la tristesse des autres, j'absorbais tout", category: 'E' },
+        { letter: 'D', text: 'Une enfance normale, rien de particulier à signaler', category: 'N' },
+        { letter: 'E', text: "J'étais très sensible aux ambiances, certains endroits me mettaient mal à l'aise", category: 'S' },
+        { letter: 'F', text: "J'avais des amis imaginaires très vivants ou des rêves qui se réalisaient", category: 'C' },
+      ],
+    },
+    {
+      title: "Comment savez-vous quand quelqu'un ne vous dit pas toute la vérité ?",
+      options: [
+        { letter: 'A', text: "Je ressens un malaise émotionnel, une dissonance dans ce qu'il dégage", category: 'E' },
+        { letter: 'B', text: "J'ai une image ou un flash qui me montre autre chose que ce qu'il dit", category: 'C' },
+        { letter: 'C', text: 'Je me fie aux incohérences dans son discours ou son comportement', category: 'N' },
+        { letter: 'D', text: 'Mon corps réagit : nœud au ventre, tension, ou sensation désagréable', category: 'S' },
+        { letter: 'E', text: 'J\'entends comme une petite voix intérieure qui me dit "attention"', category: 'M' },
+        { letter: 'F', text: "Je sens que son énergie est trouble, comme brouillée ou fermée", category: 'G' },
+      ],
+    },
+    {
+      title: 'Quel environnement vous ressource le plus naturellement ?',
+      options: [
+        { letter: 'A', text: "Près de l'eau : mer, lac, rivière \u2014 tout ce qui est fluide et profond", category: 'E' },
+        { letter: 'B', text: "Près du feu, au soleil, là où il y a chaleur et énergie vitale", category: 'G' },
+        { letter: 'C', text: "Chez moi, dans mon confort habituel, sans préférence particulière", category: 'N' },
+        { letter: 'D', text: 'Dans des lieux sacrés, des églises, des espaces de recueillement', category: 'M' },
+        { letter: 'E', text: 'Dans la lumière : lever de soleil, cristaux, lieux lumineux', category: 'C' },
+        { letter: 'F', text: 'En pleine nature : forêt, montagne, contact direct avec la terre', category: 'S' },
+      ],
+    },
+    {
+      title: 'Comment décririez-vous votre plus grande force intuitive ?',
+      options: [
+        { letter: 'A', text: "Je ne suis pas vraiment intuitif(ve), je me fie à la logique", category: 'N' },
+        { letter: 'B', text: 'Je peux apaiser les gens par ma simple présence', category: 'G' },
+        { letter: 'C', text: "Je reçois des informations ou des messages sans savoir d'où ils viennent", category: 'M' },
+        { letter: 'D', text: "Je perçois des choses avant qu'elles n'arrivent", category: 'C' },
+        { letter: 'E', text: "Je comprends les gens mieux qu'ils ne se comprennent eux-mêmes", category: 'E' },
+        { letter: 'F', text: 'Mon corps me dit toujours quand quelque chose ne va pas', category: 'S' },
+      ],
+    },
+    {
+      title: 'Quelle affirmation vous correspond le mieux ?',
+      options: [
+        { letter: 'A', text: 'Mon corps capte des informations que mon mental ne comprend pas toujours', category: 'S' },
+        { letter: 'B', text: "Je ressens beaucoup, parfois trop \u2014 les émotions des autres m'envahissent", category: 'E' },
+        { letter: 'C', text: "J'ai toujours senti que j'avais un lien avec quelque chose de plus grand", category: 'M' },
+        { letter: 'D', text: "Les gens me disent souvent qu'ils se sentent mieux après m'avoir vu(e)", category: 'G' },
+        { letter: 'E', text: "Je suis plutôt terre-à-terre, je ne crois que ce que je vois", category: 'N' },
+        { letter: 'F', text: 'Je vois des choses que les autres ne voient pas', category: 'C' },
+      ],
+    },
+    {
+      title: 'Quelle pratique vous attire le plus naturellement ?',
+      options: [
+        { letter: 'A', text: 'Les soins énergétiques, le reiki, le travail avec les mains', category: 'G' },
+        { letter: 'B', text: "Aucune en particulier, ces pratiques ne m'attirent pas vraiment", category: 'N' },
+        { letter: 'C', text: "Le tarot, l'interprétation des rêves, la voyance", category: 'C' },
+        { letter: 'D', text: "L'accompagnement des autres, l'écoute profonde, le soutien émotionnel", category: 'E' },
+        { letter: 'E', text: 'La lithothérapie, le travail avec les cristaux et les énergies des lieux', category: 'S' },
+        { letter: 'F', text: "La communication avec l'invisible, le channeling, la guidance spirituelle", category: 'M' },
+      ],
+    },
+    {
+      title: 'Quel don aimeriez-vous le plus développer ?',
+      options: [
+        { letter: 'A', text: "Voir au-delà du visible : l'avenir, les vies passées, l'invisible", category: 'C' },
+        { letter: 'B', text: 'Communiquer avec les défunts, les guides ou les êtres de lumière', category: 'M' },
+        { letter: 'C', text: 'Comprendre et aider les autres émotionnellement', category: 'E' },
+        { letter: 'D', text: 'Je ne cherche pas à développer de don particulier', category: 'N' },
+        { letter: 'E', text: "Guérir et soulager par l'énergie", category: 'G' },
+        { letter: 'F', text: 'Ressentir les énergies et les vibrations subtiles', category: 'S' },
+      ],
+    },
+  ],
+  results: {
+    C: {
+      name: 'Clairvoyance',
+      icon: 'eye',
+      tagline: 'Vous voyez au-delà du voile',
+      description: "Vos réponses révèlent que la clairvoyance est votre don spirituel dominant. Vous possédez la capacité de voir au-delà de la réalité visible \u2014 par des flashs visuels, des images symboliques, des rêves prémonitoires ou des visions spontanées. Votre troisième œil est naturellement actif.",
+      howItWorks: "La clairvoyance se manifeste par la réception d'informations sous forme visuelle. Cela peut être des images mentales, des couleurs, des symboles, des scènes du passé ou de l'avenir, ou encore des visions pendant la méditation ou les rêves. Vous avez probablement toujours eu une imagination très riche et visuelle.",
+      signs: [
+        'Vous faites souvent des rêves prémonitoires ou très symboliques',
+        "Vous \"voyez\" les choses avant qu'elles n'arrivent",
+        'Vous percevez des couleurs autour des gens (auras)',
+        'Votre imagination visuelle est très développée',
+        "Vous recevez des flashs d'images spontanés",
+      ],
+      development: [
+        'Tenez un journal de rêves et analysez leurs symboles',
+        'Pratiquez la visualisation et la méditation guidée',
+        "Travaillez avec les cartes de tarot ou d'oracle pour entraîner votre vision symbolique",
+        'Exercez-vous à percevoir les auras en regardant autour des personnes',
+        'Faites confiance aux images qui vous viennent spontanément',
+      ],
+      practices: "Voyance, tarot, interprétation des rêves, lecture d'aura, médiumnité visuelle",
+      affirmation: "\"Mon troisième œil s'ouvre naturellement. Je fais confiance aux visions qui me sont données. Je vois avec clarté ce qui est caché aux autres.\"",
+    },
+    S: {
+      name: 'Clairsentience',
+      icon: 'hand',
+      tagline: "Votre corps est un récepteur d'informations subtiles",
+      description: "Vos réponses révèlent que la clairsentience est votre don spirituel dominant. Votre corps est un instrument de perception extraordinaire qui capte les énergies, les vibrations et les informations subtiles. Vous ressentez physiquement ce que les autres pensent ou vivent.",
+      howItWorks: "La clairsentience se manifeste par des sensations corporelles : frissons, picotements, chaleur, froid, oppression, légèreté... Votre corps vous parle et vous donne des informations sur les personnes, les lieux et les situations. C'est une forme d'intuition très ancrée et fiable.",
+      signs: [
+        "Vous avez des frissons ou des sensations physiques quand quelque chose est vrai",
+        'Vous ressentez l\'énergie des lieux (lourdeur, légèreté...)',
+        'Votre corps réagit avant même que vous ne compreniez mentalement',
+        "Vous êtes très sensible aux changements d'atmosphère",
+        'Vous captez les énergies des objets que vous touchez',
+      ],
+      development: [
+        'Apprenez à identifier et nommer vos sensations corporelles',
+        'Pratiquez le scan corporel pour affiner votre perception',
+        'Tenez un journal de vos ressentis et vérifiez leur exactitude',
+        'Travaillez avec les cristaux et les pierres pour entraîner votre sensibilité',
+        'Faites confiance à ce que votre corps vous dit, même si votre mental doute',
+      ],
+      practices: "Psychométrie, lecture d'énergie, lithothérapie, géobiologie, ressenti des lieux",
+      affirmation: "\"Mon corps est un instrument de perception fiable. Je fais confiance à mes ressentis. Les sensations qui me traversent sont des messages précieux.\"",
+    },
+    M: {
+      name: 'Médiumnité',
+      icon: 'bird',
+      tagline: 'Vous êtes un pont entre les mondes',
+      description: "Vos réponses révèlent que la médiumnité est votre don spirituel dominant. Vous avez la capacité naturelle de percevoir et de communiquer avec des dimensions invisibles \u2014 que ce soit les défunts, les guides spirituels, les anges ou d'autres entités de lumière.",
+      howItWorks: "La médiumnité peut se manifester de différentes façons : entendre des voix ou des messages (clairaudience), ressentir des présences, recevoir des pensées qui ne sont pas les vôtres, ou simplement savoir des choses sans savoir comment. Vous êtes un canal naturel entre le visible et l'invisible.",
+      signs: [
+        'Vous sentez souvent des présences autour de vous',
+        "Vous recevez des pensées ou des messages \"de nulle part\"",
+        'Les défunts semblent vous contacter (rêves, signes...)',
+        "Vous vous êtes toujours senti(e) accompagné(e) par des forces invisibles",
+        'Vous captez des informations sur les personnes décédées',
+      ],
+      development: [
+        "Apprenez à vous protéger énergétiquement avant d'ouvrir vos canaux",
+        'Pratiquez la méditation pour affiner votre réception',
+        'Travaillez avec un mentor expérimenté pour développer votre don en sécurité',
+        'Apprenez à distinguer vos propres pensées des messages reçus',
+        'Demandez des signes de confirmation pour valider vos perceptions',
+      ],
+      practices: 'Communication avec les défunts, channeling, guidance spirituelle, travail avec les guides',
+      affirmation: "\"Je suis un canal clair et protégé. Je communique avec le monde invisible en toute sécurité. Les messages que je reçois sont porteurs de lumière et de guérison.\"",
+    },
+    E: {
+      name: 'Empathie',
+      icon: 'heart-handshake',
+      tagline: 'Vous ressentez les émotions des autres comme les vôtres',
+      description: "Vos réponses révèlent que l'empathie est votre don spirituel dominant. Vous avez la capacité de ressentir profondément les émotions des autres, parfois même de les absorber. Ce don puissant vous permet de comprendre les êtres humains à un niveau que peu de personnes atteignent.",
+      howItWorks: "L'empathie spirituelle va au-delà de la simple compassion. Vous ressentez littéralement ce que les autres ressentent \u2014 leur joie, leur tristesse, leur anxiété, leur colère. Parfois, vous ne savez même pas si une émotion vous appartient ou si elle vient de quelqu'un d'autre.",
+      signs: [
+        "Vous êtes submergé(e) par les émotions dans les foules",
+        'Vous pleurez facilement devant la souffrance des autres',
+        "Vous savez ce que les gens ressentent même s'ils le cachent",
+        'Vous avez du mal à distinguer vos émotions de celles des autres',
+        'Les gens se confient naturellement à vous',
+      ],
+      development: [
+        'Apprenez à vous ancrer et à vous protéger énergétiquement',
+        'Pratiquez la distinction entre vos émotions et celles des autres',
+        'Créez des pratiques de nettoyage énergétique quotidiennes',
+        'Transformez votre empathie en compassion (ressentir sans absorber)',
+        'Utilisez votre don pour aider les autres consciemment',
+      ],
+      practices: 'Accompagnement émotionnel, coaching intuitif, thérapie énergétique, lecture émotionnelle',
+      affirmation: "\"Je ressens avec le cœur tout en restant ancré(e) en moi. Mon empathie est un don précieux que je maîtrise. Je peux comprendre les autres sans me perdre.\"",
+    },
+    G: {
+      name: 'Magnétisme',
+      icon: 'magnet',
+      tagline: "L'énergie de guérison coule à travers vos mains",
+      description: "Vos réponses révèlent que le magnétisme est votre don spirituel dominant. Vous avez la capacité naturelle de canaliser l'énergie de guérison à travers vos mains. Votre présence seule peut apporter apaisement, soulagement et réconfort.",
+      howItWorks: "Le magnétisme se manifeste par une chaleur, des picotements ou une vibration dans les mains. Quand vous touchez quelqu'un ou que vous posez vos mains près de lui, vous transmettez une énergie qui peut soulager les douleurs, harmoniser les chakras et rééquilibrer le corps énergétique.",
+      signs: [
+        'Vos mains chauffent spontanément ou dans certaines situations',
+        "Les gens se sentent mieux après avoir été en votre présence",
+        'Vous avez une envie naturelle de poser vos mains sur les zones douloureuses',
+        'Les animaux et les enfants sont naturellement attirés par vous',
+        "Vous ressentez un flux d'énergie quand vous touchez quelqu'un",
+      ],
+      development: [
+        "Pratiquez des exercices pour sentir l'énergie entre vos mains",
+        "Formez-vous au reiki ou à d'autres techniques de soins énergétiques",
+        "Apprenez à canaliser l'énergie universelle plutôt que votre propre énergie",
+        'Travaillez sur votre ancrage pour ne pas vous épuiser',
+        'Pratiquez régulièrement sur vous-même et vos proches',
+      ],
+      practices: 'Magnétisme, reiki, soins énergétiques, imposition des mains, guérison à distance',
+      affirmation: "\"L'énergie de guérison coule à travers moi librement. Mes mains sont des instruments de lumière. Je canalise la guérison pour le plus grand bien de tous.\"",
+    },
+    N: {
+      name: 'Potentiel en Éveil',
+      icon: 'sprout',
+      tagline: "Vos capacités intuitives sont en sommeil, prêtes à s'éveiller",
+      description: "Vos réponses indiquent que vos capacités intuitives ne se sont pas encore manifestées de façon évidente dans votre vie. Cela ne signifie pas que vous n'avez pas de don \u2014 simplement que celui-ci est peut-être encore en sommeil, ou que vous n'avez pas encore appris à reconnaître les signes.",
+      howItWorks: "Beaucoup de personnes traversent la vie sans jamais développer leur intuition, simplement parce qu'elles n'y ont pas été encouragées ou qu'elles ont appris à ignorer ces signaux subtils. L'éducation, la société et le rationalisme peuvent bloquer ces perceptions naturelles. Mais il n'est jamais trop tard pour les éveiller.",
+      signs: [
+        'Vous avez parfois des "coïncidences" troublantes',
+        "Il vous arrive de penser à quelqu'un juste avant qu'il vous appelle",
+        'Vous avez des pressentiments que vous ignorez souvent',
+        "Vous êtes attiré(e) par le monde spirituel sans savoir par où commencer",
+        'Vous aimeriez développer votre intuition mais ne savez pas comment',
+      ],
+      development: [
+        "Commencez par un journal d'intuitions : notez vos pressentiments et vérifiez-les",
+        'Pratiquez la méditation régulièrement pour calmer le mental',
+        'Passez du temps dans la nature pour vous reconnecter à votre ressenti',
+        'Faites attention aux "coïncidences" \u2014 ce sont souvent des signes',
+        'Soyez patient(e) : le développement spirituel prend du temps',
+      ],
+      practices: 'Méditation, journaling, pleine conscience, connexion à la nature, développement personnel',
+      affirmation: "\"Mon intuition s'éveille doucement. Je suis ouvert(e) aux signes de l'univers. Chaque jour, je me connecte un peu plus à ma sagesse intérieure.\"",
+    },
+  },
+};
+
+const test: TestProfils | TestScore = quizConfig;
+export default test;

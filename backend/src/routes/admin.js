@@ -739,6 +739,15 @@ router.get('/clientes/:id', async (req, res) => {
         .order('date', { ascending: true }),
     ]);
 
+    // Ses tests spirituels : le profil obtenu et la date, jamais les
+    // réponses (migration 014). Elle sait qu'Elena les voit ici.
+    const { data: resultatsTests } = await supabase
+      .from('resultats_tests')
+      .select('id, test, profil, titre_profil, score, cree_le')
+      .eq('client_id', cliente.id)
+      .order('cree_le', { ascending: false })
+      .limit(60);
+
     // Ses recharges (crédits Stripe) — l'autre moitié de son histoire
     let recharges = [];
     if (wallet?.id) {
@@ -822,6 +831,9 @@ router.get('/clientes/:id', async (req, res) => {
       })),
       // SIGNAL DE SILENCE — information, jamais relance automatique
       rythme,
+      resultatsTests: (resultatsTests || []).map((r) => ({
+        id: r.id, test: r.test, profil: r.profil, titreProfil: r.titre_profil, score: r.score, creeLe: r.cree_le,
+      })),
       proches: (proches || []).map((pr) => ({
         prenom: pr.prenom,
         dateNaissance: pr.date_naissance,

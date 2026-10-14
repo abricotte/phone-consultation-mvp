@@ -85,6 +85,11 @@ export const api = {
   getProchainRendezVous: () => request("/profil/rendez-vous"),
   // Le mot d'Elena — affiché sous le bonjour, remplace la citation du jour
   getMotElena: () => request("/profil/mot-elena"),
+  // Les tests spirituels : mes résultats (migration 014)
+  getTests: () => request("/profil/tests"),
+  saveTest: (body: { test: string; profil: string; titreProfil: string; score: number | null }) =>
+    request("/profil/tests", { method: "POST", body: JSON.stringify(body) }),
+  deleteTest: (id: string) => request(`/profil/tests/${id}`, { method: "DELETE" }),
   updateProfil: (body: {
     dateNaissance?: string | null;
     ascendant?: string | null;
