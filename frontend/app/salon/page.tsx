@@ -25,12 +25,15 @@ const LIVRES = [
   },
 ];
 
-const BOOSTS_A_VENIR = [
-  "La vulnérabilité",
-  "Avant de lui écrire",
-  "La solitude est belle, profitez-en",
-  "Après une rupture",
-  "Est-ce que vous l'aimez vraiment ?",
+// Les boosts : un fichier audio par boost (fourni par Elena, dans
+// public/audio/boosts), sa durée ; sans fichier, le boost est « bientôt ».
+type Boost = { titre: string; src?: string; duree?: string };
+const BOOSTS: Boost[] = [
+  { titre: "La vulnérabilité, c'est beau aussi", src: "/audio/boosts/la-vulnerabilite.mp4", duree: "2 min 37" },
+  { titre: "Avant de lui écrire" },
+  { titre: "La solitude est belle, profitez-en" },
+  { titre: "Après une rupture" },
+  { titre: "Est-ce que vous l'aimez vraiment ?" },
 ];
 
 export default function SalonPage() {
@@ -63,15 +66,26 @@ export default function SalonPage() {
             certitude ou tout simplement, apaise.
           </p>
           <ul className="mt-5 divide-y divide-greige/50 rounded-[20px] border border-greige/60 bg-ivory">
-            {BOOSTS_A_VENIR.map((t) => (
-              <li key={t} className="flex items-center gap-4 px-5 py-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blush text-aubergine/50">
-                  <span className="ml-0.5 border-y-[7px] border-l-[11px] border-y-transparent border-l-current" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold text-aubergine">{t}</span>
-                </span>
-                <span className="shrink-0 text-[12px] text-gold-dark">offert · bientôt</span>
+            {BOOSTS.map((b) => (
+              <li key={b.titre} className="px-5 py-4">
+                <div className="flex items-center gap-4">
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${b.src ? "bg-aubergine text-cream" : "bg-blush text-aubergine/50"}`}
+                  >
+                    <span className="ml-0.5 border-y-[7px] border-l-[11px] border-y-transparent border-l-current" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold text-aubergine">{b.titre}</span>
+                    {b.duree && <span className="block text-[12px] text-mention">{b.duree} · la voix d&apos;Elena</span>}
+                  </span>
+                  <span className="shrink-0 text-[12px] text-gold-dark">{b.src ? "offert" : "offert · bientôt"}</span>
+                </div>
+                {b.src && (
+                  // Un mp4 avec une piste audio se lit dans <audio> : le navigateur ignore l'image.
+                  <audio controls preload="metadata" src={b.src} className="mt-3 w-full">
+                    Votre navigateur ne lit pas cet audio.
+                  </audio>
+                )}
               </li>
             ))}
           </ul>
