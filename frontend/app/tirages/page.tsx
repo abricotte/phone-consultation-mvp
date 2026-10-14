@@ -1,14 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import EspaceShell from "@/components/EspaceShell";
-import { Filet, Eventail, Bientot } from "@/components/Ornements";
+import { Eventail } from "@/components/Ornements";
 
-// MES TIRAGES — « Elena tire pour vous ». Deux tirages à la main : la
-// Petite Pythie (une question) et le Grand Tableau (toute votre vie).
-// La commande en ligne (paiement, file à un par semaine, livraison dans
-// l'espace) arrive après le lancement : la page dit ce qui existe, à quel
-// prix, et comment commander en attendant. Décisions et prix : Elena,
-// 12-13 octobre 2026 (docs/espace-cliente-mon-univers.md).
+// MES TIRAGES — « Elena tire pour vous ». Deux tirages à la main, en deux
+// colonnes, chacun avec son bouton « Je commande mon tirage » (Elena,
+// 14 octobre). Le paiement sera relié à PayPal plus tard : d'ici là, le
+// bouton dit comment commander. Décisions et prix : Elena, 12-14 octobre
+// 2026 (docs/espace-cliente-mon-univers.md).
 
 const PYTHIE = ["/images/pythie/la-vision.webp", "/images/pythie/le-grand-amour.webp", "/images/pythie/le-rendez-vous.webp"];
 const LENORMAND = ["01-cavalier", "09-bouquet", "24-coeur", "29-femme", "31-soleil", "33-cle", "32-lune", "16-etoile"].map(
@@ -32,7 +32,33 @@ function Tableau() {
   );
 }
 
+type Tirage = "pythie" | "tableau";
+
 export default function TiragesPage() {
+  // Le bouton existe ; le paiement arrive. En attendant il dit comment faire.
+  const [commande, setCommande] = useState<Tirage | null>(null);
+
+  function BoutonCommande({ quoi }: { quoi: Tirage }) {
+    return (
+      <div className="mt-6">
+        <button
+          type="button"
+          onClick={() => setCommande(commande === quoi ? null : quoi)}
+          className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-aubergine px-6 py-3 text-[14px] font-semibold text-cream hover:bg-aubergine/90"
+        >
+          Je commande mon tirage <span aria-hidden>→</span>
+        </button>
+        {commande === quoi && (
+          <p className="mt-3 rounded-[16px] border border-gold/30 bg-ivory px-4 py-3 text-[13px] leading-relaxed text-ink/80">
+            <span className="mr-2 text-gold">✦</span>
+            Le paiement en ligne arrive. D&apos;ici là, demandez votre tirage à Elena lors d&apos;une consultation, ou par{" "}
+            <a href="https://elena-wolska.com/contact" className="font-semibold text-prix hover:underline">le site</a>.
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <EspaceShell>
       <header className="mb-10 max-w-2xl">
@@ -45,14 +71,12 @@ export default function TiragesPage() {
         </p>
       </header>
 
-      {/* ── La Petite Pythie ── */}
-      <section className="grid items-center gap-8 md:grid-cols-5">
-        <div className="md:col-span-2">
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* ── La Petite Pythie ── */}
+        <section className="flex flex-col rounded-[28px] border border-[#EAD6DF] bg-[#F8EDF2] p-6 md:p-8">
           <Eventail images={PYTHIE} />
-        </div>
-        <div className="md:col-span-3">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Une question</p>
-          <h2 className="mt-1 font-serif text-[34px] font-semibold leading-tight text-aubergine">La Petite Pythie</h2>
+          <p className="mt-6 text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Une question</p>
+          <h2 className="mt-1 font-serif text-[32px] font-semibold leading-tight text-aubergine">La Petite Pythie</h2>
           <p className="mt-3 text-[15px] leading-relaxed text-ink/85">
             Mon oracle : trente-six cartes que j&apos;ai peintes à la main, consacrées à Delphes et à Délos.
             J&apos;en tire trois pour vous, sur la question qui vous occupe — une décision, une hésitation, un
@@ -62,18 +86,18 @@ export default function TiragesPage() {
             Vous recevez la photo de vos trois cartes et une lecture d&apos;une à deux pages, sous trois jours.
           </p>
           <p className="mt-5 font-serif text-3xl font-semibold tabular-nums text-aubergine">55 €</p>
-        </div>
-      </section>
+          <div className="mt-auto">
+            <BoutonCommande quoi="pythie" />
+          </div>
+        </section>
 
-      <Filet />
-
-      {/* ── Le Grand Tableau ── */}
-      <section className="grid items-center gap-8 md:grid-cols-5">
-        <div className="order-2 md:order-1 md:col-span-3">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">
+        {/* ── Le Grand Tableau ── */}
+        <section className="flex flex-col rounded-[28px] border border-[#EAD9B4] bg-[#FBF3E2] p-6 md:p-8">
+          <Tableau />
+          <p className="mt-6 text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">
             Toute votre vie, en un regard
           </p>
-          <h2 className="mt-1 font-serif text-[34px] font-semibold leading-tight text-aubergine">
+          <h2 className="mt-1 font-serif text-[32px] font-semibold leading-tight text-aubergine">
             Le Grand Tableau Lenormand
           </h2>
           <p className="mt-3 text-[15px] leading-relaxed text-ink/85">
@@ -91,11 +115,11 @@ export default function TiragesPage() {
             <span className="font-semibold">Un seul tirage du Grand Tableau est effectué par semaine.</span>
           </p>
           <p className="mt-5 font-serif text-3xl font-semibold tabular-nums text-aubergine">149 €</p>
-        </div>
-        <div className="order-1 md:order-2 md:col-span-2">
-          <Tableau />
-        </div>
-      </section>
+          <div className="mt-auto">
+            <BoutonCommande quoi="tableau" />
+          </div>
+        </section>
+      </div>
 
       <p className="mt-8 font-serif text-lg italic text-mention">
         Avec chaque tirage, si vous le souhaitez :{" "}
@@ -103,23 +127,6 @@ export default function TiragesPage() {
           « on en parle », vingt minutes au téléphone après lecture — 39 € au lieu de 58.
         </span>
       </p>
-
-      <Filet />
-
-      {/* ── Commander, en attendant ── */}
-      <section className="max-w-2xl">
-        <h2 className="font-serif text-2xl font-semibold text-aubergine">Commander</h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink/85">
-          La commande depuis votre espace — avec votre place dans la semaine et votre tirage à relire ici —
-          ouvre dans quelques semaines. En attendant, demandez votre tirage à Elena lors d&apos;une
-          consultation, ou par{" "}
-          <a href="https://elena-wolska.com/contact" className="font-semibold text-prix hover:underline">
-            le site
-          </a>
-          .
-        </p>
-        <Bientot>Commande et livraison dans votre espace — bientôt</Bientot>
-      </section>
     </EspaceShell>
   );
 }
