@@ -6,28 +6,27 @@ import { Icone } from "@/components/IconesEspace";
 // Lecture seule ici : on ne duplique pas le formulaire, « Modifier »
 // mène à la section de Profil. La donnée existe déjà (profil.aAborder).
 // Jamais d'état vide silencieux : sans texte, l'encadré invite.
+// Titre et formulation voulus par Elena (14 octobre) : « Pour ma prochaine
+// consultation », sans « Elena le lit » — le mot « consultation » dit en
+// creux à quoi ça sert.
 
 export default function TuileAborder({ texte }: { texte: string }) {
   const vide = !texte.trim();
   return (
     <section className="flex h-full flex-col rounded-3xl border border-greige bg-ivory p-5 md:p-7">
       <h2 className="font-serif text-2xl font-semibold text-aubergine">
-        Ce que je veux aborder
+        Pour ma prochaine consultation
       </h2>
 
       <div className="mt-3 rounded-2xl border border-greige bg-cream p-3.5 text-sm leading-[1.55] text-ink">
         {vide ? (
           <p className="italic text-mention">
-            Rien pour l&apos;instant — notez ici ce que vous voulez lui dire.
+            Notez ici ce que vous souhaitez aborder lors de votre prochaine consultation.
           </p>
         ) : (
           <p className="line-clamp-4 whitespace-pre-line">{texte}</p>
         )}
       </div>
-
-      <p className="mt-2 text-xs text-mention">
-        Elena le lit avant de vous appeler. Personne d&apos;autre.
-      </p>
 
       <a
         href="/profil#aborder"

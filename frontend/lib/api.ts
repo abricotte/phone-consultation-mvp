@@ -81,6 +81,8 @@ export const api = {
 
   // Profil cliente (date de naissance + "personnes qui comptent")
   getProfil: () => request("/profil"),
+  // Le prochain rendez-vous Calendly de la cliente (tuile de l'accueil)
+  getProchainRendezVous: () => request("/profil/rendez-vous"),
   // Le mot d'Elena — affiché sous le bonjour, remplace la citation du jour
   getMotElena: () => request("/profil/mot-elena"),
   updateProfil: (body: {

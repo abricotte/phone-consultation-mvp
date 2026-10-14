@@ -96,6 +96,45 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/profil/rendez-vous - Le prochain rendez-vous Calendly de la
+// cliente. Elle réservait sur Calendly et ne voyait rien dans son espace :
+// la tuile « Prochain rendez-vous » de l'accueil lit ceci. Les liens pour
+// déplacer ou annuler viennent de la charge utile Calendly (jamais
+// réécrits à la main).
+router.get('/rendez-vous', authMiddleware, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('rendez_vous')
+      .select('id, debut, fin, formule, minutes, statut, montant_paye, charge_utile')
+      .eq('client_id', req.user.id)
+      .eq('statut', 'prevu')
+      .gte('fin', new Date().toISOString())
+      .order('debut', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return res.json({ prochain: null });
+
+    const payload = data.charge_utile?.payload || data.charge_utile || {};
+    const lien = (u) => (typeof u === 'string' && /^https:\/\/calendly\.com\//.test(u) ? u : null);
+    res.json({
+      prochain: {
+        id: data.id,
+        debut: data.debut,
+        fin: data.fin,
+        formule: data.formule || null,
+        minutes: data.minutes || null,
+        regle: data.montant_paye !== null && data.montant_paye !== undefined,
+        rescheduleUrl: lien(payload.reschedule_url),
+        cancelUrl: lien(payload.cancel_url),
+      },
+    });
+  } catch (err) {
+    console.error('Erreur prochain rendez-vous:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // PATCH /api/profil - Mise à jour PARTIELLE : seuls les champs présents
 // dans le body sont modifiés (dateNaissance et/ou ascendant, facultatifs).
 router.patch('/', authMiddleware, async (req, res) => {

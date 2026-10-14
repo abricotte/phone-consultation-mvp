@@ -10,6 +10,7 @@ import CarteElena from "@/components/CarteElena";
 import TuileCredit from "@/components/TuileCredit";
 import TuilePermanences, { permanencesVisibles } from "@/components/TuilePermanences";
 import TuileAborder from "@/components/TuileAborder";
+import TuileRendezVous, { type ProchainRendezVous } from "@/components/TuileRendezVous";
 
 // MON ESPACE — l'accueil, « Le Salon » (maquette validée par Elena le
 // 10 octobre 2026). Un tableau de bord doux : tout l'essentiel tient
@@ -59,6 +60,8 @@ export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [prixMinuteCents, setPrixMinuteCents] = useState(290);
   const [minimumMinutes, setMinimumMinutes] = useState(5);
+  const [forfaits, setForfaits] = useState<{ code: string; nom: string; minutes: number; prix: number }[]>([]);
+  const [prochainRdv, setProchainRdv] = useState<ProchainRendezVous | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -104,6 +107,12 @@ export default function DashboardPage() {
       window.history.replaceState({}, "", "/dashboard");
     }
 
+    // Son prochain rendez-vous Calendly — c'est lui qui compte aujourd'hui
+    api
+      .getProchainRendezVous()
+      .then((r: { prochain: ProchainRendezVous | null }) => setProchainRdv(r.prochain))
+      .catch(() => setProchainRdv(null));
+
     // Le mot d'Elena — s'il y en a un, il remplace la citation du jour.
     api
       .getMotElena()
@@ -124,10 +133,17 @@ export default function DashboardPage() {
 
     api
       .getRechargeConfig()
-      .then((c: { prixMinuteCents: number; creditMinimumMinutes: number }) => {
-        if (c?.prixMinuteCents) setPrixMinuteCents(c.prixMinuteCents);
-        if (c?.creditMinimumMinutes) setMinimumMinutes(c.creditMinimumMinutes);
-      })
+      .then(
+        (c: {
+          prixMinuteCents: number;
+          creditMinimumMinutes: number;
+          forfaits?: { code: string; nom: string; minutes: number; prix: number }[];
+        }) => {
+          if (c?.prixMinuteCents) setPrixMinuteCents(c.prixMinuteCents);
+          if (c?.creditMinimumMinutes) setMinimumMinutes(c.creditMinimumMinutes);
+          if (c?.forfaits?.length) setForfaits(c.forfaits);
+        }
+      )
       .catch(() => {
         /* les valeurs par défaut restent affichées */
       });
@@ -226,10 +242,11 @@ export default function DashboardPage() {
 
       {error && <div className="mb-6 rounded-2xl bg-red-50 p-4 text-red-600">{error}</div>}
 
-      {/* ── La grille ── bureau : 3 colonnes, A et C sur deux.
-          Téléphone : une colonne, A → B → C → D. Quand la tuile des
-          permanences n'a rien à dire, D prend toute la largeur — pas de
-          trou. */}
+      {/* ── La grille (v2, 11 octobre) ── bureau, 3 colonnes :
+            la carte d'Elena (2) + le prochain rendez-vous (1) ;
+            le crédit, compact (1) + pour ma prochaine consultation (2) ;
+            les permanences en pleine largeur quand elles ont quelque chose
+            à dire. Téléphone : une colonne, dans cet ordre. */}
       <div className="grid gap-5 md:grid-cols-3">
         <div className="md:col-span-2">
           <CarteElena
@@ -237,20 +254,24 @@ export default function DashboardPage() {
             minimumMinutes={minimumMinutes}
             prixMinuteCents={prixMinuteCents}
             presence={presence}
+            forfaits={forfaits}
+            rendezVousRegle={!!prochainRdv?.regle}
           />
         </div>
 
+        <TuileRendezVous prochain={prochainRdv} />
+
         <TuileCredit soldeEuros={balance} soldeMinutes={minutesRestantes} />
 
+        <div className="md:col-span-2">
+          <TuileAborder texte={aAborder} />
+        </div>
+
         {permVisibles && (
-          <div className="md:col-span-2">
+          <div className="md:col-span-3">
             <TuilePermanences presence={presence} />
           </div>
         )}
-
-        <div className={permVisibles ? "" : "md:col-span-3"}>
-          <TuileAborder texte={aAborder} />
-        </div>
       </div>
     </EspaceShell>
   );

@@ -31,9 +31,18 @@ interface Props {
   presence: ElenaPresence;
   /** Aperçu/tests uniquement : force le statut */
   statutDemo?: ElenaStatus;
+  /** Les formules sur rendez-vous, pour afficher les prix */
+  forfaits?: { code: string; nom: string; minutes: number; prix: number }[];
+  /** Un rendez-vous déjà réglé est prévu : la recharge n'est plus la chose la plus importante */
+  rendezVousRegle?: boolean;
 }
 
 const CALENDLY = "https://elena-wolska.com/disponibilites";
+
+/** « 58 € », « 14,50 € » */
+function euros(n: number): string {
+  return Number.isInteger(n) ? `${n} €` : `${n.toFixed(2).replace(".", ",")} €`;
+}
 
 /** « 14,50 € » — le prix d'un nombre de minutes au tarif courant */
 function prixDe(minutes: number, cents: number): string {
@@ -87,6 +96,8 @@ export default function CarteElena({
   prixMinuteCents,
   presence,
   statutDemo,
+  forfaits = [],
+  rendezVousRegle = false,
 }: Props) {
   const statut = statutDemo ?? presence.statut;
   // « De retour vers 15h03 » — porte qui dit quand elle rouvre
@@ -219,7 +230,15 @@ export default function CarteElena({
   // Deux boutons pleins côte à côte se disputent l'œil (vu sur l'écran
   // de Rue, 11 octobre) : dès que la porte 1 est un vrai bouton — appel
   // ou recharge — la porte 2 passe en contour.
-  const porte1Pleine = enLigne || (permanenceAujourdhui && !creditSuffisant);
+  const porte1Pleine = (enLigne && !rendezVousRegle) || (permanenceAujourdhui && !creditSuffisant);
+  // Quand un rendez-vous est déjà prévu, Réserver ne crie pas non plus.
+  const porte2Contour = porte1Pleine || rendezVousRegle;
+  const decouverte = forfaits.find((f) => f.code === "decouverte");
+  const complete = forfaits.find((f) => f.code === "complete");
+  const sousTitreReserver =
+    decouverte && complete
+      ? `Découverte ${decouverte.minutes} min · ${euros(decouverte.prix)} — Complète ${complete.minutes} min · ${euros(complete.prix)}`
+      : "Découverte 20 min · Complète 45 min";
 
   const classePleine =
     "block w-full rounded-2xl bg-cta px-6 py-[18px] text-center shadow-card transition hover:bg-cta-dark";
@@ -235,7 +254,7 @@ export default function CarteElena({
             {ligne.titre}
           </p>
           {ligne.sousTitre && (
-            <p className={`mt-1 text-sm text-mention ${ligne.italique ? "italic" : ""}`}>
+            <p className={`mt-1 text-[13px] text-mention ${ligne.italique ? "italic" : ""}`}>
               {ligne.sousTitre}
             </p>
           )}
@@ -261,19 +280,32 @@ export default function CarteElena({
               <Icone nom="appeler" taille={20} />
               {appelEnCours ? "Connexion…" : "Appeler maintenant"}
             </span>
-            <span className="block text-xs text-cta-text/80">
+            <span className="block text-[13px] text-cta-text/80">
               à la minute · {prixDe(1, prixMinuteCents)}/min · votre téléphone sonne
             </span>
           </button>
+        ) : enLigne && rendezVousRegle ? (
+          // Un rendez-vous réglé est déjà prévu : la recharge devient une
+          // option, pas un cri — elle n'a pas besoin de payer pour être appelée.
+          <a href="/credit?pour=appeler" className={`${classeConstat} border border-greige bg-white`}>
+            <span className="flex items-center justify-center gap-2 text-[17px] font-semibold text-aubergine">
+              <Icone nom="credit" taille={18} />
+              Recharger pour l&apos;appeler maintenant
+            </span>
+            <span className="block text-[13px] text-mention">
+              facultatif — votre rendez-vous est déjà réglé
+            </span>
+          </a>
         ) : enLigne ? (
-          // Même libellé, autre destination : la recharge, avec la raison.
+          // Le bouton dit ce qu'il fait : à 0 min, « Appeler maintenant »
+          // frustrait (remarque du 11 octobre). Même destination : la recharge.
           <a href="/credit?pour=appeler" className={classePleine}>
             <span className="flex items-center justify-center gap-2 text-[19px] font-semibold text-cta-text">
-              <Icone nom="appeler" taille={20} />
-              Appeler maintenant
+              <Icone nom="credit" taille={20} />
+              Recharger pour appeler
             </span>
-            <span className="block text-xs text-cta-text/80">
-              il vous reste {soldeMinutes} min — rechargez pour appeler
+            <span className="block text-[13px] text-cta-text/80">
+              dès {minimumMinutes} minutes ({prixDe(minimumMinutes, prixMinuteCents)}) · votre crédit n&apos;expire jamais
             </span>
           </a>
         ) : permanenceAujourdhui && prochaine && !creditSuffisant ? (
@@ -284,7 +316,7 @@ export default function CarteElena({
             <span className="block text-[19px] font-semibold text-cta-text">
               Préparer mon crédit pour l&apos;appeler
             </span>
-            <span className="block text-xs text-cta-text/80">
+            <span className="block text-[13px] text-cta-text/80">
               il faut au moins {minimumMinutes} min ({prixDe(minimumMinutes, prixMinuteCents)}) —
               vous serez prête à {heureFr(prochaine.debut)}
             </span>
@@ -295,7 +327,7 @@ export default function CarteElena({
             <span className="block text-[19px] font-semibold text-gold-dark">
               Vous êtes prête pour {heureFr(prochaine.debut)}
             </span>
-            <span className="block text-xs text-mention">
+            <span className="block text-[13px] text-mention">
               revenez à cette heure — le bouton d&apos;appel apparaîtra
             </span>
           </div>
@@ -307,7 +339,7 @@ export default function CarteElena({
                 ? "Appeler dès qu'Elena se libère"
                 : "Appeler pendant la permanence"}
             </span>
-            <span className="block text-xs text-mention">
+            <span className="block text-[13px] text-mention">
               {statut === "en_consultation" && retour
                 ? `de retour vers ${retour}`
                 : prochaine
@@ -320,20 +352,37 @@ export default function CarteElena({
         <a
           href={CALENDLY}
           className={`block w-full rounded-2xl px-6 py-4 text-center transition ${
-            porte1Pleine
+            porte2Contour
               ? "border border-greige bg-white text-aubergine hover:border-cta/50"
               : "bg-cta text-cta-text shadow-card hover:bg-cta-dark"
           }`}
         >
           <span className="flex items-center justify-center gap-2 text-[17px] font-semibold">
             <Icone nom="reserver" taille={18} />
-            Réserver un créneau
+            {rendezVousRegle ? "Réserver un autre créneau" : "Réserver un créneau"}
           </span>
-          <span className={`block text-xs ${porte1Pleine ? "text-mention" : "text-cta-text/80"}`}>
-            Découverte 20 min · Complète 45 min
+          <span className={`block text-[13px] ${porte2Contour ? "text-mention" : "text-cta-text/80"}`}>
+            {sousTitreReserver}
           </span>
         </a>
       </div>
+
+      {/* Les prix, lisibles sans chercher (remarque du 11 octobre) */}
+      <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1 border-t border-greige/60 pt-3 text-[13px] text-mention">
+        <span>
+          <span className="font-semibold text-ink">{prixDe(1, prixMinuteCents)}</span> la minute
+        </span>
+        {decouverte && (
+          <span>
+            <span className="font-semibold text-ink">{euros(decouverte.prix)}</span> Découverte {decouverte.minutes} min
+          </span>
+        )}
+        {complete && (
+          <span>
+            <span className="font-semibold text-ink">{euros(complete.prix)}</span> Complète {complete.minutes} min
+          </span>
+        )}
+      </p>
 
       {message && (
         <p className="mt-4 rounded-lg bg-green-50 p-3 text-center text-sm text-green-700">

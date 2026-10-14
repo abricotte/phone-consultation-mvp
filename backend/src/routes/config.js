@@ -159,6 +159,14 @@ router.get('/recharge', async (req, res) => {
       prixMinuteCents: tarifs.prixMinuteCents,
       creditMinimumMinutes: tarifs.creditMinimumMinutes,
       ...tarifs.recharge,
+      // Les formules sur rendez-vous, pour que l'accueil affiche les prix
+      // sans les coder en dur (ils sont publics sur le site).
+      forfaits: (tarifs.forfaits || []).map((f) => ({
+        code: f.code,
+        nom: f.nom,
+        minutes: f.minutes,
+        prix: f.prix,
+      })),
     });
   } catch (err) {
     console.error('Erreur config recharge:', err);
