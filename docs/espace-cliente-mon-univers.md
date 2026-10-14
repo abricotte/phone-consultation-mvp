@@ -264,8 +264,10 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   féminin / masculin (décision du 14 octobre, soir) : la Sirène
   (l'attirance), la Fée (la réparation), la Louve (la protection), la
   Biche (l'intuition), le Phénix (la renaissance), le Sphinx (la
-  question), le Dragon (la garde du trésor), l'Aigle (la hauteur).
-  Retirés pour doublon : la Lionne, le Cerf, le Dauphin, le Pégase. Elle
+  question), le Dauphin (le jeu avec les profondeurs), l'Aigle (la
+  hauteur). Retirés pour doublon : la Lionne, le Cerf, le Pégase, et le
+  Dragon (trop féroce). La Louve est la version qui hurle à la lune,
+  pas la gueule ouverte. Elle
   sert de petit logo dans le menu et dans sa carte. Pas de photo demandée
   ni stockée. Pas d'émoticônes : des silhouettes. Provisoirement celles
   de game-icons.net (CC BY 3.0, à créditer dans les mentions légales ;
