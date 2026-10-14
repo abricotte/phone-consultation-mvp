@@ -180,7 +180,9 @@ export default function ClientesPage() {
           (a, b) => parDate(b.derniereConsultation) - parDate(a.derniereConsultation)
         );
     }
-  }, [clientes, recherche, tri]);
+    // `filtre` et `reglages` manquaient : cliquer un angle de lecture ne
+    // recalculait rien (corrigé le 14 octobre).
+  }, [clientes, recherche, tri, filtre, reglages]);
 
   if (loading)
     return <div className="mt-16 text-center text-mention">Chargement…</div>;
