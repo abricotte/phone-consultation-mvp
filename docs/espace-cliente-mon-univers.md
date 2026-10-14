@@ -269,9 +269,13 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   Dragon (trop féroce). La Louve est la version qui hurle à la lune,
   pas la gueule ouverte. Elle
   sert de petit logo dans le menu et dans sa carte. Pas de photo demandée
-  ni stockée. Pas d'émoticônes : des silhouettes. Provisoirement celles
-  de game-icons.net (CC BY 3.0, à créditer dans les mentions légales ;
-  phénix manquant, placeholder) ; **à terme, Elena peint les siennes**,
+  ni stockée. Pas d'émoticônes. **Graphisme retenu : au trait** (décision
+  du 14 octobre, soir) — dessins fins recolorés en aubergine, trait épaissi
+  à 3,2 pour rester lisible en petit dans le menu ; provisoirement ceux
+  d'OpenMoji (CC BY-SA 4.0, à créditer dans les mentions légales ; le
+  Sphinx est un chat assis en attendant). Les silhouettes de game-icons.net
+  restent disponibles sur la maquette, en second choix. **À terme, Elena
+  peint les siennes**,
   comme ses cartes. Maquette : `frontend/app/apercu-tmp/avatar/page.tsx`,
   fichiers `frontend/public/images/avatars/*.svg`.
 - **Accueil revu** d'après la maquette d'Elena : bonjour daté, un mot
