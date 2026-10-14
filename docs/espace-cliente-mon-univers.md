@@ -380,3 +380,24 @@ Maquette : `frontend/app/apercu-tmp/profil/page.tsx`.
   dans le calendrier astrologique) ; et les textes courts d'Elena (signe,
   ascendant, nombre). Les tests et le carnet existent déjà.
 
+## Le miroir au cabinet — « Ses nombres » (construit le 14 octobre, soir)
+
+Elena : « un miroir pour moi : quand je clique sur son nom, j'ai accès à
+ses tests et à son mois de numérologie, son signe, son année en cours,
+son chemin de vie… mais pas pour elle ». Fait, dans la fiche cliente du
+cabinet (`app/cabinet-ew/clientes/[id]/page.tsx`) :
+
+- **« Ses nombres »** : mois personnel (du mois civil en cours), année
+  personnelle (année civile), chemin de vie, expression, élan de l'âme,
+  personnalité, dettes karmiques, leçons karmiques, passion cachée. Deux
+  mots par nombre pour la lecture rapide. Calculé côté navigateur, rien
+  en base.
+- **`lib/numerologie.ts`** : les règles portées telles quelles du moteur
+  du site (tableau 1–9, maîtres 11/22/33, dettes 13/14/16/19, année
+  personnelle sur l'année civile). Contrôle croisé sur le rapport Decoz
+  d'Elena : année 8 en 2024, 9 en 2025 — identique. Le mois personnel
+  (absent du moteur) suit la formule classique : année personnelle +
+  mois civil, réduit.
+- **« Ses tests spirituels »** juste en dessous, le signe et l'ascendant
+  déjà en tête de fiche. Côté cliente : rien de tout cela.
+
