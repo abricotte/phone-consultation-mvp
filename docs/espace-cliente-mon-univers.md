@@ -261,25 +261,23 @@ le cabinet d'Elena, qui a appris à vivre entre deux consultations.*
   urgence de jour hors permanence (85 €) reste à décider.
 - **L'emblème à la place de la photo** : au premier écran de l'espace, la
   cliente choisit une figure parmi **huit**, ensemble, sans colonnes
-  féminin / masculin (décision du 14 octobre, soir) : la Sirène
-  (l'attirance), la Fée (la réparation), la Louve (la protection), la
-  Biche (l'intuition), la Chouette (voir dans la nuit — remplace le
-  Phénix, qu'on ne comprenait pas), le Sphinx (la question), le Dauphin
-  (le jeu avec les profondeurs), l'Aigle (la hauteur). Retirés : la
-  Lionne, le Cerf, le Pégase (doublons), le Dragon (trop féroce), le
-  Phénix (illisible). La Louve est la version qui hurle à la lune,
-  pas la gueule ouverte. Elle
-  sert de petit logo dans le menu et dans sa carte. Pas de photo demandée
-  ni stockée. Pas d'émoticônes. **Graphisme retenu : au trait** (décision
-  du 14 octobre, soir) — dessins fins recolorés en aubergine, trait épaissi
-  à 3,8 pour rester lisible en petit dans le menu, chaque dessin recentré
-  dans un carré autour de son vrai contour ; provisoirement ceux
-  d'OpenMoji (CC BY-SA 4.0, à créditer dans les mentions légales ; le
-  Sphinx est un chat assis en attendant). Les silhouettes de game-icons.net
-  restent disponibles sur la maquette, en second choix. **À terme, Elena
-  peint les siennes**,
-  comme ses cartes. Maquette : `frontend/app/apercu-tmp/avatar/page.tsx`,
-  fichiers `frontend/public/images/avatars/*.svg`.
+  féminin / masculin. Grille arrêtée le 14 octobre au soir : **la Sirène**
+  (attirer sans courir, sans son trident), **la Fée** (réparer en
+  silence), **le Papillon** (se transformer), **le Cerf** (porter la forêt
+  sur la tête), **le Cygne** (la grâce, sans effort), **le Sphinx** (garder
+  la question — un chat assis en attendant), **le Dauphin** (jouer avec
+  les profondeurs), **l'Aigle** (voir de haut). Écartées mais gardées sous
+  la main sur la maquette : la Chouette, la Louve, la Colombe, la Licorne,
+  la Renarde, l'Ourse ; retirés : la Lionne, le Pégase, le Dragon, le
+  Phénix. Elle sert de petit logo dans le menu et dans sa carte. Pas de
+  photo demandée ni stockée. Pas d'émoticônes. **Graphisme retenu : au
+  trait** — dessins fins recolorés en aubergine, trait à 3,4, chaque
+  dessin recentré dans un carré autour de son vrai contour ;
+  provisoirement ceux d'OpenMoji (CC BY-SA 4.0, à créditer dans les
+  mentions légales). Les silhouettes de game-icons.net restent sur la
+  maquette en second choix. **À terme, Elena peint les siennes**, comme
+  ses cartes. Maquette : `frontend/app/apercu-tmp/avatar/page.tsx`,
+  fichiers `frontend/public/images/avatars-trait/*.svg`.
 - **Accueil revu** d'après la maquette d'Elena : bonjour daté, un mot
   d'elle en exergue, dernières consultations à relire, formules sur une
   ligne (Découverte 58 · Complète 129 · Grand Tableau 149 · Urgence de
