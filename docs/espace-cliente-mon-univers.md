@@ -159,9 +159,10 @@ univers » qui est celle de la cliente.
 
 - **Écouter** : *La Minute Voyance* (lecteur Spotify intégré, derniers
   épisodes, « écouter sur Spotify ») · *Les boosts* — « Deux minutes avec
-  Elena » : *une réflexion qui ouvre une perspective, bouscule une
-  certitude — ou, simplement, apaise* (par besoin, lecteur dans l'espace, fichiers dans Supabase Storage ; les
-  premiers offerts, le reste pour les clientes actives ou « le cercle ») ·
+  Elena » : *quelques minutes à écouter autour d'une réflexion qui
+  ouvre une perspective, bouscule une certitude ou tout simplement,
+  apaise* (mots d'Elena) (par besoin, lecteur dans l'espace, fichiers dans Supabase Storage ; **offerts aux clientes, pas
+  d'abonnement** — décision d'Elena, 14 octobre) ·
   *Pour s'apaiser* (hypnose douce, relaxation — **en veille**, le rayon
   n'apparaît pas tant qu'il est vide). Les boosts ressortent aussi au bon
   moment (Ma journée, après une consultation).
@@ -184,8 +185,7 @@ dans « Ma journée ».
    clientes actives.
 2. Boosts par besoin (*avant de lui écrire*, *après une rupture*, *le soir
    où ça tourne*, *pleine lune*…) : bibliothèque de 8–10 audios de 3 min,
-   3–5 € l'un, ou un abonnement doux « Le cercle » (9 €/mois : boosts,
-   semaine, carte du jour).
+   **offerts aux clientes — pas d'abonnement** (Elena, 14 octobre).
 3. La carte du jour, dite. 4. Le mot d'Elena en audio. 5. Un rituel de
    nouvelle lune par mois. 6. Son anniversaire : l'espace change ce
    jour-là. 7. Un bouton « Pas aujourd'hui » qui replie « Votre journée ».
