@@ -396,18 +396,17 @@ export default function FicheClientePage() {
               {capitaliser(fiche.prenom)} {capitaliser(fiche.nom)}
             </h1>
             {signe ? (
-              <p className="mt-0.5 text-sm text-ink">
+              <p className="mt-1 text-[16px] font-bold text-aubergine">
                 {signe.emoji} {signe.nom}
-                {asc && ` · ascendant ${asc.nom}`}
-                {fiche.dateNaissance &&
-                  ` · née le ${formatDateNaissance(fiche.dateNaissance)}`}
+                {asc && <span className="font-semibold text-ink"> · ascendant {asc.nom}</span>}
+                {fiche.dateNaissance && <span className="font-semibold text-ink"> · née le {formatDateNaissance(fiche.dateNaissance)}</span>}
               </p>
             ) : (
-              <p className="mt-0.5 text-sm text-mention">
+              <p className="mt-1 text-[15px] font-semibold text-ink/70">
                 Date de naissance non renseignée.
               </p>
             )}
-            <p className="mt-1 text-xs text-mention">
+            <p className="mt-1 text-[14px] font-medium text-ink/70">
               Cliente depuis le {formatDate(fiche.inscriteLe)}
             </p>
           </div>
@@ -525,7 +524,7 @@ export default function FicheClientePage() {
               Pour vous seule — elle ne les voit pas dans son espace. D&apos;après sa date de naissance{n?.expression != null ? " et son nom" : ""}.
             </p>
             {!n ? (
-              <p className="mt-3 text-sm text-mention">Pas de date de naissance renseignée.</p>
+              <p className="mt-3 text-sm font-medium text-ink/70">Pas de date de naissance renseignée.</p>
             ) : (
               <>
                 <ul className="mt-4 grid gap-2 sm:grid-cols-3">
@@ -552,11 +551,11 @@ export default function FicheClientePage() {
         <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
           Ses tests spirituels
         </h2>
-        <p className="mt-0.5 text-sm text-mention">
+        <p className="mt-0.5 text-sm font-medium text-ink/70">
           Le profil obtenu et la date — pas ses réponses. Elle peut effacer un résultat.
         </p>
         {!fiche.resultatsTests || fiche.resultatsTests.length === 0 ? (
-          <p className="mt-3 text-sm text-mention">Aucun test fait pour l&apos;instant.</p>
+          <p className="mt-3 text-sm font-medium text-ink/70">Aucun test fait pour l&apos;instant.</p>
         ) : (
           <ul className="mt-4 space-y-2">
             {fiche.resultatsTests.map((r) => (
@@ -564,8 +563,8 @@ export default function FicheClientePage() {
                 key={r.id}
                 className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 rounded-xl border border-greige/50 bg-cream px-4 py-2.5"
               >
-                <span className="font-medium text-ink">{r.titreProfil}</span>
-                <span className="text-xs text-mention">
+                <span className="text-[15px] font-bold text-aubergine">{r.titreProfil}</span>
+                <span className="text-[13px] font-medium text-ink/70">
                   {CATALOGUE.find((e) => e.slug === r.test)?.titre ?? r.test} ·{" "}
                   {new Date(r.creeLe).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
                 </span>
@@ -587,7 +586,7 @@ export default function FicheClientePage() {
               <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {euros(panierMoyen)}
               </p>
-              <p className="text-xs text-mention">
+              <p className="text-[13px] font-medium text-ink/70">
                 sur {facturees.length} consultation{facturees.length > 1 ? "s" : ""}
               </p>
             </div>
@@ -598,7 +597,7 @@ export default function FicheClientePage() {
               <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {tenues.length}
               </p>
-              <p className="text-xs text-mention">
+              <p className="text-[13px] font-medium text-ink/70">
                 {premiere ? `depuis le ${formatDate(premiere)}` : "—"}
               </p>
             </div>
@@ -610,7 +609,7 @@ export default function FicheClientePage() {
                 {minutesTotales}
                 <span className="ml-1 text-base font-normal text-mention">min</span>
               </p>
-              <p className="text-xs text-mention">{dureeMoyenne} min par appel</p>
+              <p className="text-[13px] font-medium text-ink/70">{dureeMoyenne} min par appel</p>
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-mention">
@@ -619,7 +618,7 @@ export default function FicheClientePage() {
               <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-aubergine">
                 {fiche.recharges.length}
               </p>
-              <p className="text-xs text-mention">
+              <p className="text-[13px] font-medium text-ink/70">
                 {euros(
                   fiche.recharges.reduce((acc, r) => acc + r.montant, 0)
                 )}{" "}
@@ -686,7 +685,7 @@ export default function FicheClientePage() {
           <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
             Mon carnet
           </h2>
-          <p className="text-xs text-mention">
+          <p className="text-[13px] font-medium text-ink/70">
             🔒 Strictement privé — jamais visible par {capitaliser(fiche.prenom)}
           </p>
         </div>
@@ -728,7 +727,7 @@ export default function FicheClientePage() {
             </label>
 
             {aSuivre && (
-              <label className="flex items-center gap-2 text-sm text-mention">
+              <label className="flex items-center gap-2 text-sm font-medium text-ink/70">
                 Vers le
                 <input
                   type="date"
@@ -749,7 +748,7 @@ export default function FicheClientePage() {
           </div>
 
           {aSuivre && (
-            <p className="mt-2 text-xs text-mention">
+            <p className="mt-2 text-[13px] font-medium text-ink/70">
               Cette note apparaîtra dans votre zone « À reprendre » à
               l&apos;approche de l&apos;échéance. Pour une vraie prédiction,
               utilisez plutôt « Ce que je lui ai annoncé » ci-dessous.
@@ -783,7 +782,7 @@ export default function FicheClientePage() {
                     >
                       {n.contenu}
                     </p>
-                    <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-mention">
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-[13px] font-medium text-ink/70">
                       {/* Relatif : « il y a 3 semaines » se lit plus vite
                           qu'une date quand on relit avant un appel */}
                       <span title={formatDate(n.createdAt)}>
@@ -812,7 +811,7 @@ export default function FicheClientePage() {
                       <button
                         onClick={() => handleClore(n)}
                         title={n.closeLe ? "Rouvrir" : "Marquer comme advenu"}
-                        className="rounded-full px-2 py-1 text-xs text-mention hover:bg-blush hover:text-aubergine"
+                        className="rounded-full px-2 py-1 text-[13px] font-medium text-ink/70 hover:bg-blush hover:text-aubergine"
                       >
                         {n.closeLe ? "↺" : "✓"}
                       </button>
@@ -820,7 +819,7 @@ export default function FicheClientePage() {
                     <button
                       onClick={() => handleSupprimeNote(n.id)}
                       title="Supprimer"
-                      className="rounded-full px-2 py-1 text-xs text-mention hover:bg-red-50 hover:text-red-600"
+                      className="rounded-full px-2 py-1 text-[13px] font-medium text-ink/70 hover:bg-red-50 hover:text-red-600"
                     >
                       ✕
                     </button>
@@ -838,7 +837,7 @@ export default function FicheClientePage() {
           <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
             Ce que je lui ai annoncé
           </h2>
-          <p className="text-xs text-mention">🔒 Pour ma mémoire seule</p>
+          <p className="text-[13px] font-medium text-ink/70">🔒 Pour ma mémoire seule</p>
         </div>
 
         <form onSubmit={ajouterAugure} className="mt-4">
@@ -872,7 +871,7 @@ export default function FicheClientePage() {
               {augureEnCours ? "…" : "Poser l'augure"}
             </button>
           </div>
-          <p className="mt-2 text-xs text-mention">
+          <p className="mt-2 text-[13px] font-medium text-ink/70">
             L&apos;échéance peut rester floue — c&apos;est souvent plus juste
             qu&apos;une date. Les augures dont l&apos;heure vient remontent dans
             « À reprendre ».
@@ -914,7 +913,7 @@ export default function FicheClientePage() {
                         >
                           {a.contenu}
                         </p>
-                        <p className="mt-1 text-xs text-mention">
+                        <p className="mt-1 text-[13px] font-medium text-ink/70">
                           {a.echeanceTexte ||
                             (a.echeance ? formatDate(a.echeance) : "sans échéance")}
                           {urgent && (
@@ -971,7 +970,7 @@ export default function FicheClientePage() {
           <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
             Dates qui pèsent
           </h2>
-          <p className="text-xs text-mention">
+          <p className="text-[13px] font-medium text-ink/70">
             Ce qu&apos;elle m&apos;a confié et qu&apos;il serait dur d&apos;oublier
           </p>
         </div>
@@ -984,14 +983,14 @@ export default function FicheClientePage() {
                 className="group flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-greige/50 bg-cream px-4 py-2.5"
               >
                 <span className="font-medium text-ink">{d.libelle}</span>
-                <span className="text-xs text-mention">
+                <span className="text-[13px] font-medium text-ink/70">
                   {formatDate(d.date)}
                   {d.recurrenceAnnuelle && " · chaque année"}
                 </span>
                 <button
                   onClick={() => supprimerDate(d.id)}
                   aria-label={`Supprimer ${d.libelle}`}
-                  className="ml-auto rounded-full px-2 py-1 text-xs text-mention opacity-0 transition group-hover:opacity-100 hover:bg-red-50 hover:text-red-600"
+                  className="ml-auto rounded-full px-2 py-1 text-[13px] font-medium text-ink/70 opacity-0 transition group-hover:opacity-100 hover:bg-red-50 hover:text-red-600"
                 >
                   ✕
                 </button>
@@ -1015,7 +1014,7 @@ export default function FicheClientePage() {
             aria-label="Date"
             className="rounded-xl border border-greige bg-ivory px-3 py-2 text-sm text-ink focus:border-cta-outline focus:outline-none"
           />
-          <label className="flex items-center gap-1.5 text-xs text-mention">
+          <label className="flex items-center gap-1.5 text-[13px] font-medium text-ink/70">
             <input
               type="checkbox"
               checked={dateRecurrente}
@@ -1040,7 +1039,7 @@ export default function FicheClientePage() {
           Les personnes qui comptent
         </h2>
         {fiche.proches.length === 0 ? (
-          <p className="mt-3 text-sm text-mention">
+          <p className="mt-3 text-sm font-medium text-ink/70">
             Aucun proche renseigné pour l&apos;instant.
           </p>
         ) : (
@@ -1053,11 +1052,11 @@ export default function FicheClientePage() {
                   key={i}
                   className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 rounded-xl border border-greige/50 bg-cream px-4 py-2.5"
                 >
-                  <span className="font-medium text-ink">{p.prenom}</span>
-                  <span className="rounded-full bg-blush px-2.5 py-0.5 text-xs text-mention">
+                  <span className="text-[15px] font-bold text-aubergine">{p.prenom}</span>
+                  <span className="rounded-full bg-blush px-2.5 py-0.5 text-xs font-semibold text-aubergine">
                     {LIEN_LABELS[p.lien] || "Autre"}
                   </span>
-                  <span className="text-xs text-mention">
+                  <span className="text-[13px] font-medium text-ink/70">
                     {[
                       p.dateNaissance ? formatDateNaissance(p.dateNaissance) : null,
                       s ? `${s.emoji} ${s.nom}` : null,
@@ -1079,7 +1078,7 @@ export default function FicheClientePage() {
         <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">
           Son histoire
         </h2>
-        <p className="mt-0.5 text-sm text-mention">
+        <p className="mt-0.5 text-sm font-medium text-ink/70">
           Consultations, notes, augures et recharges, mêlés par date.
         </p>
         <div className="mt-5">

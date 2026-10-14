@@ -296,7 +296,7 @@ export default function ClientesPage() {
 
                 <span className="min-w-44 flex-1">
                   <span className="flex items-center gap-1.5">
-                    <span className="truncate font-medium text-ink">
+                    <span className="truncate text-[16px] font-bold text-aubergine">
                       {c.prenom} {c.nom}
                     </span>
                     {/* Marqueurs discrets, sans libellé de statut :
@@ -318,7 +318,7 @@ export default function ClientesPage() {
                       />
                     )}
                   </span>
-                  <span className="block truncate text-xs text-mention">
+                  <span className="block truncate text-[13px] font-medium text-ink/70">
                     {signeAstrologique(c.dateNaissance)?.nom ?? "signe inconnu"}
                     {" · "}
                     {c.derniereConsultation
@@ -329,10 +329,10 @@ export default function ClientesPage() {
                 </span>
 
                 <span className="w-28 shrink-0">
-                  <span className="block text-sm text-ink">
+                  <span className="block text-[15px] font-bold text-ink">
                     {c.nbConsultations} consult.
                   </span>
-                  <span className="block text-xs text-mention">
+                  <span className="block text-[13px] font-medium text-ink/70">
                     {c.derniereConsultation
                       ? formatDate(c.derniereConsultation)
                       : "jamais"}
@@ -346,7 +346,7 @@ export default function ClientesPage() {
                   {/* Deux argents : la minute (portefeuille) et le forfait
                       (Calendly). La ventilation ne s'affiche que si les
                       deux existent — sinon un seul mot suffit. */}
-                  <span className="block text-xs text-mention">
+                  <span className="block text-[13px] font-medium text-ink/70">
                     {c.depenseMinute > 0 && c.depenseCalendly > 0
                       ? `${euros(c.depenseMinute)} min · ${euros(c.depenseCalendly)} rdv`
                       : c.depenseCalendly > 0
@@ -365,7 +365,7 @@ export default function ClientesPage() {
                   >
                     {euros(c.solde)}
                   </span>
-                  <span className="block text-xs text-mention">de crédit</span>
+                  <span className="block text-[13px] font-medium text-ink/70">de crédit</span>
                 </span>
               </a>
             </li>
