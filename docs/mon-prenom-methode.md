@@ -120,11 +120,11 @@ renforce l'espace, dans les pièces qui existent.
 - **Le gratuit doit être immédiatement intéressant, jamais frustrant** :
   sens principal, origine probable, une variante, le nombre avec son
   calcul, une force, une tension, une question personnelle.
-- **La transparence IA** (règlement européen, août 2026) : afficher sur
-  chaque étude *« produite avec l'assistance d'une intelligence
-  artificielle, relue et signée par Elena Wolska »* — c'est exactement
-  « calculé, relu, signé », dit en clair. Et la minimisation CNIL : on ne
-  demande que le nécessaire, on dit pourquoi, on purge.
+- **Pas de mention « IA »** sur les études (décision d'Elena, 14 octobre) :
+  « calculée d'après ma méthode, relue et signée par moi » est vrai tel
+  quel, et l'AI Act ne vise pas une étude personnelle relue (voir
+  machine-a-rapports.md). Minimisation CNIL : on ne demande que le
+  nécessaire, on dit pourquoi, on purge.
 - **Pas de verdict** : jamais « relation impossible » ; des axes expliqués
   (fluidité, communication, intensité, sécurité, autonomie, projet). Le
   score 58–98 % du moteur existant reste **symbolique** et présenté comme

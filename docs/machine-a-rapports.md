@@ -19,8 +19,9 @@ relecture au cabinet         onglet « Rapports à relire » : le brouillon à g
                              fiche de la cliente à droite ; Elena corrige, écrit son mot
         │
 signature → PDF              le générateur de PDF du Grand Tableau (client_pdf.py),
-                             même charte ; mention « produite avec l'assistance d'une IA,
-                             relue et signée par Elena Wolska »
+                             même charte ; « calculée d'après la méthode Wolska, relue
+                             et signée par Elena » — pas de mention « IA » (décision
+                             d'Elena, 14 oct.) : la formule est vraie telle quelle
         │
 livraison                    « Mes rapports » / « Méthode Wolska » dans l'espace, 48 h
 ```
@@ -35,8 +36,14 @@ pas une construction. C'est ça, devenir une machine.
   d'interprétation** : écrits en tête de chaque rapport.
 - **La fiche de provenance** sur chaque affirmation : Documenté ·
   Probable · Discuté · Traditionnel · Symbolique · Personnel · Intuitif.
-- **Transparence IA** (obligation européenne, août 2026) et minimisation
-  des données (CNIL).
+- **Pas de mention « IA »** sur les études (décision d'Elena, 14 octobre) :
+  l'AI Act (art. 50) vise les dialogues avec une IA et les textes publiés
+  pour informer le public — pas une étude personnelle relue. Ce qui est
+  interdit, c'est d'affirmer le contraire (« rédigée entièrement à la
+  main ») : on ne l'affirme jamais. Une ligne neutre dans les CGV
+  (« outils de calcul et de rédaction assistée, puis relecture et
+  signature »), et on revoit dans six mois avec les lignes directrices.
+  Minimisation des données (CNIL).
 - **Jamais de verdict**, jamais de fait historique inventé, jamais
   « savoir ancestral » sans peuple ni date. Les vies antérieures sont un
   **récit symbolique**, dit comme tel.
