@@ -19,7 +19,9 @@ export function Eventail({ images, taille = 150 }: { images: string[]; taille?: 
   return (
     <div
       className="relative mx-auto flex items-end justify-center"
-      style={{ height: taille * 1.5, width: taille * 2 }}
+      // Les cartes sont plus hautes que larges (480 × 823) : la hauteur doit
+      // les contenir, rotation et décalage compris, sinon le haut est rogné.
+      style={{ height: taille * 1.9, width: taille * 2.1 }}
     >
       {images.map((src, i) => (
         // eslint-disable-next-line @next/next/no-img-element

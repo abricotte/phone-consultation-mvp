@@ -120,7 +120,9 @@ export default function TiragesPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ── La Petite Pythie ── */}
         <section className="flex flex-col rounded-[28px] border border-[#EAD6DF] bg-[#F8EDF2] p-6 md:p-8">
-          <Eventail images={PYTHIE} />
+          <div className="rounded-[22px] bg-white/50 px-4 pb-4 pt-8 ring-1 ring-white/70">
+            <Eventail images={PYTHIE} taille={140} />
+          </div>
           <p className="mt-6 text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Une question</p>
           <h2 className="mt-1 font-serif text-[32px] font-semibold leading-tight text-aubergine">La Petite Pythie</h2>
           <p className="mt-3 text-[15px] leading-relaxed text-ink/85">
@@ -131,15 +133,17 @@ export default function TiragesPage() {
           <p className="mt-3 text-[14px] text-mention">
             Vous recevez la photo de vos trois cartes et une lecture d&apos;une à deux pages, sous trois jours.
           </p>
-          <p className="mt-5 font-serif text-3xl font-semibold tabular-nums text-aubergine">55 €</p>
           <div className="mt-auto">
+            <p className="mt-5 font-serif text-[34px] font-bold tabular-nums text-aubergine">55 €</p>
             <BoutonCommande quoi="pythie" />
           </div>
         </section>
 
         {/* ── Le Grand Tableau ── */}
         <section className="flex flex-col rounded-[28px] border border-[#EAD9B4] bg-[#FBF3E2] p-6 md:p-8">
-          <Tableau />
+          <div className="rounded-[22px] bg-white/50 p-4 ring-1 ring-white/70">
+            <Tableau />
+          </div>
           <p className="mt-6 text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">
             Toute votre vie, en un regard
           </p>
@@ -160,8 +164,8 @@ export default function TiragesPage() {
             <span className="mr-2 text-gold">✦</span>
             <span className="font-semibold">Un seul tirage du Grand Tableau est effectué par semaine.</span>
           </p>
-          <p className="mt-5 font-serif text-3xl font-semibold tabular-nums text-aubergine">149 €</p>
           <div className="mt-auto">
+            <p className="mt-5 font-serif text-[34px] font-bold tabular-nums text-aubergine">149 €</p>
             <BoutonCommande quoi="grand_tableau" />
           </div>
         </section>
