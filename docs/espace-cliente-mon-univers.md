@@ -688,7 +688,8 @@ lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
   d'après la méthode Wolska · remise sous 48 h ». Pas de dessins tant
   qu'Elena ne les a pas fournis (fond uni + signe). Maquette :
   `apercu-tmp/etudes-bibliotheque`.
-- **« Votre Aura »** : le nom du résultat de la méthode (ce qui se calcule
+- ~~« Votre Aura »~~ remplacé le jour même par **« Votre Portrait Wolska »**
+  (voir plus bas). Ancienne note : « Votre Aura », le nom du résultat de la méthode (ce qui se calcule
   sur la date et le prénom, jamais nommé « numérologie ») — préféré à
   « votre Empreinte » ; la Clé Wolska en réserve ; méthode Wolska reste la
   signature. Le résultat se donne **en couleur** (neuf couleurs, une par
@@ -716,6 +717,21 @@ lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
 - **Tests** : plus de mention « Elena voit vos résultats dans votre fiche »
   côté cliente.
 - **« Les mères derrière vous » retirée** aussi (Elena, 15 octobre).
+- **« Votre Portrait Wolska »** (Elena, 15 octobre) : l'étude phare, sous-titre
+  « L'étude la plus complète de la méthode Wolska ». C'est le portrait de
+  Decoz (chemin de vie, expression, désir du cœur, personnalité, jour de
+  naissance, maturité, passerelles, épreuves, leçons, passion cachée, pierre
+  d'angle, force cachée, plans d'expression, pinacles, cycles) **traduit sans
+  un chiffre** : la couleur principale, votre lumière, ce que votre cœur
+  désire, ce que les autres voient, le don de votre jour de naissance, celle
+  que vous devenez, vos passerelles, vos épreuves d'âme, ce que votre âme
+  vient apprendre, votre feu secret, la pierre d'angle de votre prénom, votre
+  force cachée, **vos quatre éléments** (corps = Terre, esprit = Air, cœur =
+  Eau, intuition = Feu), les quatre saisons et les trois âges de votre vie.
+  **La partie prévisions (transits, essence, année et mois personnels) reste
+  au cabinet** — même raison que l'année amoureuse. Le mot **« aura » est
+  rendu à Elena** : c'est la couleur qu'elle perçoit en consultation, jamais
+  un calcul. Environ 150 textes courts à écrire (gabarits d'abord).
   Mon héritage garde : le prénom et qui l'a donné, l'arbre des prénoms,
   le contrat avec sa mère ou son enfant, les archives de l'âme, les
   blessures d'âme.
