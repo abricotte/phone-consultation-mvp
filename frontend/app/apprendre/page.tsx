@@ -6,14 +6,14 @@ import MotsCaches from "@/components/MotsCaches";
 import { Pilules } from "@/components/Ornements";
 
 // APPRENDRE — ce qu'Elena sait des cartes, elle l'apprend. Deux onglets
-// (Elena, 15 octobre) : « Apprendre en écoutant » (le podcast La Minute
-// Voyance, lecteur Spotify : rien à héberger) et « Apprendre en
-// s'amusant » (la série de livres-jeux « Les jeux d'Elena », et les mots
-// cachés du Carnet rose, jouables ici). Les vidéos viendront quand Elena
+// (Elena, 15 octobre), dans cet ordre : « Apprendre en s'amusant » (la série
+// de livres-jeux « Les jeux d'Elena », et les mots cachés du Carnet rose,
+// jouables ici) puis « Apprendre en écoutant » (le podcast La Minute
+// Voyance, lecteur Spotify : rien à héberger). Les vidéos viendront quand Elena
 // les aura commencées — on n'ouvre pas une pièce vide.
 
 export default function ApprendrePage() {
-  const [onglet, setOnglet] = useState<"ecouter" | "jouer">("ecouter");
+  const [onglet, setOnglet] = useState<"jouer" | "ecouter">("jouer");
 
   return (
     <EspaceShell>
@@ -30,7 +30,7 @@ export default function ApprendrePage() {
         label="Apprendre"
         valeur={onglet}
         onChange={setOnglet}
-        options={[["ecouter", "Apprendre en écoutant"], ["jouer", "Apprendre en s'amusant"]] as const}
+        options={[["jouer", "Apprendre en s'amusant"], ["ecouter", "Apprendre en écoutant"]] as const}
       />
 
       {onglet === "ecouter" && (
@@ -72,16 +72,14 @@ export default function ApprendrePage() {
             <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Les jeux d&apos;Elena · le Tarot de Marseille</p>
             <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Le livre-jeu</h2>
             <div className="mt-5 grid items-start gap-6 sm:grid-cols-[180px_1fr]">
-              {/* La couverture : un aplat en attendant la vraie */}
-              <div className="aspect-[2/3] w-[180px] rounded-r-xl rounded-l-sm bg-gradient-to-br from-[#1E2A4A] to-[#2E3F6B] p-4 shadow-[0_24px_40px_-20px_rgba(35,43,69,0.6)] ring-1 ring-white/20">
-                <div className="flex h-full flex-col border border-[#D8B76A]/60 p-3 text-center">
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#D8B76A]">Elena Wolska</span>
-                  <span className="mt-3 font-serif text-[15px] font-semibold leading-tight text-cream">Mots mêlés, mots croisés &amp; jeux</span>
-                  <span className="mt-1 font-serif text-[11px] italic text-cream/80">pour apprendre le</span>
-                  <span className="mt-1 font-serif text-[17px] font-bold leading-tight text-[#D8B76A]">Tarot de Marseille</span>
-                  <span className="mt-auto text-[9px] font-semibold uppercase tracking-[0.16em] text-cream/70">100 jeux</span>
-                </div>
-              </div>
+              {/* La vraie couverture (face avant, tirée du PDF KDP) */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/apprendre/tarot-de-marseille-jeux.webp"
+                alt="Couverture : Mots mêlés, mots croisés & jeux pour apprendre le Tarot de Marseille, Elena Wolska"
+                className="w-[180px] rounded-r-xl rounded-l-sm shadow-[0_24px_40px_-20px_rgba(35,43,69,0.6)] ring-1 ring-black/10"
+                style={{ aspectRatio: "8.5 / 11" }}
+              />
               <div>
                 <p className="font-serif text-[22px] font-semibold leading-tight text-aubergine">
                   Mots mêlés, mots croisés &amp; jeux pour apprendre le Tarot de Marseille
