@@ -26,14 +26,19 @@ export interface OngletEspace {
 }
 
 export interface GroupeEspace {
-  /** Intertitre doré au-dessus du groupe ; null pour le premier et le dernier */
+  /** Intertitre doré au-dessus du groupe ; null pour le dernier */
   titre: string | null;
+  /** Le groupe « appeler » : dessiné à part, dans un encadré de couleur (Elena, 15 octobre) */
+  appel?: boolean;
   onglets: OngletEspace[];
 }
 
 export const GROUPES_ESPACE: GroupeEspace[] = [
   {
-    titre: null,
+    // Tout ce qui sert à appeler, compartimenté dans un encadré de couleur :
+    // la cliente qui veut appeler ne se perd pas (Elena, 15 octobre).
+    titre: "Consulter Elena",
+    appel: true,
     onglets: [
       { href: "/dashboard", label: "Mon espace", court: "Espace", icone: "etoile" },
       { href: "/consultations", label: "Consultations", court: "Consult.", icone: "lune" },

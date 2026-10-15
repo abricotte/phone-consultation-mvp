@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import { usePathname } from "next/navigation";
 import { GROUPES_ESPACE, ONGLETS_ESPACE, SOUS_LE_POUCE } from "@/lib/espace";
 import { capitaliser } from "@/lib/format";
-import { Icone } from "@/components/IconesEspace";
+import { Icone, type NomIcone } from "@/components/IconesEspace";
 import { useElenaPresence, heureFr, jourRelatif } from "@/components/useElenaStatus";
 
 // LE SHELL DE L'ESPACE CLIENTE — « Le Salon » (maquette validée par Elena
@@ -13,9 +13,12 @@ import { useElenaPresence, heureFr, jourRelatif } from "@/components/useElenaSta
 // doux : menu fixe à gauche sur ordinateur, barre d'onglets en bas sur
 // téléphone, comme une application.
 //
-// EN TÊTE DU MENU, ELENA : sa photo, son statut, « Appeler maintenant ».
-// Visible depuis chaque page — c'est le geste n°1, sans renommer l'onglet
-// d'accueil. Hors ligne, la même carte dit quand revenir, en gris doux.
+// EN TÊTE DU MENU, LE BLOC « CONSULTER ELENA » (15 octobre) : dans un
+// encadré de couleur, tout ce qui sert à appeler — l'état d'Elena, le
+// bouton (appeler si elle est en ligne, sinon prendre rendez-vous), le
+// crédit et « Recharger », puis Mon espace, Consultations, Mon crédit.
+// La cliente qui veut appeler ne se perd pas. Sur téléphone, le bouton
+// d'appel est en haut de chaque écran.
 //
 // Sur téléphone, douze entrées ne tiennent pas sous le pouce : quatre y
 // sont, le reste dans « Plus » — la Déconnexion aussi (un geste rare).
@@ -31,70 +34,123 @@ interface Props {
   children: React.ReactNode;
 }
 
-/** Elena, en tête du menu : l'état, et la porte vers l'appel */
-function CarteElenaMenu({ compact = false }: { compact?: boolean }) {
-  const p = useElenaPresence();
+const RENDEZ_VOUS = "https://elena-wolska.com/disponibilites";
+
+/** L'état d'Elena, partagé par le bloc d'appel et les pastilles du téléphone */
+function etatElena(p: ReturnType<typeof useElenaPresence>) {
   const enLigne = p.statut === "disponible";
   const enConsultation = p.statut === "en_consultation";
   const prochaine = p.permanence.prochaine;
+  if (enLigne) return { enLigne, enConsultation, titre: "Elena est en ligne", sous: "vous pouvez l'appeler maintenant", badge: "bg-statut-online" };
+  if (enConsultation) return { enLigne, enConsultation, titre: "Elena est en consultation", sous: "elle se libère bientôt", badge: "bg-amber-500" };
+  if (p.statut === "chargement") return { enLigne, enConsultation, titre: "Elena", sous: "vérification…", badge: "bg-greige" };
+  return {
+    enLigne,
+    enConsultation,
+    titre: "Elena n'est pas en ligne",
+    sous: prochaine ? `prochaine permanence : ${jourRelatif(prochaine.debut)} ${heureFr(prochaine.debut)}` : "les consultations se font sur rendez-vous",
+    badge: "bg-statut-offline",
+  };
+}
 
-  let titre = "Elena n'est pas en ligne";
-  let sous = prochaine
-    ? `prochaine permanence : ${jourRelatif(prochaine.debut)} ${heureFr(prochaine.debut)}`
-    : "les consultations se font sur rendez-vous";
-  let badge = "bg-statut-offline";
-  let classeTitre = "text-mention";
-  let fond = "bg-blush/70 ring-greige/60";
-  if (enLigne) {
-    titre = "Elena est en ligne";
-    sous = "Appeler maintenant →";
-    badge = "bg-statut-online";
-    classeTitre = "text-statut-online";
-    fond = "bg-statut-online/10 ring-statut-online/25 hover:bg-statut-online/15";
-  } else if (enConsultation) {
-    titre = "Elena est en consultation";
-    sous = "elle se libère bientôt";
-    badge = "bg-amber-500";
-    classeTitre = "text-amber-700";
-    fond = "bg-amber-50 ring-amber-200";
-  } else if (p.statut === "chargement") {
-    titre = "Elena";
-    sous = "vérification…";
-    badge = "bg-greige";
-  }
-
-  if (compact) {
-    // Téléphone : un point sur l'étoile de l'onglet d'accueil, rien de plus
-    return (
-      <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-ivory ${badge}`} />
-    );
-  }
+/** LE BLOC « CONSULTER ELENA » — tout ce qui sert à appeler, dans un encadré
+ *  de couleur, en tête du menu : l'état d'Elena, le bouton (appeler, ou
+ *  prendre rendez-vous), le crédit et « Recharger », puis Mon espace,
+ *  Consultations, Mon crédit. La cliente qui veut appeler ne se perd pas. */
+function BlocAppel({
+  onglets,
+  estActif,
+  soldeEuros,
+}: {
+  onglets: { href: string; label: string; icone: NomIcone }[];
+  estActif: (h: string) => boolean;
+  soldeEuros: number | null;
+}) {
+  const p = useElenaPresence();
+  const e = etatElena(p);
+  const prochaine = p.permanence.prochaine;
+  // Deux lignes courtes, jamais plus : l'état, et quand revenir
+  const titre = e.enLigne ? "Elena est en ligne" : e.enConsultation ? "En consultation" : p.statut === "chargement" ? "Elena" : "Hors ligne";
+  const sous = e.enLigne
+    ? "à la minute, tout de suite"
+    : e.enConsultation
+      ? "elle se libère bientôt"
+      : prochaine
+        ? `de retour ${jourRelatif(prochaine.debut)} ${heureFr(prochaine.debut)}`
+        : "sur rendez-vous";
+  const solde = soldeEuros === null ? null : `${soldeEuros.toFixed(2).replace(".", ",").replace(",00", "")} €`;
 
   return (
-    <a
-      href="/dashboard"
-      className={`mb-4 flex items-center gap-3 rounded-2xl px-3 py-2.5 ring-1 transition ${fond}`}
-    >
-      <span className="relative inline-flex shrink-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/elena-avatar.png"
-          alt=""
-          width={36}
-          height={36}
-          className="h-9 w-9 rounded-full object-cover ring-2 ring-white"
-        />
-        <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
-          {enLigne && (
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-statut-online opacity-60" />
-          )}
-          <span className={`relative inline-flex h-3 w-3 rounded-full ring-2 ring-white ${badge}`} />
+    <section aria-label="Consulter Elena" className="mb-5 rounded-3xl bg-gradient-to-br from-[#FBF3E2] to-[#F5E3BD] px-4 pb-3 pt-4 shadow-soft ring-1 ring-gold/40">
+      <div className="flex items-center gap-3">
+        <span className="relative inline-flex shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/elena-avatar.png" alt="" width={36} height={36} className="h-9 w-9 rounded-full object-cover ring-2 ring-white" />
+          <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
+            {e.enLigne && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-statut-online opacity-60" />}
+            <span className={`relative inline-flex h-3 w-3 rounded-full ring-2 ring-white ${e.badge}`} />
+          </span>
         </span>
+        <span className="min-w-0">
+          <span className="block whitespace-nowrap text-[14px] font-bold leading-tight text-aubergine">{titre}</span>
+          <span className="block whitespace-nowrap text-[12px] leading-snug text-ink/65">{sous}</span>
+        </span>
+      </div>
+
+      <a
+        href={e.enLigne ? "/dashboard" : RENDEZ_VOUS}
+        className={`mt-4 flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-3 py-3 text-[14.5px] font-bold shadow-card transition ${
+          e.enLigne ? "bg-statut-online text-white hover:brightness-110" : "bg-cta text-cta-text hover:bg-cta-dark"
+        }`}
+      >
+        <Icone nom={e.enLigne ? "appeler" : "reserver"} taille={17} />
+        {e.enLigne ? "Appeler maintenant" : "Rendez-vous"}
+      </a>
+
+      <div className="mt-4 flex flex-col gap-1 border-t border-gold/30 pt-3">
+        {onglets.map((o) => {
+          const actif = estActif(o.href);
+          return (
+            <a
+              key={o.href}
+              href={o.href}
+              aria-current={actif ? "page" : undefined}
+              className={`flex min-h-[40px] items-center gap-3 rounded-2xl px-3 text-[14.5px] transition ${
+                actif ? "bg-aubergine font-semibold text-cream" : "font-medium text-aubergine hover:bg-white/70"
+              }`}
+            >
+              <Icone nom={o.icone} taille={17} className={actif ? "text-gold-light" : "text-gold-dark"} />
+              <span className="flex-1">{o.label}</span>
+              {o.href === "/credit" && solde && (
+                <span className={`text-[13px] font-bold tabular-nums ${actif ? "text-gold-light" : "text-aubergine"}`}>{solde}</span>
+              )}
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/** Téléphone : un point de statut sur l'onglet d'accueil, rien de plus */
+function PastilleTelephone() {
+  const e = etatElena(useElenaPresence());
+  return <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-ivory ${e.badge}`} />;
+}
+
+/** Téléphone : le bouton d'appel, en haut de chaque écran */
+function AppelTelephone() {
+  const e = etatElena(useElenaPresence());
+  return (
+    <a
+      href={e.enLigne ? "/dashboard" : RENDEZ_VOUS}
+      className={`flex items-center gap-2 rounded-full px-3.5 py-2 text-[13px] font-bold shadow-card ${e.enLigne ? "bg-statut-online text-white" : "bg-aubergine text-cream"}`}
+    >
+      <span className="relative inline-flex h-2.5 w-2.5">
+        {e.enLigne && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-70" />}
+        <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${e.enLigne ? "bg-white" : e.badge}`} />
       </span>
-      <span className="min-w-0">
-        <span className={`block text-[13px] font-bold leading-tight ${classeTitre}`}>{titre}</span>
-        <span className="block truncate text-[12px] text-ink/70">{sous}</span>
-      </span>
+      {e.enLigne ? "Appeler Elena" : "Rendez-vous"}
     </a>
   );
 }
@@ -169,17 +225,12 @@ export default function EspaceShell({ prenom, signe, ascendant, children }: Prop
           />
         </a>
 
-        <CarteElenaMenu />
-
-        {soldeEuros !== null && (
-          <a href="/credit" className="mb-3 flex items-center justify-between rounded-2xl border border-greige/70 bg-cream px-3.5 py-2.5 text-[13px] hover:border-gold/60">
-            <span className="text-ink">Mon crédit <span className="ml-1 font-semibold tabular-nums text-aubergine">{soldeEuros.toFixed(2).replace(".", ",").replace(",00", "")} €</span></span>
-            <span className="rounded-full bg-aubergine px-2.5 py-1 text-[11px] font-semibold text-cream">Recharger</span>
-          </a>
-        )}
+        {GROUPES_ESPACE.filter((g) => g.appel).map((g) => (
+          <BlocAppel key="appel" onglets={g.onglets} estActif={estActif} soldeEuros={soldeEuros} />
+        ))}
 
         <nav aria-label="Espace cliente" className="flex flex-col">
-          {GROUPES_ESPACE.map((g, gi) => (
+          {GROUPES_ESPACE.filter((g) => !g.appel).map((g, gi) => (
             <div key={gi} className={gi > 0 ? "mt-3 border-t border-greige/70 pt-3" : ""}>
               {g.titre && (
                 <p className="mb-1 px-3.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-gold-dark">
@@ -247,13 +298,16 @@ export default function EspaceShell({ prenom, signe, ascendant, children }: Prop
               className="h-10 w-auto"
             />
           </a>
-          <a
-            href="/compte"
-            aria-label="Paramètres"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-aubergine text-sm font-semibold text-cream"
-          >
-            {initiale}
-          </a>
+          <div className="flex items-center gap-2">
+            <AppelTelephone />
+            <a
+              href="/compte"
+              aria-label="Paramètres"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-aubergine text-sm font-semibold text-cream"
+            >
+              {initiale}
+            </a>
+          </div>
         </header>
 
         {/* ── Contenu ── pb-28 sur téléphone : la barre d'onglets est
@@ -328,7 +382,7 @@ export default function EspaceShell({ prenom, signe, ascendant, children }: Prop
             >
               <span className="relative">
                 <Icone nom={o.icone} taille={22} />
-                {o.href === "/dashboard" && <CarteElenaMenu compact />}
+                {o.href === "/dashboard" && <PastilleTelephone />}
               </span>
               {o.court}
             </a>
