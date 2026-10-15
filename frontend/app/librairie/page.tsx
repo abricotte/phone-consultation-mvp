@@ -5,8 +5,9 @@ import { Eventail } from "@/components/Ornements";
 
 // LA LIBRAIRIE (Elena, 15 octobre) : tout ce qui s'achète au même endroit,
 // en vitrine, pour que le salon et Apprendre restent entièrement gratuits.
-// Trois rayons, visibles d'un coup (pas d'onglet : trop de clics tue
-// l'action) : les Carnets d'Elena, les Jeux d'Elena, la Petite Pythie.
+// Quatre rayons, visibles d'un coup (pas d'onglet : trop de clics tue
+// l'action) : les Carnets d'Elena, les Jeux d'Elena, les ouvrages d'Elena,
+// la Petite Pythie.
 // Chaque livre : sa couverture, son titre, « Sur Amazon » s'il est paru,
 // « à paraître » ou « à venir » sinon. Pas de vente ici : le lien mène à
 // Amazon (ou au site pour le jeu).
@@ -20,6 +21,10 @@ const CARNETS: Carnet[] = [
   { couleur: "Les Carnets verts", titre: "La Guérison familiale", sousTitre: "et les héritages invisibles de votre lignée", promesse: "Dix tests pour vous libérer des schémas familiaux.", teinte: "from-[#E9F3E8] to-[#C6DEC4]", encre: "text-[#2F5D3A]", etat: "a_venir" },
   { couleur: "Les Carnets blancs", titre: "Le Deuil et le lâcher-prise", sousTitre: "et l'art de traverser les fins avec douceur", promesse: "Dix tests pour traverser, et vous relever en douceur.", teinte: "from-white to-[#EFE9E3]", encre: "text-aubergine", etat: "a_venir" },
 ];
+
+// Contrats d'Âmes : recherche Amazon par ISBN (979-8185708682) tant
+// qu'Elena n'a pas donné le lien exact de la fiche.
+const CONTRATS_AMAZON = "https://www.amazon.fr/s?k=9798185708682";
 
 const PYTHIE = ["/images/pythie/la-vision.webp", "/images/pythie/le-grand-amour.webp", "/images/pythie/le-rendez-vous.webp"];
 
@@ -98,6 +103,44 @@ export default function LibrairiePage() {
               100 jeux et leçons pour découvrir les cartes, leur histoire et l&apos;art de les lire.
             </p>
             <Etat etat="a_paraitre" />
+          </div>
+        </div>
+      </section>
+
+      {/* Les ouvrages d'Elena */}
+      <section className="mt-14">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Pour aller au fond des choses</p>
+        <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les ouvrages d&apos;Elena</h2>
+        <div className="mt-5 grid items-start gap-6 sm:grid-cols-[180px_1fr]">
+          {/* La couverture, redessinée en attendant l'image : bleu nuit, titre or, deux anneaux entre les étoiles */}
+          <a href={CONTRATS_AMAZON} className="group block">
+            <span
+              className="relative flex w-[180px] flex-col items-center rounded-r-xl rounded-l-sm bg-[#0F1A30] px-4 pb-5 pt-9 text-center shadow-[0_24px_40px_-20px_rgba(15,26,48,0.8)] ring-1 ring-black/20 transition group-hover:-translate-y-1"
+              style={{ aspectRatio: "5 / 8" }}
+            >
+              <span className="font-serif text-[22px] leading-tight text-[#D8B76A]">Contrats d&apos;Âmes</span>
+              <span className="mt-1.5 font-serif text-[8px] leading-snug text-[#D8B76A]/80">Les 12 accords sacrés qui façonnent vos relations amoureuses</span>
+              <svg viewBox="0 0 120 70" className="mt-6 w-[110px]" aria-hidden>
+                {[[14, 12], [104, 18], [30, 58], [92, 60], [60, 6], [8, 40], [112, 44]].map(([x, y]) => (
+                  <circle key={`${x}-${y}`} cx={x} cy={y} r="1.2" fill="#D8B76A" opacity="0.8" />
+                ))}
+                <circle cx="50" cy="36" r="14" fill="none" stroke="#D8B76A" strokeWidth="1.2" />
+                <circle cx="70" cy="36" r="14" fill="none" stroke="#D8B76A" strokeWidth="1.2" />
+              </svg>
+              <span className="mt-auto text-[9px] font-semibold uppercase tracking-[0.2em] text-[#D8B76A]/90">Elena Wolska</span>
+            </span>
+          </a>
+          <div>
+            <p className="font-serif text-[22px] font-semibold leading-tight text-aubergine">
+              Contrats d&apos;Âmes : les 12 accords sacrés qui façonnent vos relations amoureuses
+            </p>
+            <p className="mt-1 font-serif text-[17px] italic text-mention">Et si vos histoires d&apos;amour n&apos;avaient rien du hasard ?</p>
+            <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink/85">
+              Les douze contrats qui lient les âmes : karmique, d&apos;apprentissage, d&apos;âme sœur, de flamme jumelle, miroir… Pour
+              comprendre pourquoi certaines rencontres bouleversent, et pourquoi le même scénario revient.
+            </p>
+            <p className="mt-2 text-[13px] text-mention">Broché · 177 pages · paru le 5 juillet 2026</p>
+            <Etat etat="paru" amazon={CONTRATS_AMAZON} />
           </div>
         </div>
       </section>
