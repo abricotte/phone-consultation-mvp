@@ -736,3 +736,24 @@ lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
   le contrat avec sa mère ou son enfant, les archives de l'âme, les
   blessures d'âme.
 
+## Les études : prix, relecture, capacité (15 octobre)
+
+- **Elena relit et améliore chaque étude** avant remise (sous 48 h, « En
+  préparation » côté cliente, sans jamais écrire « relue »).
+- **Chaque correction sert aux suivantes** (validé) : quand Elena réécrit un
+  paragraphe, il remplace le texte de base pour toutes les clientes
+  suivantes. Le temps de relecture doit baisser de semaine en semaine.
+- **Onglet « À relire » au cabinet** (validé) : le texte calculé d'un côté,
+  la fiche de la cliente de l'autre ; « Remettre l'étude » ; le temps
+  restant avant les 48 h sur chaque étude, en rouge à l'approche du délai.
+- **Pas de limite de capacité au lancement** (Elena). Garde-fous : un
+  interrupteur « Pause des études » au cabinet (la fiche dit alors quand
+  les commandes reprennent) et l'alerte des 48 h. La limite par jour
+  s'ajoutera si la file déborde souvent.
+- **Prix proposés, à confirmer par Elena** : offert (thème astral, signe
+  chinois) · 49 € (un sujet, sur vous) · 59 € (sur l'autre, sur votre vie)
+  · 69 € (à deux) · 129 € (Votre Portrait Wolska, prix de la Complète) ·
+  pack de trois études 149 €. Calcul : à 10 études par jour, environ 660 €
+  encaissés pour 3 h 20 de relecture, soit environ 200 € de l'heure contre
+  174 € à la minute en consultation.
+
