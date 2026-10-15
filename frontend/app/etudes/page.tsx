@@ -61,7 +61,6 @@ const QUESTIONS: { titre: string; intro: string; teinte: string; etudes: Etude[]
     { titre: "Le triangle", accroche: "L'ex, la tierce, l'enfant : qui tient quelle place ?", pour: "Trois liens croisés, la place de chacun, ce qui se rejoue — et ce qui peut se dénouer." },
   ] },
   { titre: "Mon chemin", intro: "L'année, les seuils, le mythe que vous traversez. Pour savoir ce qui vient, vous m'appelez.", teinte: "border-[#EAD9B4] bg-[#FBF3E2]", etudes: [
-    { titre: "Votre année amoureuse", accroche: "Semer, attendre, récolter : vous en êtes où ?", pour: "Votre année, mois par mois, avec les lunes. Se renouvelle à chaque anniversaire." },
     { titre: "L'almanach de votre année", accroche: "Votre année, lue par quatre calendriers.", pour: "Quatre rubriques séparées, jamais fondues, pour les douze mois qui viennent." },
     { titre: "Les portes de votre vie", accroche: "Trente ans, quarante ans : ce qui bascule.", pour: "Les grands seuils. Ce qui doit se terminer, ce qui demande à naître." },
     { titre: "Le mythe que vous traversez", accroche: "Perséphone, Psyché, Ariane, Isis : laquelle est en vous ?", pour: "Le mythe miroir de ce que vous vivez, l'étape où vous êtes, le passage à accomplir." },
