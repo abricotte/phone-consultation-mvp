@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import CabinetShell from "@/components/CabinetShell";
 import { CATALOGUE } from "@/lib/tests";
 import { nombres, MOT_DU_NOMBRE } from "@/lib/numerologie";
+import { jourPersonnel } from "@/lib/journee";
 import FilChronologique, {
   type EvenementFil,
 } from "@/components/FilChronologique";
@@ -534,6 +535,7 @@ export default function FicheClientePage() {
             ) : (
               <>
                 <ul className="mt-4 grid gap-2 sm:grid-cols-3">
+                  <Nb v={fiche.dateNaissance ? jourPersonnel(fiche.dateNaissance) : null} label="Jour personnel · aujourd'hui" sous="la tonalité de « Ma journée » dans son espace — elle ne voit pas le chiffre" />
                   <Nb v={n.moisPersonnel} label={`Mois personnel · ${MOIS[n.moisCivil - 1]}`} />
                   <Nb v={n.anneePersonnelle} label={`Année personnelle ${n.anneeCivile}`} />
                   <Nb v={n.cheminDeVie} label="Chemin de vie" />

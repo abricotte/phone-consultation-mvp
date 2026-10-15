@@ -9,6 +9,7 @@ import {
   SIGNES_LISTE,
 } from "@/lib/astro";
 import EspaceShell from "@/components/EspaceShell";
+import MaJournee from "@/components/MaJournee";
 
 interface Proche {
   id: string;
@@ -278,6 +279,9 @@ export default function ProfilPage() {
           Mon profil
         </h1>
       </header>
+
+      {/* Ma journée — le paragraphe du jour, en tête (Elena, 15 octobre) */}
+      <MaJournee dateNaissance={dateEnregistree} prenom={prenom} />
 
       {/* Confidentialité — note fine et rassurante */}
       <div className="mt-5 flex items-start gap-2.5 rounded-2xl bg-blush px-4 py-3">
