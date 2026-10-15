@@ -5,7 +5,7 @@ import { notFound, useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetShell from "@/components/CabinetShell";
 import { CATALOGUE } from "@/lib/tests";
-import { nombres, MOT_DU_NOMBRE } from "@/lib/numerologie";
+import { nombres, MOT_DU_NOMBRE, COULEUR_DU_NOMBRE, SENS_DETTE, SENS_LECON, SENS_PASSION } from "@/lib/numerologie";
 import { jourPersonnel } from "@/lib/journee";
 import FilChronologique, {
   type EvenementFil,
@@ -516,8 +516,16 @@ export default function FicheClientePage() {
         const n = fiche.dateNaissance ? nombres(fiche.dateNaissance, `${fiche.prenom} ${fiche.nom}`.trim()) : null;
         const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
         const Nb = ({ v, label, sous }: { v: number | null; label: string; sous?: string }) => (
-          <li className="flex items-baseline gap-3 rounded-xl border border-greige/50 bg-cream px-4 py-2.5">
-            <span className="w-12 shrink-0 font-serif text-[34px] font-bold leading-none text-aubergine">{v ?? "—"}</span>
+          <li
+            className="flex items-baseline gap-3 rounded-xl border border-white/70 px-4 py-2.5"
+            style={{ backgroundColor: v ? COULEUR_DU_NOMBRE[v]?.fond : "#FBF7F2" }}
+          >
+            <span
+              className="w-12 shrink-0 font-serif text-[34px] font-bold leading-none"
+              style={{ color: v ? COULEUR_DU_NOMBRE[v]?.encre : "#232B45" }}
+            >
+              {v ?? "—"}
+            </span>
             <span className="min-w-0">
               <span className="block text-[15px] font-bold text-ink">{label}</span>
               <span className="block text-[13px] font-medium text-ink/70">{sous ?? (v ? MOT_DU_NOMBRE[v] : "renseigner le nom")}</span>
@@ -543,11 +551,38 @@ export default function FicheClientePage() {
                   <Nb v={n.elan} label="Élan de l'âme" />
                   <Nb v={n.personnalite} label="Personnalité" />
                 </ul>
-                <p className="mt-3 text-[14px] font-medium text-ink/80">
-                  Dettes karmiques : <span className="font-bold text-aubergine">{n.dettes.length ? n.dettes.join(", ") : "aucune"}</span>
-                  {n.lecons.length > 0 && <> · Leçons karmiques : <span className="font-bold text-aubergine">{n.lecons.join(", ")}</span></>}
-                  {n.passion.length > 0 && <> · Passion cachée : <span className="font-bold text-aubergine">{n.passion.join(", ")}</span></>}
-                </p>
+                {/* Dettes, leçons, passion : le chiffre en couleur, et une ligne de sens */}
+                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                  {[
+                    { titre: "Dettes karmiques", liste: n.dettes, sens: SENS_DETTE, vide: "Aucune dette karmique." },
+                    { titre: "Leçons karmiques", liste: n.lecons, sens: SENS_LECON, vide: n.expression != null ? "Aucune leçon : tous les chiffres sont dans son nom." : "Renseigner le nom." },
+                    { titre: "Passion cachée", liste: n.passion, sens: SENS_PASSION, vide: n.expression != null ? "Pas de passion dominante." : "Renseigner le nom." },
+                  ].map((bloc) => (
+                    <div key={bloc.titre} className="rounded-xl border border-greige/50 bg-white/70 px-4 py-3">
+                      <p className="text-[13px] font-bold uppercase tracking-[0.08em] text-gold-dark">{bloc.titre}</p>
+                      {bloc.liste.length === 0 ? (
+                        <p className="mt-1.5 text-[13px] font-medium text-ink/70">{bloc.vide}</p>
+                      ) : (
+                        <ul className="mt-2 space-y-2">
+                          {bloc.liste.map((x) => {
+                            const c = COULEUR_DU_NOMBRE[x] ?? COULEUR_DU_NOMBRE[x % 9 || 9];
+                            return (
+                              <li key={x} className="flex items-start gap-2.5">
+                                <span
+                                  className="flex h-8 min-w-[2rem] shrink-0 items-center justify-center rounded-full px-1.5 font-serif text-[17px] font-bold"
+                                  style={{ backgroundColor: c?.fond, color: c?.encre }}
+                                >
+                                  {x}
+                                </span>
+                                <span className="text-[13px] font-medium leading-snug text-ink/85">{bloc.sens[x] ?? ""}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </>
             )}
           </section>

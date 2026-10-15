@@ -132,3 +132,53 @@ export const MOT_DU_NOMBRE: Record<number, string> = {
   22: "le bâtisseur, maître nombre",
   33: "le guide, maître nombre",
 };
+
+/** Une couleur par nombre, pour le cabinet (fond de la tuile, couleur du chiffre). */
+export const COULEUR_DU_NOMBRE: Record<number, { fond: string; encre: string }> = {
+  1: { fond: "#F9DCD5", encre: "#B23A2A" },
+  2: { fond: "#FBE4CF", encre: "#A85A17" },
+  3: { fond: "#FBF0C4", encre: "#8A6A0A" },
+  4: { fond: "#DFEFD9", encre: "#3C6B35" },
+  5: { fond: "#D8E8F6", encre: "#2F5F8F" },
+  6: { fond: "#F9D9E5", encre: "#A3245A" },
+  7: { fond: "#E6DBF4", encre: "#5B3F8C" },
+  8: { fond: "#F3E3C0", encre: "#7A5A12" },
+  9: { fond: "#E8E3EF", encre: "#4E4560" },
+  11: { fond: "#E3E8EF", encre: "#3F4A5C" },
+  22: { fond: "#EBDCCB", encre: "#7A4B21" },
+  33: { fond: "#F6DCD8", encre: "#8F3B4B" },
+};
+
+/** Les dettes karmiques (13, 14, 16, 19) : une ligne ou deux, pour Elena. */
+export const SENS_DETTE: Record<number, string> = {
+  13: "Dette de travail : la facilité a été prise ailleurs. Ici, tout se construit pas à pas, avec rigueur, sans raccourci.",
+  14: "Dette de liberté : excès, dispersion, abus des sens par le passé. Elle apprend la mesure, la constance, tenir ses engagements.",
+  16: "Dette d'ego et d'amour : orgueil, liens brisés. Des chutes soudaines remettent l'ego à sa place et ouvrent à l'humilité, au spirituel.",
+  19: "Dette de pouvoir : la force utilisée pour soi seule. Elle apprend à demander de l'aide, à ne pas tout porter seule, à partager.",
+};
+
+/** Les leçons karmiques (chiffres absents du nom) : ce qu'elle vient apprendre. */
+export const SENS_LECON: Record<number, string> = {
+  1: "Apprendre à s'affirmer, à prendre l'initiative, à décider seule.",
+  2: "Apprendre la patience, l'écoute, la coopération, la douceur dans le lien.",
+  3: "Apprendre à s'exprimer, à montrer ses émotions, à oser la joie.",
+  4: "Apprendre la méthode, la constance, l'effort qui dure.",
+  5: "Apprendre à accepter le changement, l'imprévu, la liberté.",
+  6: "Apprendre les responsabilités du cœur : le foyer, l'engagement, le soin.",
+  7: "Apprendre à faire confiance à son intuition, à sa vie intérieure, à la foi.",
+  8: "Apprendre à gérer l'argent et le pouvoir, à recevoir sa juste valeur.",
+  9: "Apprendre la compassion, le détachement, l'ouverture aux autres.",
+};
+
+/** La passion cachée (chiffre le plus présent dans le nom) : ce qui la pousse en secret. */
+export const SENS_PASSION: Record<number, string> = {
+  1: "Le besoin de mener, d'être indépendante, de commencer.",
+  2: "Le besoin de lien, de douceur, de vivre à deux.",
+  3: "Le besoin de créer, de parler, de séduire, de briller.",
+  4: "Le besoin de construire, d'ordre, de sécurité.",
+  5: "Le besoin de liberté, d'aventure, de sensations.",
+  6: "Le besoin d'aimer, de prendre soin, d'harmonie.",
+  7: "Le besoin de comprendre, de chercher, de solitude.",
+  8: "Le besoin de réussir, de diriger, d'abondance.",
+  9: "Le besoin de donner, de servir, d'un idéal.",
+};
