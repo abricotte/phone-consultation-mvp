@@ -3,16 +3,14 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import EspaceShell from "@/components/EspaceShell";
-import MotsCaches from "@/components/MotsCaches";
 import { Eventail, Pilules } from "@/components/Ornements";
 
-// LE SALON — ma voix, mes textes, mes carnets, mon jeu. Cinq rayons
+// LE SALON — ma voix, mes textes, mes carnets, mon jeu. Quatre rayons
 // (Elena, 14 octobre, tard) : Écouter (les boosts, offerts, et une boîte
 // à idées pour souffler un thème), Lire (mes articles, sur le site),
 // Se découvrir (la collection des Carnets d'Elena, une couleur par
-// thème), S'amuser (les mots cachés du Carnet rose — le jeu vit ici, pas
-// dans Apprendre : Apprendre, c'est Elena qui enseigne ; le salon, c'est
-// ce qu'elle laisse entre deux consultations), L'oracle de l'amour.
+// thème), L'oracle de l'amour. Les jeux (mots cachés) ont rejoint
+// Apprendre, onglet « Petit cadeau d'Elena » (Elena, 15 octobre).
 
 const PYTHIE = ["/images/pythie/la-vision.webp", "/images/pythie/le-grand-amour.webp", "/images/pythie/le-rendez-vous.webp"];
 
@@ -153,7 +151,7 @@ function BoiteAIdees() {
 }
 
 export default function SalonPage() {
-  const [onglet, setOnglet] = useState<"ecouter" | "lire" | "decouvrir" | "amuser" | "jeu">("ecouter");
+  const [onglet, setOnglet] = useState<"ecouter" | "lire" | "decouvrir" | "jeu">("ecouter");
 
   return (
     <EspaceShell>
@@ -170,7 +168,7 @@ export default function SalonPage() {
         label="Le salon"
         valeur={onglet}
         onChange={setOnglet}
-        options={[["ecouter", "Écouter"], ["lire", "Lire"], ["decouvrir", "Se découvrir"], ["amuser", "S'amuser"], ["jeu", "L'oracle de l'amour"]] as const}
+        options={[["ecouter", "Écouter"], ["lire", "Lire"], ["decouvrir", "Se découvrir"], ["jeu", "L'oracle de l'amour"]] as const}
       />
 
       {onglet === "ecouter" && (
@@ -270,20 +268,6 @@ export default function SalonPage() {
               );
             })}
           </ul>
-        </section>
-      )}
-
-      {onglet === "amuser" && (
-        <section>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">S&apos;amuser</p>
-          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les jeux d&apos;Elena</h2>
-          <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
-            Pour apprendre les mots de la voyance sans s&apos;en apercevoir. On commence par les mots cachés du Carnet rose ;
-            les mots croisés de votre signe viendront ensuite.
-          </p>
-          <div className="mt-6">
-            <MotsCaches />
-          </div>
         </section>
       )}
 
