@@ -72,7 +72,7 @@ function BlocAppel({
   // Deux lignes courtes, jamais plus : l'état, et quand revenir
   const titre = e.enLigne ? "Elena est en ligne" : e.enConsultation ? "En consultation" : p.statut === "chargement" ? "Elena" : "Hors ligne";
   const sous = e.enLigne
-    ? "à la minute, tout de suite"
+    ? "à la minute"
     : e.enConsultation
       ? "elle se libère bientôt"
       : prochaine
@@ -97,15 +97,32 @@ function BlocAppel({
         </span>
       </div>
 
-      <a
-        href={e.enLigne ? "/dashboard" : RENDEZ_VOUS}
-        className={`mt-4 flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-3 py-3 text-[14.5px] font-bold shadow-card transition ${
-          e.enLigne ? "bg-statut-online text-white hover:brightness-110" : "bg-cta text-cta-text hover:bg-cta-dark"
-        }`}
-      >
-        <Icone nom={e.enLigne ? "appeler" : "reserver"} taille={17} />
-        {e.enLigne ? "Appeler maintenant" : "Rendez-vous"}
-      </a>
+      {/* Deux boutons, toujours là, toujours à la même place : celui qui sert
+          tout de suite est plein, l'autre est dessous, en contour. */}
+      <div className="mt-4 flex flex-col gap-2">
+        <a
+          href="/dashboard"
+          className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-3 py-3 text-[14.5px] font-bold transition ${
+            e.enLigne
+              ? "order-1 bg-statut-online text-white shadow-card hover:brightness-110"
+              : "order-2 bg-white/80 text-aubergine ring-1 ring-gold/40 hover:bg-white"
+          }`}
+        >
+          <Icone nom="appeler" taille={17} />
+          J&apos;appelle Elena
+        </a>
+        <a
+          href={RENDEZ_VOUS}
+          className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl px-3 py-3 text-[14.5px] font-bold transition ${
+            e.enLigne
+              ? "order-2 bg-white/80 text-aubergine ring-1 ring-gold/40 hover:bg-white"
+              : "order-1 bg-cta text-cta-text shadow-card hover:bg-cta-dark"
+          }`}
+        >
+          <Icone nom="reserver" taille={17} />
+          Rendez-vous
+        </a>
+      </div>
 
       <div className="mt-4 flex flex-col gap-1 border-t border-gold/30 pt-3">
         {onglets.map((o) => {
