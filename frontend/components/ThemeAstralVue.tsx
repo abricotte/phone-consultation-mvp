@@ -412,7 +412,7 @@ export default function ThemeAstralVue({ profil, erreur = "" }: { profil: Profil
 
       <p className="mt-10 text-[14px] text-ink/80">
         <span className="mr-2 text-gold">✦</span>
-        Pour ce qui n&apos;est qu&apos;à {prenom} : <a href="/etudes" className="font-semibold text-prix hover:underline">les études complètes</a>, relues et signées.
+        Pour ce qui n&apos;est qu&apos;à {prenom} : <a href="/etudes" className="font-semibold text-prix hover:underline">les études complètes</a>, calculées d&apos;après la méthode Wolska.
       </p>
     </>
   );

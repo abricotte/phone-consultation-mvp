@@ -127,8 +127,8 @@ export default function EtudesPage() {
           Je vous propose d&apos;apprendre à mieux vous connaître, et à mieux connaître vos proches, suivant la méthode Wolska.
         </p>
         <p className="mt-3 text-[15px] leading-relaxed text-ink/85">
-          Une part vous est offerte ici. Les études complètes sont calculées d&apos;après ma méthode, relues et signées par
-          moi, et vous sont remises dans votre espace.
+          Une part vous est offerte ici. Les études complètes sont calculées d&apos;après la méthode Wolska, et vous sont
+          remises dans votre espace sous 48 heures.
         </p>
       </header>
 

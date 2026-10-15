@@ -699,6 +699,22 @@ lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
 - **« Votre année amoureuse » retirée** partout (Elena : « trop dangereux,
   surtout en gratuit ») — ni étude ni page offerte ; l'année ne se lit
   qu'en consultation.
+- **Mes études, version « bibliothèque »** (Elena, 15 octobre, d'après
+  une analyse qu'elle a fait faire) : titre « Mes études », signature
+  « Méthode Wolska · votre espace personnel » ; deux univers séparés —
+  **Ma bibliothèque** (ce qui est à elle, rien à vendre) et **Poursuivez
+  votre découverte** (**toutes les études visibles d'un coup**, par thèmes,
+  les noms des thèmes servent de raccourcis : « trop de clics tue
+  l'action »). **Cadeaux d'Elena : le thème astral et le signe chinois,
+  pas plus.** Une étude achetée passe **« En préparation »** et est
+  **remise sous 48 h** (Elena : ça dit qu'elle est faite pour elle) ; la
+  date de remise est calculée, jamais une date passée. Une seule
+  suggestion contextuelle. La fiche : question, sommaire, **extrait
+  gratuit**, prix, « Débloquer l'étude ». Pas de paiement par le crédit
+  minutes (décision du 12 octobre maintenue). Maquette :
+  `apercu-tmp/etudes-bibliotheque`.
+- **Tests** : plus de mention « Elena voit vos résultats dans votre fiche »
+  côté cliente.
 - **« Les mères derrière vous » retirée** aussi (Elena, 15 octobre).
   Mon héritage garde : le prénom et qui l'a donné, l'arbre des prénoms,
   le contrat avec sa mère ou son enfant, les archives de l'âme, les
