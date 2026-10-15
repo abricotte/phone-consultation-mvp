@@ -755,6 +755,14 @@ lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
   paie, le bouton dit « Réserver », et la date de remise est comptée depuis
   le retour (reprise + 48 h). Pas de liste d'attente sans paiement : elle
   obligerait à prévenir la cliente, et il n'y a jamais d'envoi automatique.
+- **Le bandeau de pause** ne dit jamais « Elena fait une pause » (Elena). Au
+  cabinet, deux textes au choix d'Elena : « Vos études sont très demandées en
+  ce moment » ou « Chaque étude mérite toute mon attention », suivis de « Pour
+  que la vôtre reçoive le soin qu'elle mérite, les nouvelles commandes sont
+  préparées à partir du lundi… Réservez la vôtre dès maintenant : elle sera
+  prête mercredi… ». Le premier texte est utilisable à sa discrétion, même
+  hors forte demande réelle : exception à la règle « rareté vraie » décidée
+  par Elena le 15 octobre, risque signalé.
 - **Prix, à confirmer par Elena** : 49 € écarté (« si ça me prend plus de
   20 minutes c'est pas bon »). Plancher = 20 min de son temps à la minute
   (≈ 58 €). Proposition révisée : offert (thème astral, signe chinois) ·
