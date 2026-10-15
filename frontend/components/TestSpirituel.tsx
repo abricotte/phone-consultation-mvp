@@ -198,7 +198,7 @@ function Pied({ recommencer }: { recommencer: () => void }) {
     <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-greige pt-5 text-[13px]">
       <a href="/tests" className="rounded-full bg-aubergine px-5 py-2.5 font-semibold text-cream hover:bg-aubergine/90">Retour aux tests</a>
       <button type="button" onClick={recommencer} className="font-semibold text-prix hover:underline">Refaire le test</button>
-      <span className="text-mention">Votre résultat est gardé dans Mes résultats. Elena le voit dans votre fiche, avant de vous appeler.</span>
+      <span className="text-mention">Votre résultat est gardé dans Mes résultats.</span>
     </div>
   );
 }

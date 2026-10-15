@@ -10,7 +10,7 @@ import { api } from "@/lib/api";
 // TESTS SPIRITUELS — quinze tests écrits par Elena, offerts, rangés en
 // trois thèmes (vous et l'autre · vous, en amour · votre lumière). Le
 // résultat reste ici, daté. Elena le voit dans la fiche de la cliente
-// avant de l'appeler (c'est dit sous chaque test). Rien n'est partagé.
+// avant de l'appeler. Ce n'est plus écrit côté cliente (Elena, 15 octobre).
 
 function dateCourte(iso: string) {
   return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -119,7 +119,6 @@ export default function TestsPage() {
             })}
           </ul>
         )}
-        <p className="mt-3 text-[12px] text-mention">Elena voit vos résultats dans votre fiche, avant de vous appeler. Rien n&apos;est partagé ailleurs. Vous pouvez effacer un résultat quand vous voulez.</p>
       </section>
     </EspaceShell>
   );
