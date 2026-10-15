@@ -66,6 +66,12 @@ export default function ApprendrePage() {
 
       {onglet === "jouer" && (
         <>
+          {/* La phrase d'Elena, dans un encadré blanc (15 octobre) */}
+          <p className="mb-8 max-w-2xl rounded-[20px] border border-greige/70 bg-white px-5 py-4 font-serif text-[18px] italic leading-relaxed text-ink shadow-soft">
+            J&apos;ai créé la série <span className="font-semibold not-italic text-aubergine">Les Jeux d&apos;Elena</span> pour vous apprendre la
+            voyance et tout son univers en vous amusant.
+          </p>
+
           {/* Les jeux d'Elena — la série de livres-jeux. En révision chez
               Amazon : pas de lien tant qu'il n'est pas en ligne. */}
           <section>
