@@ -6,14 +6,14 @@ import MotsCaches from "@/components/MotsCaches";
 import { Pilules } from "@/components/Ornements";
 
 // APPRENDRE — ce qu'Elena sait des cartes, elle l'apprend. Deux onglets
-// (Elena, 15 octobre), dans cet ordre : « Apprendre en s'amusant » (la série
-// de livres-jeux « Les jeux d'Elena », et les mots cachés du Carnet rose,
-// jouables ici) puis « Apprendre en écoutant » (le podcast La Minute
-// Voyance, lecteur Spotify : rien à héberger). Les vidéos viendront quand Elena
+// (Elena, 15 octobre), dans cet ordre : « Apprendre en s'amusant » (sa
+// série de livres-jeux « Les Jeux d'Elena »), « Apprendre en écoutant » (le
+// podcast La Minute Voyance, lecteur Spotify) et « 🎁 Petit cadeau
+// d'Elena » (les mots cachés du Carnet rose, jouables ici, offerts). Les vidéos viendront quand Elena
 // les aura commencées — on n'ouvre pas une pièce vide.
 
 export default function ApprendrePage() {
-  const [onglet, setOnglet] = useState<"jouer" | "ecouter">("jouer");
+  const [onglet, setOnglet] = useState<"jouer" | "ecouter" | "cadeau">("jouer");
 
   return (
     <EspaceShell>
@@ -30,7 +30,7 @@ export default function ApprendrePage() {
         label="Apprendre"
         valeur={onglet}
         onChange={setOnglet}
-        options={[["jouer", "Apprendre en s'amusant"], ["ecouter", "Apprendre en écoutant"]] as const}
+        options={[["jouer", "Apprendre en s'amusant"], ["ecouter", "Apprendre en écoutant"], ["cadeau", "🎁 Petit cadeau d'Elena"]] as const}
       />
 
       {onglet === "ecouter" && (
@@ -69,8 +69,8 @@ export default function ApprendrePage() {
           {/* Les jeux d'Elena — la série de livres-jeux. En révision chez
               Amazon : pas de lien tant qu'il n'est pas en ligne. */}
           <section>
-            <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Les jeux d&apos;Elena · le Tarot de Marseille</p>
-            <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Le livre-jeu</h2>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Ma série de livres-jeux</p>
+            <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les Jeux d&apos;Elena</h2>
             <div className="mt-5 grid items-start gap-6 sm:grid-cols-[180px_1fr]">
               {/* La vraie couverture (face avant, tirée du PDF KDP) */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -89,7 +89,7 @@ export default function ApprendrePage() {
                 </p>
                 <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink/85">
                   Les cartes du Tarot de Marseille, leur histoire et l&apos;art de les lire : on les apprend sans s&apos;en apercevoir, en
-                  cherchant des mots, en remplissant des grilles. Dans la série « Les jeux d&apos;Elena ».
+                  cherchant des mots, en remplissant des grilles.
                 </p>
                 <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-gold/15 px-4 py-2 text-[13px] font-semibold text-gold-dark">
                   <span aria-hidden>✦</span>Bientôt sur Amazon
@@ -98,18 +98,22 @@ export default function ApprendrePage() {
             </div>
           </section>
 
-          {/* Un jeu, tout de suite, ici */}
-          <section className="mt-12">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">À jouer ici, offert</p>
-            <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les mots cachés du Carnet rose</h2>
-            <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
-              Vingt-cinq mots de l&apos;amour karmique à retrouver dans la grille. Une nouvelle grille à chaque fois.
-            </p>
-            <div className="mt-5">
-              <MotsCaches />
-            </div>
-          </section>
         </>
+      )}
+
+      {onglet === "cadeau" && (
+        <section>
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-[#FAD3E2] px-3 py-1 text-[12px] font-bold uppercase tracking-[0.08em] text-[#A3245A] ring-1 ring-[#F2B3CB]">
+            🎁 Petit cadeau d&apos;Elena
+          </p>
+          <h2 className="mt-2 font-serif text-[30px] font-semibold text-aubergine">Les mots cachés du Carnet rose</h2>
+          <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
+            Vingt-cinq mots de l&apos;amour karmique à retrouver dans la grille. Une nouvelle grille à chaque fois.
+          </p>
+          <div className="mt-5">
+            <MotsCaches />
+          </div>
+        </section>
       )}
     </EspaceShell>
   );
