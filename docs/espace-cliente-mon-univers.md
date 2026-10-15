@@ -747,13 +747,17 @@ lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
   la fiche de la cliente de l'autre ; « Remettre l'étude » ; le temps
   restant avant les 48 h sur chaque étude, en rouge à l'approche du délai.
 - **Pas de limite de capacité au lancement** (Elena). Garde-fous : un
-  interrupteur « Pause des études » au cabinet (la fiche dit alors quand
-  les commandes reprennent) et l'alerte des 48 h. La limite par jour
-  s'ajoutera si la file déborde souvent.
-- **Prix proposés, à confirmer par Elena** : offert (thème astral, signe
-  chinois) · 49 € (un sujet, sur vous) · 59 € (sur l'autre, sur votre vie)
-  · 69 € (à deux) · 129 € (Votre Portrait Wolska, prix de la Complète) ·
-  pack de trois études 149 €. Calcul : à 10 études par jour, environ 660 €
-  encaissés pour 3 h 20 de relecture, soit environ 200 € de l'heure contre
-  174 € à la minute en consultation.
+  interrupteur « Pause des études » au cabinet et l'alerte des 48 h. La
+  limite par jour s'ajoutera si la file déborde souvent.
+- **Pendant la pause, on réserve** (Elena : « je ne les perds pas mais
+  elles attendent ») : les études restent visibles, un bandeau dit « Elena
+  fait une pause. Les commandes reprennent lundi » ; la cliente commande et
+  paie, le bouton dit « Réserver », et la date de remise est comptée depuis
+  le retour (reprise + 48 h). Pas de liste d'attente sans paiement : elle
+  obligerait à prévenir la cliente, et il n'y a jamais d'envoi automatique.
+- **Prix, à confirmer par Elena** : 49 € écarté (« si ça me prend plus de
+  20 minutes c'est pas bon »). Plancher = 20 min de son temps à la minute
+  (≈ 58 €). Proposition révisée : offert (thème astral, signe chinois) ·
+  59 € (un sujet, sur vous) · 69 € (sur l'autre, sur votre vie) · 79 € (à
+  deux) · 149 € (Votre Portrait Wolska) · 10 % de moins dès trois études.
 
