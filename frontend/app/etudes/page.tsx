@@ -68,7 +68,6 @@ const QUESTIONS: { titre: string; intro: string; teinte: string; etudes: Etude[]
   { titre: "D'où je viens ?", intro: "Votre prénom, votre lignée, vos mémoires d'avant. Ce que vous avez reçu avant de choisir.", teinte: "border-[#D3E0D2] bg-[#EDF4EC]", etudes: [
     { titre: "Votre prénom en amour", accroche: "Qui vous a nommée, et pourquoi ?", pour: "D'où il vient, comment il a voyagé, ce qu'il porte — et sa lecture symbolique, à part." },
     { titre: "L'arbre secret des prénoms", accroche: "Trois générations, un prénom qui revient.", pour: "Ce qui se transmet, ce qui s'efface, ce qui se répare. D'après ce que vous racontez." },
-    { titre: "Les mères derrière vous", accroche: "Aimez-vous comme elles ont aimé ?", pour: "Votre lignée maternelle : les prénoms, les silences, les modèles amoureux. L'héritage à garder, celui à transformer." },
     { titre: "Les archives de votre âme", accroche: "Ce que vous auriez déjà vécu.", pour: "Un récit symbolique de vos vies anciennes — un récit, jamais un fait." },
   ] },
 ];

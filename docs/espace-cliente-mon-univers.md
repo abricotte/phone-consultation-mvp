@@ -676,4 +676,31 @@ lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
 - Elena apportera **ses textes et ses réflexions** (« les librairies »)
   une fois tout en place : partout, les textes sont des gabarits faciles à
   remplacer, fichier par fichier.
+- **Mes études, dans les mots de la cliente** (Elena, 15 octobre) : sept
+  onglets — Vos études · Qui suis-je ? · L'autre (« lui, elle, iels : le
+  ou la comprendre vraiment ») · Mes relations amoureuses (les
+  compatibilités offertes en tête, puis le lien) · Mon travail · Mon
+  chemin, ma mission · Mon héritage. Une seule grille par onglet, toutes
+  les cartes au même format (titre dans la carte, pied de hauteur fixe) ;
+  « Étude offerte » en doré solaire, « À lire » / « En préparation · 48 h »
+  en couleur franche, « À débloquer » en blanc bordé avec le bouton orange
+  « Commander » et le prix. **Plus de « relue » nulle part** : « Calculée
+  d'après la méthode Wolska · remise sous 48 h ». Pas de dessins tant
+  qu'Elena ne les a pas fournis (fond uni + signe). Maquette :
+  `apercu-tmp/etudes-bibliotheque`.
+- **« Votre Aura »** : le nom du résultat de la méthode (ce qui se calcule
+  sur la date et le prénom, jamais nommé « numérologie ») — préféré à
+  « votre Empreinte » ; la Clé Wolska en réserve ; méthode Wolska reste la
+  signature. Le résultat se donne **en couleur** (neuf couleurs, une par
+  tonalité, à choisir avec Elena), qui peut teinter l'espace de la cliente.
+  Deux auras, jamais confondues : **l'aura de naissance** (calculée,
+  offerte, fixe) et **l'aura vue par Elena** (posée depuis le cabinet après
+  un appel, qui change).
+- **« Votre année amoureuse » retirée** partout (Elena : « trop dangereux,
+  surtout en gratuit ») — ni étude ni page offerte ; l'année ne se lit
+  qu'en consultation.
+- **« Les mères derrière vous » retirée** aussi (Elena, 15 octobre).
+  Mon héritage garde : le prénom et qui l'a donné, l'arbre des prénoms,
+  le contrat avec sa mère ou son enfant, les archives de l'âme, les
+  blessures d'âme.
 
