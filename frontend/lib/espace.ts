@@ -60,6 +60,8 @@ export const GROUPES_ESPACE: GroupeEspace[] = [
     onglets: [
       { href: "/salon", label: "Le salon", court: "Salon", icone: "casque" },
       { href: "/apprendre", label: "Apprendre", court: "Apprendre", icone: "modifier" },
+      // Tout ce qui s'achète, en vitrine : carnets, jeux, oracle (Elena, 15 octobre)
+      { href: "/librairie", label: "La librairie", court: "Librairie", icone: "livre" },
       // Voyages spirituels : en off tant que ce n'est pas abouti (Elena, 14 octobre) — la page reste, hors menu.
       // { href: "/voyages", label: "Voyages spirituels", court: "Voyages", icone: "boussole" },
     ],

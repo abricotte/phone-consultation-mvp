@@ -100,6 +100,9 @@ export default function ApprendrePage() {
                 <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-gold/15 px-4 py-2 text-[13px] font-semibold text-gold-dark">
                   <span aria-hidden>✦</span>Bientôt sur Amazon
                 </p>
+                <a href="/librairie" className="mt-3 block text-[13px] font-semibold text-prix hover:underline">
+                  Tous mes livres dans la librairie →
+                </a>
               </div>
             </div>
           </section>

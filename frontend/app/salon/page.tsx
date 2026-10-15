@@ -3,16 +3,14 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import EspaceShell from "@/components/EspaceShell";
-import { Eventail, Pilules } from "@/components/Ornements";
+import { Pilules } from "@/components/Ornements";
 
-// LE SALON — ma voix, mes textes, mes carnets, mon jeu. Quatre rayons
-// (Elena, 14 octobre, tard) : Écouter (les boosts, offerts, et une boîte
-// à idées pour souffler un thème), Lire (mes articles, sur le site),
-// Se découvrir (la collection des Carnets d'Elena, une couleur par
-// thème), L'oracle de l'amour. Les jeux (mots cachés) ont rejoint
-// Apprendre, onglet « Petit cadeau d'Elena » (Elena, 15 octobre).
+// LE SALON — ma voix et mes textes, pour se faire du bien. Deux rayons
+// (Elena, 15 octobre) : Écouter (les boosts, offerts, et une boîte à idées
+// pour souffler un thème) et Lire (mes articles, sur le site). Tout est
+// gratuit ici : les carnets et le jeu de la Pythie sont dans La librairie,
+// les mots cachés dans Apprendre.
 
-const PYTHIE = ["/images/pythie/la-vision.webp", "/images/pythie/le-grand-amour.webp", "/images/pythie/le-rendez-vous.webp"];
 
 // Les boosts : un fichier audio par boost (fourni par Elena, dans
 // public/audio/boosts), sa durée ; sans fichier, le boost est « bientôt ».
@@ -60,18 +58,6 @@ const ARTICLES: { rubrique: string; textes: [string, string][] }[] = [
       ["synchronicites", "Les synchronicités"],
     ],
   },
-];
-
-// La collection « Les Carnets d'Elena » : une couleur par thème. Le rose
-// est paru ; le bleu est écrit ; les autres sont nommés, pas vendus.
-type Carnet = { couleur: string; titre: string; sousTitre: string; promesse: string; teinte: string; encre: string; amazon?: string; etat: "paru" | "a_paraitre" | "a_venir" };
-const CARNETS: Carnet[] = [
-  { couleur: "Les Carnets roses", titre: "L'Amour karmique", sousTitre: "et les liens d'âme", promesse: "Pourquoi lui ? Pourquoi maintenant ? Dix tests pour voir clair dans vos liens.", teinte: "from-[#FBE3EA] to-[#F0C2D0]", encre: "text-[#8E2E55]", amazon: "https://www.amazon.co.uk/LAmour-Karmique-Carnets-dElena-Wolska/dp/B0H7PTQKGR", etat: "paru" },
-  { couleur: "Les Carnets bleus", titre: "L'Intuition et la Voyance", sousTitre: "et la voyance qui sommeille en chacun de nous", promesse: "Dix tests pour révéler votre intuition : voir, entendre, ressentir, savoir.", teinte: "from-[#E3ECF7] to-[#BFD3EA]", encre: "text-[#2F6BA8]", etat: "a_paraitre" },
-  { couleur: "Les Carnets violets", titre: "La Mission de vie", sousTitre: "et ce que votre âme est venue accomplir", promesse: "Dix tests pour révéler votre mission de vie.", teinte: "from-[#EEE6F7] to-[#D4C4EA]", encre: "text-[#5B3F8C]", etat: "a_venir" },
-  { couleur: "Les Carnets dorés", titre: "L'Abondance", sousTitre: "et votre vraie relation à l'argent", promesse: "Dix tests pour libérer votre abondance.", teinte: "from-[#FBF3E2] to-[#EAD7A8]", encre: "text-[#8a6f3e]", etat: "a_venir" },
-  { couleur: "Les Carnets verts", titre: "La Guérison familiale", sousTitre: "et les héritages invisibles de votre lignée", promesse: "Dix tests pour vous libérer des schémas familiaux.", teinte: "from-[#E9F3E8] to-[#C6DEC4]", encre: "text-[#2F5D3A]", etat: "a_venir" },
-  { couleur: "Les Carnets blancs", titre: "Le Deuil et le lâcher-prise", sousTitre: "et l'art de traverser les fins avec douceur", promesse: "Dix tests pour traverser, et vous relever en douceur.", teinte: "from-white to-[#EFE9E3]", encre: "text-aubergine", etat: "a_venir" },
 ];
 
 type Suggestion = { id: string; texte: string; creeLe: string };
@@ -151,7 +137,7 @@ function BoiteAIdees() {
 }
 
 export default function SalonPage() {
-  const [onglet, setOnglet] = useState<"ecouter" | "lire" | "decouvrir" | "jeu">("ecouter");
+  const [onglet, setOnglet] = useState<"ecouter" | "lire">("ecouter");
 
   return (
     <EspaceShell>
@@ -160,7 +146,7 @@ export default function SalonPage() {
           Le salon
         </h1>
         <p className="mt-3 font-serif text-xl italic leading-relaxed text-mention">
-          Ma voix, mes textes, mes carnets, mon jeu — ce que je vous laisse entre deux consultations.
+          Ma voix et mes textes — ce que je vous laisse entre deux consultations.
         </p>
       </header>
 
@@ -168,7 +154,7 @@ export default function SalonPage() {
         label="Le salon"
         valeur={onglet}
         onChange={setOnglet}
-        options={[["ecouter", "Écouter"], ["lire", "Lire"], ["decouvrir", "Se découvrir"], ["jeu", "L'oracle de l'amour"]] as const}
+        options={[["ecouter", "Écouter"], ["lire", "Lire"]] as const}
       />
 
       {onglet === "ecouter" && (
@@ -234,75 +220,11 @@ export default function SalonPage() {
         </section>
       )}
 
-      {onglet === "decouvrir" && (
-        <section>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Se découvrir</p>
-          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les Carnets d&apos;Elena</h2>
-          <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
-            Une collection de carnets à remplir : dix tests, sept chapitres, un journal. Une couleur par thème. On y écrit, on
-            y coche, on s&apos;y découvre.
-          </p>
-          <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {CARNETS.map((c) => {
-              const couverture = (
-                <span className={`block aspect-[2/3] rounded-r-xl rounded-l-sm bg-gradient-to-br p-5 shadow-[0_24px_40px_-20px_rgba(35,43,69,0.45)] ring-1 ring-white/60 transition ${c.teinte} ${c.etat === "paru" ? "group-hover:-translate-y-1.5 group-hover:rotate-[-1deg]" : "opacity-80"}`}>
-                  <span className="block h-full border border-white/60 p-4">
-                    <span className={`block text-[10px] font-semibold uppercase tracking-[0.2em] ${c.encre}`}>{c.couleur}</span>
-                    <span className={`mt-5 block font-serif text-[24px] font-semibold leading-tight ${c.encre}`}>{c.titre}</span>
-                    <span className={`mt-2 block font-serif text-[13px] italic leading-snug ${c.encre} opacity-80`}>{c.sousTitre}</span>
-                    <span className="mt-4 block text-[10px] font-semibold uppercase tracking-[0.14em] text-aubergine/60">Elena Wolska</span>
-                  </span>
-                </span>
-              );
-              return (
-                <li key={c.titre} className="group">
-                  {c.amazon ? <a href={c.amazon}>{couverture}</a> : couverture}
-                  <p className="mt-4 font-semibold text-aubergine">{c.titre}</p>
-                  <p className="mt-0.5 text-[13px] leading-snug text-ink/75">{c.promesse}</p>
-                  {c.etat === "paru" && c.amazon ? (
-                    <a href={c.amazon} className="mt-1.5 inline-flex items-center gap-1.5 text-[13px] font-semibold text-prix hover:underline">Sur Amazon →</a>
-                  ) : (
-                    <p className="mt-1.5 text-[12px] text-gold-dark">{c.etat === "a_paraitre" ? "à paraître" : "à venir"}</p>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
-
-      {onglet === "jeu" && (
-        <section className="grid items-center gap-8 md:grid-cols-5">
-          <div className="md:col-span-2">
-            <Eventail images={PYTHIE} />
-          </div>
-          <div className="md:col-span-3">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">
-              L&apos;oracle de l&apos;amour · 36 cartes
-            </p>
-            <h2 className="mt-1 font-serif text-[34px] font-semibold leading-tight text-aubergine">La Petite Pythie</h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-ink/85">
-              Il y a très longtemps, on venait de toute la Grèce interroger la Pythie. Aujourd&apos;hui, elle
-              revient pour parler d&apos;amour. Trente-six cartes que j&apos;ai peintes à la main, à l&apos;huile et
-              au pastel, consacrées à Delphes au temple d&apos;Apollon et à Délos, l&apos;île de la lumière.
-            </p>
-            <p className="mt-3 text-[14px] text-mention">
-              Le jeu est en cours d&apos;impression. En attendant, c&apos;est avec les cartes originales que je tire
-              pour vous, dans{" "}
-              <a href="/tirages" className="font-semibold text-prix hover:underline">
-                Mes tirages
-              </a>
-              .
-            </p>
-            <a
-              href="https://elena-wolska.com/oracle"
-              className="mt-4 inline-block text-[13px] font-semibold text-prix hover:underline"
-            >
-              L&apos;histoire du jeu, sur le site →
-            </a>
-          </div>
-        </section>
-      )}
+      <p className="mt-10 text-[14px] text-ink/80">
+        <span className="mr-2 text-gold">✦</span>
+        Mes carnets, mes jeux et l&apos;oracle de la Petite Pythie sont dans{" "}
+        <a href="/librairie" className="font-semibold text-prix hover:underline">la librairie</a>.
+      </p>
     </EspaceShell>
   );
 }

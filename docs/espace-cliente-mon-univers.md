@@ -769,3 +769,19 @@ lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
   59 € (un sujet, sur vous) · 69 € (sur l'autre, sur votre vie) · 79 € (à
   deux) · 149 € (Votre Portrait Wolska) · 10 % de moins dès trois études.
 
+## Avec Elena : trois entrées (15 octobre)
+
+- **Le salon** : se faire du bien — Écouter (les boosts, la boîte à idées)
+  et Lire (ses dix-sept textes). Entièrement gratuit.
+- **Apprendre** : progresser — Apprendre en s'amusant (« J'ai créé la série
+  Les Jeux d'Elena… », le livre-jeu du Tarot de Marseille), Apprendre en
+  écoutant (La Minute Voyance), 🎁 Petit cadeau d'Elena (les mots cachés).
+- **La librairie** (nom choisi par Elena ; « Mes créations » écarté, trop
+  centré sur elle) : tout ce qui s'achète, en vitrine, sans onglet — les
+  Carnets d'Elena (six couleurs), les Jeux d'Elena, la Petite Pythie. Liens
+  Amazon quand paru, « Bientôt sur Amazon » ou « À venir » sinon.
+- **Menu « Consulter Elena »** en tête : encadré doré pâle, l'état d'Elena,
+  deux boutons toujours visibles (« J'appelle Elena », vert quand elle est en
+  ligne ; « Rendez-vous »), Mon espace, Consultations, Mon crédit avec le
+  solde. Sur téléphone, le bouton d'appel en haut de chaque écran.
+
