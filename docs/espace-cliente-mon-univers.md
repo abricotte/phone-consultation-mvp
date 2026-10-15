@@ -637,3 +637,43 @@ lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
   par placement, l'heure et le lieu des proches (pour les affinités), et
   l'export en étude signée.
 
+## Décisions du 15 octobre
+
+- **En ligne** : les 29 commits du 14 octobre (salon, études, tirages,
+  tests, thème astral) poussés après les migrations 014 → 017, exécutées
+  par Elena dans Supabase, bloc par bloc, collées dans le chat.
+- **« Ma journée »**, en tête de Mon profil (construit) : un paragraphe
+  par jour, **assemblé, jamais généré**, à partir de trois couches — la
+  tonalité du jour (un calcul sur la date de naissance, **qui ne se montre
+  jamais** : ni chiffre, ni mot), le ciel du jour dit à voix haute (la
+  Lune en signe et sa phase, Vénus et Mercure quand ils reculent, par
+  éphémérides), et un mot pour son signe. Textes dans
+  `lib/journee-textes.ts`, premières versions dans la voix d'Elena,
+  **à relire par elle** (« moins IA, plus ma voix »). Au cabinet, « Jour
+  personnel · aujourd'hui » dans Ses nombres. Pas de choix de date à
+  quatre jours : une journée à la fois.
+- **Gratuit / payant, la règle** : est offert ce qui se calcule et se
+  trouve partout (signe, ascendant, compatibilités par élément, la roue du
+  thème et ses positions, les tests, la carte du jour, la page offerte de
+  chaque étude) ; est payant ce qui demande les yeux, la voix ou la main
+  d'Elena (la lecture du thème en cinq blocs dans sa voix et sa synthèse,
+  les études, les tirages, « on en parle »). Sur la page offerte du thème,
+  ses mots seulement pour le Soleil, la Lune et l'ascendant.
+- **Mes études comme une étagère qui s'illumine** (d'après World
+  Numerology, en plus doux) : une seule grille, quatre états — offerte ·
+  à découvrir (**voilée, jamais grise**) · commandée (« Elena relit ») ·
+  remise (« à lire ») ; en haut « Votre bibliothèque », ce qu'elle
+  possède ; une tuile ouvre une fiche (accroche, ce que vous recevez,
+  « Lire ma page offerte », prix en petit, Commander) ; une étude remise
+  s'ouvre et se lit (mot d'Elena en ouverture, sommaire, le texte, la
+  signature, le PDF, « on en parle »). Pas d'abonnement, pas de cadenas,
+  pas de compte à rebours. Maquette : `apercu-tmp/etudes-bibliotheque`.
+- **Le genre, sans « iel »** : on nomme la place plutôt que la personne
+  (l'autre, votre partenaire, la personne qui compte) ; on tourne la
+  phrase vers la cliente ; « lui ou elle » rarement. La porte « Qui
+  est-il / elle / iels ? » devient **« Qui est l'autre ? »**. Les accroches
+  au masculin par défaut sont à reprendre (en attente de son oui).
+- Elena apportera **ses textes et ses réflexions** (« les librairies »)
+  une fois tout en place : partout, les textes sont des gabarits faciles à
+  remplacer, fichier par fichier.
+
