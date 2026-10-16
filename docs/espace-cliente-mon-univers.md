@@ -785,3 +785,36 @@ lots, profection, la grille en cinq blocs, les limites, pas de fatalisme.
   ligne ; « Rendez-vous »), Mon espace, Consultations, Mon crédit avec le
   solde. Sur téléphone, le bouton d'appel en haut de chaque écran.
 
+
+## Décisions du 16 octobre
+
+- **Mes études, au lancement : seule la partie offerte est en ligne**
+  (🎁 Cadeau d'Elena, rose poudré). Toutes les études et la carte des
+  sagesses restent dans le code, cachées (`ETUDES_VISIBLES`,
+  `CARTE_VISIBLE` dans `app/etudes/page.tsx`) : Elena les peaufine.
+- **La bibliothèque réglée pour le lancement** (maquette
+  `app/apercu-tmp/etudes-lancement`) : en tête, « Vous, en trois signes »,
+  un bandeau de ciel et non des cases : le Soleil, l'ascendant (« on
+  l'incarne pleinement à partir de 40 ans ») et l'animal chinois, reliés
+  par un fil d'or, avec une phrase qui les dit ensemble. Puis les cadeaux en
+  couleur : thème astral, compatibilités, emblème. Puis les études à venir
+  en gris « Bientôt », sans prix ni achat. Pas de faux chiffres.
+- **Études « Bientôt »** : Votre animal totem, Votre contrat d'âme, L'autre
+  par ses dates, Votre contrat d'âme à deux, Votre année complète (« votre
+  année astrologique, selon la méthode Wolska »), Les portes de votre vie,
+  Les anciennes vies de votre âme (« et ce qu'elle est revenue accomplir dans
+  celle-ci » : les nœuds lunaires, le calcul est prêt dans
+  `lib/noeuds-lunaires.ts`, une étude et non un cadeau), Votre prénom en amour.
+- **Votre animal totem : 9 €**, d'après les signes mayas, la petite porte
+  d'entrée vers les études. Les vingt signes du jour ne sont pas tous des
+  animaux ; on s'appuie sur l'animal que les gardiens des jours associent à
+  chacun, une seule source choisie par Elena et gardée. Version courte de
+  « Le gardien de votre jour » (carte des sagesses, en off).
+- **Le signe chinois** se compte depuis le vrai Nouvel An chinois
+  (`lib/signe-chinois.ts`, 39 années vérifiées de 1950 à 2034).
+- **L'emblème** se choisit dans Mon profil (migration 019) et remplace
+  l'initiale dans le menu ; il revient parmi les cadeaux de Mes études.
+- **Mon profil en tableau de bord** : la carte en tête (emblème, prénom,
+  signe, date, ascendant), puis deux colonnes (Ma journée, Ce que je veux
+  aborder, Les personnes qui comptent ; la naissance, l'emblème). Ma journée
+  en couleur d'aube. Plus de « Strictement privé — Elena voit… ».
