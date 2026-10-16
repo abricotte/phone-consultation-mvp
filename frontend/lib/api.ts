@@ -116,6 +116,8 @@ export const api = {
     fuseau?: string | null;
     /** « Ce que je veux aborder » — écrit par la cliente, lu par Elena */
     aAborder?: string;
+    /** L'emblème choisi (lib/emblemes.ts), ou null (migration 019) */
+    embleme?: string | null;
   }) => request("/profil", { method: "PATCH", body: JSON.stringify(body) }),
   addProche: (body: {
     prenom: string;

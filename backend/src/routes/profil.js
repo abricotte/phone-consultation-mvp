@@ -105,6 +105,10 @@ function serialiserProche(p) {
   };
 }
 
+// L'emblème de la cliente (migration 019) : une figure choisie dans cette
+// liste, à la place d'une photo. Même liste que frontend/lib/emblemes.ts.
+const EMBLEMES = ['licorne', 'colombe', 'papillon', 'cerf', 'cygne', 'renarde', 'sphinx', 'dauphin', 'aigle'];
+
 // GET /api/profil - Profil de la cliente connectée (date + proches)
 router.get('/', authMiddleware, async (req, res) => {
   try {
@@ -112,7 +116,7 @@ router.get('/', authMiddleware, async (req, res) => {
       await Promise.all([
         supabase
           .from('users')
-          .select('first_name, date_naissance, ascendant, a_aborder, a_aborder_maj_le, heure_naissance, lieu_naissance, latitude_naissance, longitude_naissance, fuseau_naissance')
+          .select('first_name, date_naissance, ascendant, a_aborder, a_aborder_maj_le, heure_naissance, lieu_naissance, latitude_naissance, longitude_naissance, fuseau_naissance, embleme')
           .eq('id', req.user.id)
           .single(),
         supabase
@@ -129,6 +133,7 @@ router.get('/', authMiddleware, async (req, res) => {
       prenom: user?.first_name || null,
       dateNaissance: user?.date_naissance || null,
       ascendant: user?.ascendant || null,
+      embleme: user?.embleme || null,
       // Écrit par la cliente POUR Elena — l'inverse du carnet privé.
       aAborder: user?.a_aborder || '',
       aAborderMajLe: user?.a_aborder_maj_le || null,
@@ -214,6 +219,14 @@ router.patch('/', authMiddleware, async (req, res) => {
       Object.assign(maj, value);
     }
 
+    if (Object.prototype.hasOwnProperty.call(req.body, 'embleme')) {
+      const e = req.body.embleme;
+      if (e !== null && !EMBLEMES.includes(e)) {
+        return res.status(400).json({ error: 'Emblème inconnu.' });
+      }
+      maj.embleme = e;
+    }
+
     if (Object.prototype.hasOwnProperty.call(req.body, 'aAborder')) {
       const brut = req.body.aAborder;
       if (typeof brut !== 'string') {
@@ -241,6 +254,7 @@ router.patch('/', authMiddleware, async (req, res) => {
     res.json({
       dateNaissance: 'date_naissance' in maj ? maj.date_naissance : undefined,
       ascendant: 'ascendant' in maj ? maj.ascendant : undefined,
+      embleme: 'embleme' in maj ? maj.embleme : undefined,
       aAborder: 'a_aborder' in maj ? maj.a_aborder || '' : undefined,
       aAborderMajLe: 'a_aborder_maj_le' in maj ? maj.a_aborder_maj_le : undefined,
       ...('heure_naissance' in maj || 'lieu_naissance' in maj ? serialiserNaissance(maj) : {}),

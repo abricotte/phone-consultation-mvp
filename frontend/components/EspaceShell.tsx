@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { GROUPES_ESPACE, ONGLETS_ESPACE, SOUS_LE_POUCE } from "@/lib/espace";
 import { capitaliser } from "@/lib/format";
 import { Icone, type NomIcone } from "@/components/IconesEspace";
+import Embleme from "@/components/Embleme";
+import { emblemeLocal, memoriserEmbleme } from "@/lib/emblemes";
 import { useElenaPresence, heureFr, jourRelatif } from "@/components/useElenaStatus";
 
 // LE SHELL DE L'ESPACE CLIENTE — « Le Salon » (maquette validée par Elena
@@ -183,6 +185,22 @@ export default function EspaceShell({ prenom, signe, ascendant, children }: Prop
   // Le solde, en une ligne au-dessus du menu : « Mon crédit · 5 € » (Elena, 14 octobre).
   const [soldeEuros, setSoldeEuros] = useState<number | null>(null);
   const [plusOuvert, setPlusOuvert] = useState(false);
+  // L'emblème choisi dans Mon profil (migration 019), à la place de l'initiale
+  const [embleme, setEmbleme] = useState<string | null>(null);
+
+  useEffect(() => {
+    const lire = () => setEmbleme(emblemeLocal());
+    lire();
+    window.addEventListener("embleme", lire);
+    // Sur un nouvel appareil, rien dans le navigateur : on le demande une fois
+    try {
+      if (!emblemeLocal() && localStorage.getItem("token") && !sessionStorage.getItem("embleme-lu")) {
+        sessionStorage.setItem("embleme-lu", "1");
+        api.getProfil().then((d: { embleme?: string | null }) => { if (d?.embleme) memoriserEmbleme(d.embleme); }).catch(() => {});
+      }
+    } catch { /* stockage indisponible : l'initiale reste */ }
+    return () => window.removeEventListener("embleme", lire);
+  }, []);
 
   // L'espace cliente est réservé aux CLIENTES : le compte praticienne y
   // est redirigé vers son cabinet. Le vécu a montré le danger — connectée
@@ -214,6 +232,7 @@ export default function EspaceShell({ prenom, signe, ascendant, children }: Prop
   function handleLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    memoriserEmbleme(null);
     window.location.href = "/";
   }
 
@@ -282,9 +301,13 @@ export default function EspaceShell({ prenom, signe, ascendant, children }: Prop
         {/* Bas de barre : la pastille utilisatrice, puis la sortie */}
         <div className="mt-6 pt-2">
           <div className="flex items-center gap-3 rounded-2xl bg-blush p-3.5">
-            <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-aubergine text-sm font-semibold text-cream">
-              {initiale}
-            </span>
+            {embleme ? (
+              <Embleme cle={embleme} taille={34} />
+            ) : (
+              <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-aubergine text-sm font-semibold text-cream">
+                {initiale}
+              </span>
+            )}
             <span className="min-w-0">
               <span className="block truncate text-sm font-semibold text-aubergine">
                 {nom || "Mon espace"}
@@ -327,7 +350,7 @@ export default function EspaceShell({ prenom, signe, ascendant, children }: Prop
               aria-label="Paramètres"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-aubergine text-sm font-semibold text-cream"
             >
-              {initiale}
+              {embleme ? <Embleme cle={embleme} taille={36} /> : initiale}
             </a>
           </div>
         </header>

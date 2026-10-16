@@ -10,6 +10,9 @@ import {
 } from "@/lib/astro";
 import EspaceShell from "@/components/EspaceShell";
 import MaJournee from "@/components/MaJournee";
+import { capitaliser } from "@/lib/format";
+import Embleme from "@/components/Embleme";
+import { EMBLEMES, emblemeParCle, memoriserEmbleme } from "@/lib/emblemes";
 
 interface Proche {
   id: string;
@@ -63,6 +66,10 @@ export default function ProfilPage() {
   const [aAborderEnCours, setAAborderEnCours] = useState(false);
   const [aAborderMsg, setAAborderMsg] = useState("");
   const [ascEnCours, setAscEnCours] = useState(false);
+  // L'emblème (migration 019)
+  const [embleme, setEmbleme] = useState<string | null>(null);
+  const [emblemeEnCours, setEmblemeEnCours] = useState(false);
+  const [emblemeMsg, setEmblemeMsg] = useState("");
 
   // L'heure et le lieu de naissance (migration 017) — pour le thème astral.
   // Facultatifs. Le lieu est choisi dans une liste (coordonnées + fuseau),
@@ -105,9 +112,12 @@ export default function ProfilPage() {
           latitude?: number | null;
           longitude?: number | null;
           fuseau?: string | null;
+          embleme?: string | null;
           proches: Proche[];
         }) => {
           setPrenom(data.prenom);
+          setEmbleme(data.embleme || null);
+          memoriserEmbleme(data.embleme || null);
           setDateNaissance(data.dateNaissance || "");
           setDateEnregistree(data.dateNaissance);
           setAscendant(data.ascendant || "");
@@ -129,6 +139,24 @@ export default function ProfilPage() {
       })
       .finally(() => setChargement(false));
   }, []);
+
+  async function choisirEmbleme(cle: string) {
+    if (emblemeEnCours || cle === embleme) return;
+    const avant = embleme;
+    setEmbleme(cle);
+    setEmblemeEnCours(true);
+    setEmblemeMsg("");
+    try {
+      await api.updateProfil({ embleme: cle });
+      memoriserEmbleme(cle);
+      setEmblemeMsg("C'est enregistré.");
+    } catch {
+      setEmbleme(avant);
+      setEmblemeMsg("Je n'ai pas pu l'enregistrer. Réessayez dans un instant.");
+    } finally {
+      setEmblemeEnCours(false);
+    }
+  }
 
   async function enregistrerAAborder(e: React.FormEvent) {
     e.preventDefault();
@@ -273,87 +301,28 @@ export default function ProfilPage() {
 
   return (
     <EspaceShell signe={signe?.nom} ascendant={ascSigne?.nom}>
-      <div className="max-w-2xl">
       <header>
         <h1 className="font-serif text-4xl font-semibold text-aubergine">
           Mon profil
         </h1>
       </header>
 
-      {/* Ma journée — le paragraphe du jour, en tête (Elena, 15 octobre) */}
-      <MaJournee dateNaissance={dateEnregistree} prenom={prenom} />
-
-      {/* Confidentialité — note fine et rassurante */}
-      <div className="mt-5 flex items-start gap-2.5 rounded-2xl bg-blush px-4 py-3">
-        <span aria-hidden className="mt-0.5 text-base">
-          🔒
-        </span>
-        <p className="text-sm text-ink">
-          <strong className="font-semibold text-aubergine">Strictement privé</strong>{" "}
-          — Elena voit votre prénom, votre date de naissance et vos proches.
-          Personne d&apos;autre.
-        </p>
-      </div>
-
-      {/* CE QUE JE VEUX ABORDER
-          Le seul champ de cet espace qu'Elena est censée lire : le ton
-          doit le dire sans ambiguïté, sinon la cliente ne saurait pas si
-          elle écrit pour elle-même ou pour être entendue. */}
-      <section
-        id="aborder"
-        className="mt-6 rounded-3xl border border-gold/40 bg-gold/5 p-7 shadow-soft"
-      >
-        <h2 className="font-serif text-2xl font-semibold text-aubergine">
-          Ce que je veux aborder
-        </h2>
-        {/* Formulation voulue par Elena : douce, sans « Elena le lit ».
-            Le mot « aborder » porte l'essentiel — ces notes préparent la
-            consultation, donc leur destination reste claire en creux. */}
-        <p className="mt-2 text-sm leading-relaxed text-ink/80">
-          Si vous souhaitez aborder des questions précises lors de votre
-          prochaine consultation, vous pouvez les noter ici.
-        </p>
-
-        <form onSubmit={enregistrerAAborder} className="mt-4">
-          <textarea
-            rows={5}
-            maxLength={2000}
-            value={aAborder}
-            onChange={(e) => setAAborder(e.target.value)}
-            placeholder="Ce dont j'aimerais parler…"
-            className="w-full rounded-2xl border border-greige/60 bg-white px-4 py-3 text-sm leading-relaxed text-ink placeholder:text-mention/60 focus:border-gold focus:outline-none"
-          />
-
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs text-mention">
-              Vous pouvez le modifier ou l&apos;effacer à tout moment.
-            </span>
-            {aAborder !== aAborderEnregistre && (
-              <button
-                type="submit"
-                disabled={aAborderEnCours}
-                className="rounded-full bg-cta px-5 py-2 text-sm font-medium text-cta-text transition hover:opacity-90 disabled:opacity-50"
-              >
-                {aAborderEnCours ? "Enregistrement…" : "Enregistrer"}
-              </button>
-            )}
-          </div>
-
-          {aAborderMsg && (
-            <p className="mt-2 text-sm text-green-700">{aAborderMsg}</p>
-          )}
-        </form>
-      </section>
-
-      {/* Votre ciel — médaillon signe astro */}
+      {/* MA CARTE — en tête du tableau de bord (Elena, 16 octobre) : son emblème
+          (ou son signe), son prénom, son ciel ; la date et l'ascendant à côté. */}
       <section className="relative mt-6 overflow-hidden rounded-3xl border border-greige/60 bg-gradient-to-br from-blush via-cream to-cream p-7 shadow-soft">
         {/* étoiles décoratives */}
         <span aria-hidden className="pointer-events-none absolute right-8 top-6 text-lg text-gold/50">✦</span>
         <span aria-hidden className="pointer-events-none absolute right-16 top-16 text-xs text-coral/40">✦</span>
         <span aria-hidden className="pointer-events-none absolute right-28 top-8 text-[0.6rem] text-gold/40">✦</span>
 
+        <div className="grid gap-6 lg:grid-cols-2 lg:items-center">
         <div className="flex items-center gap-5">
-          {/* Médaillon */}
+          {/* Médaillon : l'emblème s'il est choisi, sinon le signe */}
+          {emblemeParCle(embleme) ? (
+            <a href="#embleme" aria-label="Changer mon emblème" className="shrink-0">
+              <Embleme cle={embleme} taille={80} />
+            </a>
+          ) : (
           <div
             className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-4xl ring-1 ${
               signe
@@ -366,20 +335,21 @@ export default function ProfilPage() {
                 : undefined
             }
           >
-            {signe ? signe.emoji : "✦"}
+            {signe ? signe.emoji + "︎" : "✦"}
           </div>
+          )}
 
           <div className="min-w-0">
             {signe ? (
               <>
                 <p className="text-xs font-medium uppercase tracking-[0.15em] text-mention">
-                  Votre signe
+                  {prenom ? capitaliser(prenom) : "Votre signe"}
                 </p>
                 <p className="font-serif text-3xl font-semibold text-aubergine">
                   {signe.nom}
                   {ascSigne && (
                     <span className="ml-2 font-sans text-base font-normal text-mention">
-                      ascendant {ascSigne.nom} {ascSigne.emoji}
+                      ascendant {ascSigne.nom} {ascSigne.emoji + "︎"}
                     </span>
                   )}
                 </p>
@@ -402,8 +372,9 @@ export default function ProfilPage() {
           </div>
         </div>
 
+        <div className="space-y-4 lg:border-l lg:border-greige/50 lg:pl-6">
         {/* Date de naissance — affichage / édition */}
-        <div className="mt-5 border-t border-greige/50 pt-5">
+        <div>
           {/* Pas de « cadeau d'anniversaire » : on ne le fait pas (encore).
               Promettre ce qui n'existe pas est la seule chose pire que
               ne rien promettre. */}
@@ -460,7 +431,7 @@ export default function ProfilPage() {
         </div>
 
         {/* Ascendant — saisi si connu (non calculable sans heure + lieu) */}
-        <div className="mt-4 flex flex-col gap-2 border-t border-greige/50 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 border-t border-greige/50 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-medium text-aubergine">Votre ascendant</p>
             <p className="text-xs text-mention">
@@ -483,100 +454,75 @@ export default function ProfilPage() {
             ))}
           </select>
         </div>
+        </div>
+        </div>
+        {/* Confidentialité, sous la carte */}
+        <p className="mt-5 flex items-start gap-2 border-t border-greige/50 pt-4 text-[13px] text-ink">
+          <span aria-hidden>🔒</span>
+          <span><strong className="font-semibold text-aubergine">Strictement privé</strong> — Elena voit votre prénom, votre date de naissance et vos proches. Personne d&apos;autre.</span>
+        </p>
       </section>
 
-      {/* L'heure et le lieu de naissance — pour le thème astral */}
-      <section className="mt-6 rounded-3xl border border-greige/60 bg-ivory p-7 shadow-soft">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="font-serif text-2xl font-semibold text-aubergine">Votre heure et votre lieu de naissance</h2>
-            <p className="mt-1 text-sm text-mention">
-              Facultatifs. Avec eux, votre thème astral se calcule — l&apos;ascendant et les maisons demandent l&apos;heure.
-              Elena seule les voit.
-            </p>
-          </div>
-          {!editionNaissance && (
-            <button type="button" onClick={() => setEditionNaissance(true)} className="text-sm font-medium text-prix transition-colors hover:text-cta">
-              {naissanceEnregistree.heure || naissanceEnregistree.lieu ? "Modifier" : "Renseigner"}
-            </button>
-          )}
-        </div>
+      {/* LE TABLEAU DE BORD — deux colonnes sur ordinateur : ce qui se vit
+          (sa journée, ce qu'elle veut aborder, ses proches) à gauche ; ce qui
+          se règle (sa naissance, son emblème) à droite. Une seule sur téléphone. */}
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-3">
+        <div className="flex min-w-0 flex-col gap-6 lg:col-span-2">
+      {/* Ma journée — le paragraphe du jour, en tête (Elena, 15 octobre) */}
+      <div className="-mt-5"><MaJournee dateNaissance={dateEnregistree} prenom={prenom} /></div>
 
-        {!editionNaissance ? (
-          <p className="mt-4 text-[15px] text-ink">
-            {naissanceEnregistree.heure || naissanceEnregistree.lieu ? (
-              <>
-                {naissanceEnregistree.heure ? <span className="font-semibold text-aubergine">à {naissanceEnregistree.heure.replace(":", " h ")}</span> : <span className="text-mention">heure inconnue</span>}
-                {naissanceEnregistree.lieu && <span> · {naissanceEnregistree.lieu}</span>}
-                {naissanceEnregistree.heure && naissanceEnregistree.lieu && dateEnregistree && (
-                  <a href="/etudes/theme-astral" className="ml-3 font-semibold text-prix hover:underline">Voir mon thème astral →</a>
-                )}
-              </>
-            ) : (
-              <span className="text-mention">Rien pour l&apos;instant.</span>
+      {/* CE QUE JE VEUX ABORDER
+          Le seul champ de cet espace qu'Elena est censée lire : le ton
+          doit le dire sans ambiguïté, sinon la cliente ne saurait pas si
+          elle écrit pour elle-même ou pour être entendue. */}
+      <section
+        id="aborder"
+        className="rounded-3xl border border-gold/40 bg-gold/5 p-7 shadow-soft"
+      >
+        <h2 className="font-serif text-2xl font-semibold text-aubergine">
+          Ce que je veux aborder
+        </h2>
+        {/* Formulation voulue par Elena : douce, sans « Elena le lit ».
+            Le mot « aborder » porte l'essentiel — ces notes préparent la
+            consultation, donc leur destination reste claire en creux. */}
+        <p className="mt-2 text-sm leading-relaxed text-ink/80">
+          Si vous souhaitez aborder des questions précises lors de votre
+          prochaine consultation, vous pouvez les noter ici.
+        </p>
+
+        <form onSubmit={enregistrerAAborder} className="mt-4">
+          <textarea
+            rows={5}
+            maxLength={2000}
+            value={aAborder}
+            onChange={(e) => setAAborder(e.target.value)}
+            placeholder="Ce dont j'aimerais parler…"
+            className="w-full rounded-2xl border border-greige/60 bg-white px-4 py-3 text-sm leading-relaxed text-ink placeholder:text-mention/60 focus:border-gold focus:outline-none"
+          />
+
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs text-mention">
+              Vous pouvez le modifier ou l&apos;effacer à tout moment.
+            </span>
+            {aAborder !== aAborderEnregistre && (
+              <button
+                type="submit"
+                disabled={aAborderEnCours}
+                className="rounded-full bg-cta px-5 py-2 text-sm font-medium text-cta-text transition hover:opacity-90 disabled:opacity-50"
+              >
+                {aAborderEnCours ? "Enregistrement…" : "Enregistrer"}
+              </button>
             )}
-          </p>
-        ) : (
-          <div className="mt-4 space-y-4">
-            <label className="block">
-              <span className="text-sm font-medium text-aubergine">Heure de naissance</span>
-              <span className="block text-xs text-mention">Sur votre acte de naissance, ou de mémoire familiale. Laissez vide si vous ne la connaissez pas.</span>
-              <input
-                type="time"
-                value={heureNaissance}
-                onChange={(e) => setHeureNaissance(e.target.value)}
-                className="mt-1.5 rounded-xl border border-greige bg-white px-3 py-2.5 text-ink focus:border-cta-outline focus:outline-none"
-              />
-            </label>
-            <div>
-              <span className="text-sm font-medium text-aubergine">Lieu de naissance</span>
-              {lieu && (
-                <p className="mt-1 text-[14px] text-ink">
-                  <span className="mr-1.5 text-gold">✦</span>{lieu.nom}
-                  <button type="button" onClick={() => setLieu(null)} className="ml-2 text-xs text-mention hover:underline">changer</button>
-                </p>
-              )}
-              {!lieu && (
-                <form onSubmit={chercherLieu} className="mt-1.5 flex flex-col gap-2 sm:flex-row">
-                  <input
-                    type="text"
-                    value={rechercheLieu}
-                    onChange={(e) => setRechercheLieu(e.target.value)}
-                    placeholder="La ville, ou la plus proche"
-                    className="w-full rounded-xl border border-greige bg-white px-3 py-2.5 text-ink focus:border-cta-outline focus:outline-none"
-                  />
-                  <button type="submit" disabled={rechercheEnCours} className="whitespace-nowrap rounded-full border border-greige bg-white px-4 py-2.5 text-sm font-semibold text-aubergine hover:border-gold disabled:opacity-50">
-                    {rechercheEnCours ? "…" : "Chercher"}
-                  </button>
-                </form>
-              )}
-              {propositions.length > 0 && !lieu && (
-                <ul className="mt-2 divide-y divide-greige/50 rounded-xl border border-greige/60 bg-white">
-                  {propositions.map((p) => (
-                    <li key={`${p.latitude}-${p.longitude}`}>
-                      <button type="button" onClick={() => { setLieu(p); setPropositions([]); }} className="w-full px-3 py-2 text-left text-[14px] text-ink hover:bg-blush">
-                        {p.nom}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            {naissanceMsg && <p className="rounded-lg bg-blush p-2 text-sm text-ink">{naissanceMsg}</p>}
-            <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={enregistrerNaissance} disabled={naissanceEnCours} className="rounded-full bg-cta px-5 py-2.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50">
-                {naissanceEnCours ? "…" : "Enregistrer"}
-              </button>
-              <button type="button" onClick={() => { setEditionNaissance(false); setPropositions([]); setNaissanceMsg(""); }} className="rounded-full px-4 py-2.5 text-sm text-mention hover:text-aubergine">
-                Annuler
-              </button>
-            </div>
           </div>
-        )}
+
+          {aAborderMsg && (
+            <p className="mt-2 text-sm text-green-700">{aAborderMsg}</p>
+          )}
+        </form>
       </section>
 
       {/* Les personnes qui comptent */}
-      <section className="mt-6 rounded-3xl border border-greige/60 bg-ivory p-7 shadow-soft">
+      <section className="rounded-3xl border border-greige/60 bg-ivory p-7 shadow-soft">
         <h2 className="font-serif text-2xl font-semibold text-aubergine">
           Les personnes qui comptent
         </h2>
@@ -777,6 +723,137 @@ export default function ProfilPage() {
           .
         </p>
       </section>
+        </div>
+        <div className="flex min-w-0 flex-col gap-6">
+      {/* L'heure et le lieu de naissance — pour le thème astral */}
+      <section className="rounded-3xl border border-greige/60 bg-ivory p-6 shadow-soft">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-serif text-[22px] font-semibold text-aubergine">Votre heure et votre lieu de naissance</h2>
+            <p className="mt-1 text-sm text-mention">
+              Facultatifs. Avec eux, votre thème astral se calcule — l&apos;ascendant et les maisons demandent l&apos;heure.
+              Elena seule les voit.
+            </p>
+          </div>
+          {!editionNaissance && (
+            <button type="button" onClick={() => setEditionNaissance(true)} className="text-sm font-medium text-prix transition-colors hover:text-cta">
+              {naissanceEnregistree.heure || naissanceEnregistree.lieu ? "Modifier" : "Renseigner"}
+            </button>
+          )}
+        </div>
+
+        {!editionNaissance ? (
+          <p className="mt-4 text-[15px] text-ink">
+            {naissanceEnregistree.heure || naissanceEnregistree.lieu ? (
+              <>
+                {naissanceEnregistree.heure ? <span className="font-semibold text-aubergine">à {naissanceEnregistree.heure.replace(":", " h ")}</span> : <span className="text-mention">heure inconnue</span>}
+                {naissanceEnregistree.lieu && <span> · {naissanceEnregistree.lieu}</span>}
+                {naissanceEnregistree.heure && naissanceEnregistree.lieu && dateEnregistree && (
+                  <a href="/etudes/theme-astral" className="ml-3 font-semibold text-prix hover:underline">Voir mon thème astral →</a>
+                )}
+              </>
+            ) : (
+              <span className="text-mention">Rien pour l&apos;instant.</span>
+            )}
+          </p>
+        ) : (
+          <div className="mt-4 space-y-4">
+            <label className="block">
+              <span className="text-sm font-medium text-aubergine">Heure de naissance</span>
+              <span className="block text-xs text-mention">Sur votre acte de naissance, ou de mémoire familiale. Laissez vide si vous ne la connaissez pas.</span>
+              <input
+                type="time"
+                value={heureNaissance}
+                onChange={(e) => setHeureNaissance(e.target.value)}
+                className="mt-1.5 rounded-xl border border-greige bg-white px-3 py-2.5 text-ink focus:border-cta-outline focus:outline-none"
+              />
+            </label>
+            <div>
+              <span className="text-sm font-medium text-aubergine">Lieu de naissance</span>
+              {lieu && (
+                <p className="mt-1 text-[14px] text-ink">
+                  <span className="mr-1.5 text-gold">✦</span>{lieu.nom}
+                  <button type="button" onClick={() => setLieu(null)} className="ml-2 text-xs text-mention hover:underline">changer</button>
+                </p>
+              )}
+              {!lieu && (
+                <form onSubmit={chercherLieu} className="mt-1.5 flex flex-col gap-2 sm:flex-row">
+                  <input
+                    type="text"
+                    value={rechercheLieu}
+                    onChange={(e) => setRechercheLieu(e.target.value)}
+                    placeholder="La ville, ou la plus proche"
+                    className="w-full rounded-xl border border-greige bg-white px-3 py-2.5 text-ink focus:border-cta-outline focus:outline-none"
+                  />
+                  <button type="submit" disabled={rechercheEnCours} className="whitespace-nowrap rounded-full border border-greige bg-white px-4 py-2.5 text-sm font-semibold text-aubergine hover:border-gold disabled:opacity-50">
+                    {rechercheEnCours ? "…" : "Chercher"}
+                  </button>
+                </form>
+              )}
+              {propositions.length > 0 && !lieu && (
+                <ul className="mt-2 divide-y divide-greige/50 rounded-xl border border-greige/60 bg-white">
+                  {propositions.map((p) => (
+                    <li key={`${p.latitude}-${p.longitude}`}>
+                      <button type="button" onClick={() => { setLieu(p); setPropositions([]); }} className="w-full px-3 py-2 text-left text-[14px] text-ink hover:bg-blush">
+                        {p.nom}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {naissanceMsg && <p className="rounded-lg bg-blush p-2 text-sm text-ink">{naissanceMsg}</p>}
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={enregistrerNaissance} disabled={naissanceEnCours} className="rounded-full bg-cta px-5 py-2.5 font-medium text-cta-text shadow-card transition hover:bg-cta-dark disabled:opacity-50">
+                {naissanceEnCours ? "…" : "Enregistrer"}
+              </button>
+              <button type="button" onClick={() => { setEditionNaissance(false); setPropositions([]); setNaissanceMsg(""); }} className="rounded-full px-4 py-2.5 text-sm text-mention hover:text-aubergine">
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* MON EMBLÈME — la figure qui l'accompagne, à la place d'une photo
+          (Elena, 14 et 16 octobre). Un clic suffit : il est enregistré, et
+          le menu le prend aussitôt. Retrouvé parmi ses cadeaux dans Mes études. */}
+      <section id="embleme" className="rounded-3xl border border-greige/60 bg-ivory p-6 shadow-soft">
+        <h2 className="font-serif text-[22px] font-semibold text-aubergine">Mon emblème</h2>
+        <p className="mt-1 text-[15px] text-ink/80">
+          Il vous accompagne dans votre espace, à la place d&apos;une photo. Vous pourrez en changer quand vous voudrez.
+        </p>
+        <ul className="mt-4 grid grid-cols-3 gap-2">
+          {EMBLEMES.map((f) => {
+            const actif = f.cle === embleme;
+            return (
+              <li key={f.cle}>
+                <button
+                  type="button"
+                  onClick={() => choisirEmbleme(f.cle)}
+                  aria-pressed={actif}
+                  className={`flex w-full flex-col items-center gap-1.5 rounded-[18px] border p-2.5 transition ${actif ? "border-aubergine bg-white shadow-soft" : "border-transparent hover:border-gold/60 hover:bg-white/70"}`}
+                >
+                  <Embleme cle={f.cle} taille={52} />
+                  <span className={`text-center font-serif text-[13px] leading-tight ${actif ? "font-semibold text-aubergine" : "text-ink"}`}>{f.nom}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        {emblemeParCle(embleme) && (
+          <div className="mt-5 flex items-center gap-4 rounded-2xl bg-white/80 px-4 py-3">
+            <Embleme cle={embleme} taille={48} />
+            <div>
+              <p className="font-serif text-[18px] font-semibold text-aubergine">{emblemeParCle(embleme)!.nom}</p>
+              <p className="font-serif text-[15px] italic text-mention">{emblemeParCle(embleme)!.mot}</p>
+            </div>
+          </div>
+        )}
+        {emblemeMsg && <p className="mt-2 text-[13px] text-mention" role="status">{emblemeMsg}</p>}
+      </section>
+
+        </div>
       </div>
     </EspaceShell>
   );

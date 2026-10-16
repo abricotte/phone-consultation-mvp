@@ -171,6 +171,12 @@ plateforme différant de celui du site vitrine :
 > L'espace cliente (espace.elena-wolska.com) est hébergé par Netlify,
 > Inc., 512 2nd Street, Suite 200, San Francisco, CA 94107, États-Unis.
 
+Et, tant que les emblèmes de l'espace cliente sont ceux d'OpenMoji (en
+attendant ceux qu'Elena peindra), le crédit que leur licence demande :
+
+> Les emblèmes de l'espace cliente sont adaptés d'OpenMoji
+> (openmoji.org), sous licence CC BY-SA 4.0.
+
 ---
 
 ## D. Ce qu'il reste à faire
@@ -178,7 +184,7 @@ plateforme différant de celui du site vitrine :
 1. Coller les articles A dans la page CGV (WordPress)
 2. Corriger la phrase B.1 — **le plus urgent**
 3. Ajouter la section B.2
-4. Ajouter la ligne C aux mentions légales
+4. Ajouter les deux lignes C aux mentions légales (hébergement, emblèmes)
 5. Faire relire les deux points signalés
 
 Les liens du pied de page de la plateforme pointent déjà vers ces pages :
