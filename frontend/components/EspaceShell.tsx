@@ -127,19 +127,24 @@ function BlocAppel({
       <div className="mt-4 flex flex-col gap-1 border-t border-gold/30 pt-3">
         {onglets.map((o) => {
           const actif = estActif(o.href);
+          // Le crédit : la somme seule, à la place de « Mon crédit » (Elena,
+          // 16 octobre) ; « Mon crédit » tant que le solde n'est pas chargé.
+          const somme = o.href === "/credit" ? solde : null;
           return (
             <a
               key={o.href}
               href={o.href}
               aria-current={actif ? "page" : undefined}
+              aria-label={somme ? `Mon crédit : ${somme}` : undefined}
               className={`flex min-h-[40px] items-center gap-3 rounded-2xl px-3 text-[14.5px] transition ${
                 actif ? "bg-aubergine font-semibold text-cream" : "font-medium text-aubergine hover:bg-white/70"
               }`}
             >
               <Icone nom={o.icone} taille={17} className={actif ? "text-gold-light" : "text-gold-dark"} />
-              <span className="flex-1">{o.label}</span>
-              {o.href === "/credit" && solde && (
-                <span className={`text-[13px] font-bold tabular-nums ${actif ? "text-gold-light" : "text-aubergine"}`}>{solde}</span>
+              {somme ? (
+                <span className="flex-1 text-[16px] font-bold tabular-nums">{somme}</span>
+              ) : (
+                <span className="flex-1">{o.label}</span>
               )}
             </a>
           );
