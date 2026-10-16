@@ -145,7 +145,7 @@ export default function SalonPage() {
     <EspaceShell>
       <header className="mb-8 max-w-2xl">
         <h1 className="font-serif text-4xl font-semibold leading-tight text-aubergine md:text-[46px]">
-          Le salon
+          Le petit salon d&apos;Elena
         </h1>
         <p className="mt-3 font-serif text-xl italic leading-relaxed text-mention">
           Ma voix et mes textes — ce que je vous laisse entre deux consultations.
