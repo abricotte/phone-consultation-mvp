@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import EspaceShell from "@/components/EspaceShell";
+import IllustrationSalon from "@/components/IllustrationSalon";
 import { Pilules } from "@/components/Ornements";
 
 // LE SALON — ma voix et mes textes, pour se faire du bien. Deux rayons
@@ -150,6 +151,9 @@ export default function SalonPage() {
           Ma voix et mes textes — ce que je vous laisse entre deux consultations.
         </p>
       </header>
+
+      {/* Le thé, les cartes, les étoiles (Elena, 16 octobre) */}
+      <IllustrationSalon className="-mt-2 mb-6 w-full max-w-2xl" />
 
       <Pilules
         label="Le salon"
