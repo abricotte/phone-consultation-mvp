@@ -456,11 +456,6 @@ export default function ProfilPage() {
         </div>
         </div>
         </div>
-        {/* Confidentialité, sous la carte */}
-        <p className="mt-5 flex items-start gap-2 border-t border-greige/50 pt-4 text-[13px] text-ink">
-          <span aria-hidden>🔒</span>
-          <span><strong className="font-semibold text-aubergine">Strictement privé</strong> — Elena voit votre prénom, votre date de naissance et vos proches. Personne d&apos;autre.</span>
-        </p>
       </section>
 
       {/* LE TABLEAU DE BORD — deux colonnes sur ordinateur : ce qui se vit
@@ -732,7 +727,6 @@ export default function ProfilPage() {
             <h2 className="font-serif text-[22px] font-semibold text-aubergine">Votre heure et votre lieu de naissance</h2>
             <p className="mt-1 text-sm text-mention">
               Facultatifs. Avec eux, votre thème astral se calcule — l&apos;ascendant et les maisons demandent l&apos;heure.
-              Elena seule les voit.
             </p>
           </div>
           {!editionNaissance && (
