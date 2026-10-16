@@ -79,6 +79,21 @@ function creerBase({ respecterCondition }) {
       q.then = (ok, ko) => executer(q).then(ok, ko);
       return q;
     },
+    // debiter_consultation (migration 018) : la base soustrait et écrit la
+    // ligne en une fois. Volontairement SANS la « seconde ceinture » par
+    // session de la vraie fonction : ce test doit prouver que la prise
+    // atomique côté serveur suffit à elle seule (la fonction SQL est
+    // testée à part).
+    rpc(nom, args) {
+      return souffler().then(() => {
+        if (nom !== 'debiter_consultation') return { data: null, error: { message: `rpc inconnue ${nom}` } };
+        const cents = Math.round(Number(args.p_montant) * 100);
+        const solde = Math.max(0, Math.round(Number(etat.wallet.balance) * 100) - cents);
+        etat.wallet.balance = (solde / 100).toFixed(2);
+        etat.transactions.push({ wallet_id: args.p_wallet_id, type: 'debit', amount: args.p_montant, description: args.p_description, session_id: args.p_session_id });
+        return { data: etat.wallet.balance, error: null };
+      });
+    },
   };
 
   return { client, etat };

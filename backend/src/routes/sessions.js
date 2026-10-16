@@ -2,6 +2,7 @@ const express = require('express');
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
 const { getPraticienne, getTarifs, getStatutEnLigne } = require('../config/praticienne');
+const { centimes, versEuros } = require('../utils/argent');
 
 const router = express.Router();
 
@@ -117,10 +118,14 @@ router.patch('/:id/end', authMiddleware, async (req, res) => {
     const endedAt = new Date();
     const durationSeconds = Math.ceil((endedAt - startedAt) / 1000);
     const durationMinutes = durationSeconds < 60 ? 0 : Math.ceil(durationSeconds / 60);
-    const totalCost = durationMinutes * parseFloat(session.rate_per_minute);
+    // En centimes entiers (cf. utils/argent.js)
+    const coutCentimes = durationMinutes * (centimes(session.rate_per_minute) || 0);
+    const totalCost = Number(versEuros(coutCentimes));
 
-    // Mettre à jour la session
-    const { data: updatedSession, error: updateError } = await supabase
+    // Mettre à jour la session — PRISE ATOMIQUE, comme finalizeSession :
+    // la condition de statut est dans l'UPDATE, deux appels simultanés ne
+    // peuvent pas clôturer (et débiter) deux fois
+    const { data: gagnees, error: updateError } = await supabase
       .from('sessions')
       .update({
         status: 'completed',
@@ -129,35 +134,31 @@ router.patch('/:id/end', authMiddleware, async (req, res) => {
         total_cost: totalCost,
       })
       .eq('id', session.id)
-      .select()
-      .single();
+      .eq('status', 'active')
+      .select();
 
     if (updateError) throw updateError;
+    if (!gagnees || gagnees.length === 0) {
+      return res.status(400).json({ error: "Cette session n'est pas active" });
+    }
+    const updatedSession = gagnees[0];
 
     // Débiter le client (rien à débiter sous la franchise de 60 s)
+    // La soustraction se fait dans la base (debiter_consultation, migration 018)
     const { data: wallet } = await supabase
       .from('wallets')
-      .select('id, balance')
+      .select('id')
       .eq('user_id', session.client_id)
       .single();
 
-    if (wallet && totalCost > 0) {
-      const newBalance = Math.max(0, parseFloat(wallet.balance) - totalCost);
-
-      await supabase
-        .from('wallets')
-        .update({ balance: newBalance })
-        .eq('id', wallet.id);
-
-      await supabase
-        .from('transactions')
-        .insert({
-          wallet_id: wallet.id,
-          type: 'debit',
-          amount: totalCost,
-          description: `Consultation - ${durationMinutes} min`,
-          session_id: session.id,
-        });
+    if (wallet && coutCentimes > 0) {
+      const { error: erreurDebit } = await supabase.rpc('debiter_consultation', {
+        p_wallet_id: wallet.id,
+        p_montant: versEuros(coutCentimes),
+        p_session_id: session.id,
+        p_description: `Consultation - ${durationMinutes} min`,
+      });
+      if (erreurDebit) throw erreurDebit;
     }
 
     res.json({

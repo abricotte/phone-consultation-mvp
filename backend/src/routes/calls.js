@@ -9,6 +9,8 @@ const { VoiceResponse } = require('twilio').twiml;
 const { normaliser: normalizePhone, masquer: masquerNumeroTel } = require('../utils/telephone');
 // Numéros bloqués (cf. utils/blocage.js)
 const { estBloque } = require('../utils/blocage');
+// L'argent en centimes entiers (cf. utils/argent.js)
+const { centimes, versEuros, minutesPermises } = require('../utils/argent');
 
 const router = express.Router();
 
@@ -122,9 +124,7 @@ router.post('/initiate', authMiddleware, async (req, res) => {
       .eq('user_id', req.user.id)
       .single();
 
-    const rate = parseFloat(session.rate_per_minute);
-    const balance = wallet ? parseFloat(wallet.balance) : 0;
-    const maxMinutes = Math.floor(balance / rate);
+    const maxMinutes = minutesPermises(wallet ? wallet.balance : 0, session.rate_per_minute);
 
     if (maxMinutes < 1) {
       return res.status(400).json({ error: 'Solde insuffisant pour démarrer un appel.' });
@@ -432,9 +432,7 @@ router.post('/conference-status', twilioSignature, async (req, res) => {
           .eq('user_id', session.client_id)
           .single();
 
-        const rate = parseFloat(session.rate_per_minute);
-        const balance = wallet ? parseFloat(wallet.balance) : 0;
-        maxSeconds = Math.floor(balance / rate) * 60;
+        maxSeconds = minutesPermises(wallet ? wallet.balance : 0, session.rate_per_minute) * 60;
       }
 
       const warnInSeconds = maxSeconds - WARNING_SECONDS;
@@ -752,10 +750,12 @@ async function finalizeSession(sessionId) {
 
   // Forfait manuel : montant déjà encaissé via Calendly → pas de débit,
   // total_cost = montant du forfait (pour la vue du jour)
-  const totalCost =
+  // En centimes entiers : 3 × 290 = 870, jamais 8.700000000000001
+  const coutCentimes =
     session.type === 'forfait_manuel'
-      ? parseFloat(session.montant_paye || 0)
-      : durationMinutes * parseFloat(session.rate_per_minute);
+      ? centimes(session.montant_paye || 0) || 0
+      : durationMinutes * (centimes(session.rate_per_minute) || 0);
+  const totalCost = Number(versEuros(coutCentimes));
 
   if (sousFranchise) {
     console.log(
@@ -804,30 +804,27 @@ async function finalizeSession(sessionId) {
     // Débit du wallet : uniquement pour la consultation à la minute,
     // et seulement s'il y a quelque chose à débiter (franchise = 0 €,
     // pas de ligne de transaction parasite dans l'historique)
-    if (session.type !== 'forfait_manuel' && session.client_id && totalCost > 0) {
+    //
+    // La soustraction se fait DANS LA BASE (debiter_consultation, migration
+    // 018), portefeuille verrouillé : une recharge arrivée au même instant
+    // ne peut plus être effacée par un « lire, calculer, réécrire ».
+    if (session.type !== 'forfait_manuel' && session.client_id && coutCentimes > 0) {
       const { data: wallet } = await supabase
         .from('wallets')
-        .select('id, balance')
+        .select('id')
         .eq('user_id', session.client_id)
         .single();
 
       if (wallet) {
-        const newBalance = Math.max(0, parseFloat(wallet.balance) - totalCost);
-
-        await supabase
-          .from('wallets')
-          .update({ balance: newBalance })
-          .eq('id', wallet.id);
-
-        await supabase
-          .from('transactions')
-          .insert({
-            wallet_id: wallet.id,
-            type: 'debit',
-            amount: totalCost,
-            description: `Consultation téléphonique - ${durationMinutes} min`,
-            session_id: sessionId,
-          });
+        const { error: erreurDebit } = await supabase.rpc('debiter_consultation', {
+          p_wallet_id: wallet.id,
+          p_montant: versEuros(coutCentimes),
+          p_session_id: sessionId,
+          p_description: `Consultation téléphonique - ${durationMinutes} min`,
+        });
+        if (erreurDebit) {
+          console.error(`finalizeSession : DÉBIT NON ENREGISTRÉ pour la session ${sessionId} (${versEuros(coutCentimes)} €) : ${erreurDebit.message}`);
+        }
       }
     }
 
