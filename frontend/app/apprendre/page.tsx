@@ -4,6 +4,7 @@ import { useState } from "react";
 import EspaceShell from "@/components/EspaceShell";
 import MotsCaches from "@/components/MotsCaches";
 import { Pilules } from "@/components/Ornements";
+import { CARTES_MINUTE, SPOTIFY_PODCAST } from "@/lib/minute-voyance";
 
 // APPRENDRE — ce qu'Elena sait des cartes, elle l'apprend. Deux onglets
 // (Elena, 15 octobre), dans cet ordre : « Apprendre en s'amusant » (sa
@@ -14,6 +15,9 @@ import { Pilules } from "@/components/Ornements";
 
 export default function ApprendrePage() {
   const [onglet, setOnglet] = useState<"jouer" | "ecouter" | "cadeau">("jouer");
+  // L'épisode à l'écoute : le premier, par défaut
+  const [carte, setCarte] = useState<number>(1);
+  const enCours = CARTES_MINUTE.find((c) => c.numero === carte && c.episode);
 
   return (
     <EspaceShell>
@@ -43,23 +47,69 @@ export default function ApprendrePage() {
             Une carte, une minute, une clé. Les 36 cartes de Mademoiselle Lenormand, une par épisode — pour
             apprendre à les lire comme je les lis. Ici, et sur Spotify partout ailleurs.
           </p>
-          <div className="mt-4 overflow-hidden rounded-[20px]">
-            <iframe
-              title="La Minute Voyance sur Spotify"
-              src="https://open.spotify.com/embed/show/19rxAXVwo3fTG1RJAV7Y4R?utm_source=generator&theme=0"
-              width="100%"
-              height="352"
-              frameBorder="0"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-            />
-          </div>
+          {/* LES 36 CARTES EN BULLES (Elena, 16 octobre) : un épisode par carte.
+              Enregistrées : bleu nuit, numéro d'or, un clic les met à l'écoute.
+              Pas encore : en gris, « à venir ». */}
+          {enCours && (
+            <div className="mt-5 rounded-[20px] bg-[#FBF3E2] p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Carte n° {enCours.numero}</p>
+              <p className="font-serif text-[22px] font-semibold leading-tight text-aubergine">{enCours.nom}</p>
+              <p className="text-[13px] text-mention">{enCours.mots}</p>
+              <iframe
+                key={enCours.episode}
+                title={`La Minute Voyance — ${enCours.nom}`}
+                src={`https://open.spotify.com/embed/episode/${enCours.episode}?utm_source=generator&theme=0`}
+                width="100%"
+                height="152"
+                frameBorder="0"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+                className="mt-3 rounded-[12px]"
+              />
+            </div>
+          )}
+          <ul className="mt-5 grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-9">
+            {CARTES_MINUTE.map((c) => {
+              const pret = !!c.episode;
+              const actif = c.numero === carte;
+              return (
+                <li key={c.numero}>
+                  <button
+                    type="button"
+                    disabled={!pret}
+                    onClick={() => setCarte(c.numero)}
+                    aria-pressed={pret ? actif : undefined}
+                    title={pret ? `${c.nom} — ${c.mots}` : `${c.nom} — à venir`}
+                    className="group flex w-full flex-col items-center gap-1.5 text-center disabled:cursor-default"
+                  >
+                    <span
+                      className={`flex h-14 w-14 items-center justify-center rounded-full font-serif text-[20px] font-semibold transition ${
+                        pret
+                          ? actif
+                            ? "bg-gold text-aubergine ring-4 ring-gold/30"
+                            : "bg-aubergine text-gold-light group-hover:-translate-y-0.5 group-hover:ring-4 group-hover:ring-gold/25"
+                          : "border border-dashed border-greige bg-[#F4F2EF] text-[#9E978F]"
+                      }`}
+                    >
+                      {c.numero}
+                    </span>
+                    <span className={`text-[11.5px] leading-tight ${pret ? "font-semibold text-aubergine" : "text-[#9E978F]"}`}>{c.nom}</span>
+                    {!pret && <span className="text-[10px] uppercase tracking-[0.08em] text-[#B4ADA5]">à venir</span>}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-4 text-[13px] text-mention">
+            {CARTES_MINUTE.filter((c) => c.episode).length} cartes sur 36 enregistrées ·{" "}
+            <a href={SPOTIFY_PODCAST} className="font-semibold text-prix hover:underline">le podcast sur Spotify →</a>
+          </p>
           <p className="mt-3 text-[13px] text-mention">
             Pour aller plus loin que la minute :{" "}
-            <a href="/salon" className="font-semibold text-prix hover:underline">
+            <a href="/librairie" className="font-semibold text-prix hover:underline">
               mes carnets et mes livres
             </a>
-            , dans le salon.
+            , dans la librairie.
           </p>
         </section>
       )}
