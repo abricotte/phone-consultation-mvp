@@ -68,7 +68,7 @@ export default function LibrairiePage() {
         <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Une couleur par thème</p>
         <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les Carnets d&apos;Elena</h2>
         <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
-          Des carnets à remplir : dix tests, sept chapitres, un journal. On y écrit, on y coche, on s&apos;y découvre.
+          Des carnets à remplir, à votre rythme, un stylo à la main. Des tests, des quiz et des pages blanches pour revenir sur votre histoire, prendre le temps de comprendre ce qui se répète, éveiller le don qui sommeille en vous, ou traverser en douceur un moment difficile — un deuil, une séparation. Dans chacun : dix tests, sept chapitres et un journal. On y écrit, on y coche, et peu à peu on s&apos;y retrouve.
         </p>
         <ul className="mt-6 grid max-w-3xl grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3">
           {CARNETS.map((c) => {
