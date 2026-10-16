@@ -100,6 +100,9 @@ export default function LibrairiePage() {
       <section className="mt-14">
         <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Apprendre en s&apos;amusant</p>
         <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les Jeux d&apos;Elena</h2>
+        <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
+          J&apos;ai créé la série Les Jeux d&apos;Elena pour vous apprendre la voyance et tout son univers en vous amusant.
+        </p>
         <div className="mt-5 grid items-start gap-6 sm:grid-cols-[180px_1fr]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
