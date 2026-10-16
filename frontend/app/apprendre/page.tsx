@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EspaceShell from "@/components/EspaceShell";
 import MotsCaches from "@/components/MotsCaches";
+import Bibliotheque from "@/components/Bibliotheque";
 import { Pilules } from "@/components/Ornements";
 import { CARTES_MINUTE, SPOTIFY_PODCAST } from "@/lib/minute-voyance";
 
@@ -14,7 +15,12 @@ import { CARTES_MINUTE, SPOTIFY_PODCAST } from "@/lib/minute-voyance";
 // les aura commencées — on n'ouvre pas une pièce vide.
 
 export default function ApprendrePage() {
-  const [onglet, setOnglet] = useState<"jouer" | "ecouter" | "cadeau">("jouer");
+  const [onglet, setOnglet] = useState<"jouer" | "ecouter" | "lire" | "cadeau">("jouer");
+  // Un lien peut ouvrir un onglet précis : /apprendre?onglet=lire
+  useEffect(() => {
+    const o = new URLSearchParams(window.location.search).get("onglet");
+    if (o === "jouer" || o === "ecouter" || o === "lire" || o === "cadeau") setOnglet(o);
+  }, []);
   // L'épisode à l'écoute : le premier, par défaut
   const [carte, setCarte] = useState<number>(1);
   const enCours = CARTES_MINUTE.find((c) => c.numero === carte && c.episode);
@@ -34,18 +40,18 @@ export default function ApprendrePage() {
         label="Apprendre"
         valeur={onglet}
         onChange={setOnglet}
-        options={[["jouer", "Apprendre en s'amusant"], ["ecouter", "Apprendre en écoutant"], ["cadeau", "🎁 Petit cadeau d'Elena"]] as const}
+        options={[["jouer", "Apprendre en s'amusant"], ["ecouter", "Apprendre en écoutant"], ["lire", "Apprendre en lisant"], ["cadeau", "🎁 Petit cadeau d'Elena"]] as const}
       />
 
       {onglet === "ecouter" && (
         <section>
           <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">
-            Le podcast · le Lenormand
+            Mon podcast · La Minute Voyance · saison 1
           </p>
-          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">La Minute Voyance</h2>
+          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Le Petit Lenormand en une minute</h2>
           <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
-            Une carte, une minute, une clé. Les 36 cartes de Mademoiselle Lenormand, une par épisode — pour
-            apprendre à les lire comme je les lis. Ici, et sur Spotify partout ailleurs.
+            Les 36 cartes du Petit Lenormand, une par épisode : chaque carte racontée en une minute, son sens, sa force, ce
+            qu&apos;elle vient vous dire — pour apprendre à les lire comme je les lis. Ici, et sur Spotify.
           </p>
           {/* LES 36 CARTES EN BULLES (Elena, 16 octobre) : un épisode par carte.
               Enregistrées : bleu nuit, numéro d'or, un clic les met à l'écoute.
@@ -104,6 +110,16 @@ export default function ApprendrePage() {
             {CARTES_MINUTE.filter((c) => c.episode).length} cartes sur 36 enregistrées ·{" "}
             <a href={SPOTIFY_PODCAST} className="font-semibold text-prix hover:underline">le podcast sur Spotify →</a>
           </p>
+          {/* La saison 2 : les boosts, dans le petit salon (Elena, 16 octobre) */}
+          <a href="/salon" className="mt-6 flex max-w-2xl items-center gap-4 rounded-[20px] border border-[#F2B3CB] bg-[#FDF0F5] px-5 py-4 hover:shadow-soft">
+            <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-aubergine font-serif text-[15px] font-semibold text-gold-light">S2</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#A3245A]">La Minute Voyance · saison 2</span>
+              <span className="block font-serif text-[19px] font-semibold text-aubergine">Les boosts : deux minutes avec Elena</span>
+              <span className="block text-[13px] text-ink/75">Pour les soirs où ça tourne. À écouter dans le petit salon.</span>
+            </span>
+            <span className="text-[14px] font-semibold text-prix">Écouter →</span>
+          </a>
           <p className="mt-3 text-[13px] text-mention">
             Pour aller plus loin que la minute :{" "}
             <a href="/librairie" className="font-semibold text-prix hover:underline">
@@ -159,6 +175,9 @@ export default function ApprendrePage() {
 
         </>
       )}
+
+      {/* Apprendre en lisant : sa bibliothèque (Elena, 16 octobre) */}
+      {onglet === "lire" && <Bibliotheque />}
 
       {onglet === "cadeau" && (
         <section>

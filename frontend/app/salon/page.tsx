@@ -164,11 +164,14 @@ export default function SalonPage() {
 
       {onglet === "ecouter" && (
         <section>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Les boosts</p>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Les boosts · La Minute Voyance, saison 2</p>
           <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Deux minutes avec Elena</h2>
           <p className="mt-2 max-w-md text-[14px] text-ink/80">
             Quelques minutes à écouter autour d&apos;une réflexion qui ouvre une perspective, bouscule une
             certitude ou tout simplement, apaise.
+          </p>
+          <p className="mt-1.5 text-[13px] text-mention">
+            La saison 1, <a href="/apprendre?onglet=ecouter" className="font-semibold text-prix hover:underline">le Petit Lenormand en une minute</a>, est dans Apprendre.
           </p>
           <ul className="mt-5 divide-y divide-greige/50 rounded-[20px] border border-greige/60 bg-ivory">
             {BOOSTS.map((b) => (

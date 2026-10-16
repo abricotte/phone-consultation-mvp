@@ -1,25 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import EspaceShell from "@/components/EspaceShell";
 import { CITATION, INTRO, PREFERE, RAYONS } from "@/lib/bibliographie";
 
 // MA BIBLIOTHÈQUE (Elena, 16 octobre) — les livres qui ont nourri son
-// chemin, sa bibliographie de l'ancien site. Rangée dans La librairie (le
-// menu est à 12 lignes) : la librairie, ce sont ses livres ; la
+// chemin, sa bibliographie de l'ancien site. Dans Apprendre, onglet
+// « Apprendre en lisant » : la librairie, ce sont ses livres ; la
 // bibliothèque, ceux qu'elle a lus et qu'elle recommande. Pas de lien
 // marchand : ce sont des conseils de lecture, pas une vitrine.
 
-export default function BibliothequePage() {
+export default function Bibliotheque() {
   const [rayon, setRayon] = useState<string>("tous");
   const visibles = RAYONS.filter((r) => rayon === "tous" || r.cle === rayon);
   const total = RAYONS.reduce((n, r) => n + r.livres.length, 0);
 
   return (
-    <EspaceShell>
-      <a href="/librairie" className="text-[13px] font-semibold text-prix hover:underline">← La librairie</a>
-      <header className="mt-3 max-w-2xl">
-        <h1 className="font-serif text-4xl font-semibold leading-tight text-aubergine md:text-[46px]">Ma bibliothèque</h1>
+    <section>
+      <header className="max-w-2xl">
+        <h2 className="font-serif text-[30px] font-semibold leading-tight text-aubergine">Ma bibliothèque</h2>
         <p className="mt-3 text-[15px] leading-relaxed text-ink/85">{INTRO}</p>
         <blockquote className="mt-4 rounded-[18px] border-l-4 border-gold/60 bg-[#FBF3E2] px-5 py-3 font-serif text-[17px] italic leading-relaxed text-ink">
           « {CITATION} » <span className="not-italic text-mention">— Elena</span>
@@ -52,10 +50,10 @@ export default function BibliothequePage() {
       <div className="mt-5 grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
         {visibles.map((r) => (
           <section key={r.cle} className="rounded-[22px] border border-greige/60 bg-ivory p-5 shadow-soft">
-            <h2 className="flex items-center gap-2.5 font-serif text-[21px] font-semibold text-aubergine">
+            <h3 className="flex items-center gap-2.5 font-serif text-[21px] font-semibold text-aubergine">
               <span aria-hidden className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FBF3E2] text-[17px] text-gold-dark">{r.signe}</span>
               {r.nom}
-            </h2>
+            </h3>
             {r.intro && <p className="mt-2 text-[13px] italic leading-snug text-mention">{r.intro}</p>}
             <ul className="mt-3 divide-y divide-greige/50">
               {r.livres.map((l) => (
@@ -74,6 +72,6 @@ export default function BibliothequePage() {
       </div>
 
       <p className="mt-6 text-[12px] text-mention"><span className="text-gold-dark">★</span> mes coups de cœur</p>
-    </EspaceShell>
+    </section>
   );
 }
