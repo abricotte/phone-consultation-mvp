@@ -46,7 +46,12 @@ export default function MaJournee({ dateNaissance, prenom }: { dateNaissance: st
           <p className="mt-3 max-w-2xl font-serif text-[18px] italic leading-relaxed text-ink">
             {j.phrases.join(" ")}
           </p>
-          <p className="mt-3 text-[12px] text-mention">D&apos;après votre ciel du jour{prenom ? `, ${capitaliser(prenom)}` : ""}. Un paragraphe par jour, jamais deux fois le même. — Elena</p>
+          {/* La signature (Elena, 16 octobre) : la méthode, le ciel, les astres —
+              jamais les nombres */}
+          <p className="mt-3 text-[12px] text-mention">
+            Calculé pour vous{prenom ? `, ${capitaliser(prenom)},` : ""} selon la méthode Wolska : d&apos;après votre ciel de naissance et la
+            position des astres ce jour. — Elena
+          </p>
         </>
       ) : (
         <p className="mt-2 text-[14px] text-ink/80">
