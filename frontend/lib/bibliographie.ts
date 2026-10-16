@@ -12,6 +12,10 @@ export const CITATION = "Un livre arrive toujours au moment exact où vous en av
 export const PREFERE = {
   titre: "De nombreuses demeures",
   auteur: "Gina Cerminara",
+  // La couverture de l'édition française (Adyar), affichée depuis Open Library
+  // (bibliothèque libre, couvertures ouvertes à l'affichage) — aucun fichier copié
+  couverture: "https://covers.openlibrary.org/b/id/3144391-L.jpg",
+  edition: "Éditions Adyar",
   texte: "Ce livre remarquable nous invite à explorer la théorie des vies antérieures par le prisme des lectures d'Edgar Cayce, figure emblématique de la métaphysique. L'auteur y dévoile comment nos comportements répétitifs trouvent leur origine dans nos karmas hérités d'existences précédentes. Un ouvrage absolument passionnant qui se lit d'une traite ! Mon préféré sans aucune hésitation !",
 };
 

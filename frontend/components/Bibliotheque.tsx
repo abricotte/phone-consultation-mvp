@@ -25,11 +25,20 @@ export default function Bibliotheque() {
       </header>
 
       {/* Son livre préféré, en tête */}
-      <section className="mt-7 max-w-3xl rounded-[24px] bg-gradient-to-br from-[#FBE6EE] via-[#EFDDF3] to-[#DCD3F3] p-6">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8E2E55]">♡ Mon livre préféré</p>
-        <p className="mt-2 font-serif text-[26px] font-semibold leading-tight text-aubergine">{PREFERE.titre}</p>
-        <p className="text-[14px] text-mention">{PREFERE.auteur}</p>
-        <p className="mt-3 text-[15px] leading-relaxed text-ink/90">{PREFERE.texte}</p>
+      <section className="mt-7 grid max-w-3xl items-start gap-6 rounded-[24px] bg-gradient-to-br from-[#FBE6EE] via-[#EFDDF3] to-[#DCD3F3] p-6 sm:grid-cols-[140px_1fr]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={PREFERE.couverture}
+          alt={`Couverture : ${PREFERE.titre}, ${PREFERE.auteur}`}
+          className="mx-auto w-[140px] -rotate-2 rounded-r-lg rounded-l-sm shadow-[0_18px_30px_-16px_rgba(35,43,69,0.55)] ring-1 ring-black/10 sm:mx-0"
+          loading="lazy"
+        />
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8E2E55]">♡ Mon livre préféré</p>
+          <p className="mt-2 font-serif text-[26px] font-semibold leading-tight text-aubergine">{PREFERE.titre}</p>
+          <p className="text-[14px] text-mention">{PREFERE.auteur} · {PREFERE.edition}</p>
+          <p className="mt-3 text-[15px] leading-relaxed text-ink/90">{PREFERE.texte}</p>
+        </div>
       </section>
 
       {/* Les rayons */}
