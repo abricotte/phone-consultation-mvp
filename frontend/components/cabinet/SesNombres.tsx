@@ -140,13 +140,14 @@ export default function SesNombres({
             )}
           </div>
 
-          {/* Le petit calendrier : un mois, chaque jour dans la couleur de son nombre */}
+          {/* Le petit calendrier : un mois, chaque jour avec son nombre — sans
+              couleurs, elles brouillaient le regard (Elena, 16 octobre) */}
           <div className="rounded-2xl border border-greige/50 bg-white/80 p-3">
             <div className="flex items-center justify-between">
               <button type="button" onClick={() => changerMois(-1)} aria-label="Mois précédent" className="h-8 w-8 rounded-full text-lg text-aubergine hover:bg-cream">‹</button>
               <p className="text-[14px] font-bold capitalize text-aubergine">
                 {MOIS[vue.m - 1]} {vue.a}
-                <span className="ml-2 inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-full px-1.5 font-serif text-[14px]" style={{ backgroundColor: teinte(cal.mp).fond, color: teinte(cal.mp).encre }} title="Mois personnel">
+                <span className="ml-2 inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-cream px-1.5 font-serif text-[14px] text-aubergine ring-1 ring-greige" title="Mois personnel">
                   {cal.mp}
                 </span>
               </p>
@@ -158,7 +159,6 @@ export default function SesNombres({
               ))}
               {Array.from({ length: cal.decalage }).map((_, i) => <span key={`v${i}`} />)}
               {cal.jours.map(({ d, v }) => {
-                const c = teinte(v);
                 const aujourdhui = estCeMois && d === auj.getDate();
                 return (
                   <button
@@ -166,10 +166,9 @@ export default function SesNombres({
                     type="button"
                     onClick={() => setJour(d)}
                     title={`${d} ${MOIS[vue.m - 1]} · jour ${v ?? "—"}`}
-                    className={`flex aspect-square flex-col items-center justify-center rounded-lg text-[10.5px] leading-none transition ${jour === d ? "ring-2 ring-aubergine" : aujourdhui ? "ring-2 ring-gold" : ""}`}
-                    style={{ backgroundColor: c.fond, color: c.encre }}
+                    className={`flex aspect-square flex-col items-center justify-center rounded-lg bg-cream/70 text-[10.5px] leading-none text-aubergine transition hover:bg-cream ${jour === d ? "ring-2 ring-aubergine" : aujourdhui ? "ring-2 ring-gold" : ""}`}
                   >
-                    <span className="opacity-70">{d}</span>
+                    <span className="text-mention">{d}</span>
                     <span className="mt-0.5 font-serif text-[14px] font-bold">{v}</span>
                   </button>
                 );
