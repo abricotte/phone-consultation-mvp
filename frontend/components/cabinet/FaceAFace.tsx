@@ -18,8 +18,12 @@ function jm(date: string | null): { j: number; m: number } | null {
   return r ? { j: Number(r[3]), m: Number(r[2]) } : null;
 }
 
-function Pastille({ v, grand = false }: { v: number; grand?: boolean }) {
-  const c = COULEUR_DU_NOMBRE[v] ?? COULEUR_DU_NOMBRE[v % 9 || 9] ?? { fond: "#FBF7F2", encre: "#232B45" };
+// Neutre par défaut ; en couleur pour l'année et le mois en cours (Elena,
+// 16 octobre : les couleurs partout brouillaient la lecture)
+function Pastille({ v, grand = false, couleur = false }: { v: number; grand?: boolean; couleur?: boolean }) {
+  const c = couleur
+    ? COULEUR_DU_NOMBRE[v] ?? COULEUR_DU_NOMBRE[v % 9 || 9] ?? { fond: "#FBF7F2", encre: "#232B45" }
+    : { fond: "#F4EFE8", encre: "#232B45" };
   return (
     <span
       className={`inline-flex items-center justify-center rounded-full font-serif font-bold ${grand ? "h-11 min-w-[2.75rem] px-2 text-[24px]" : "h-8 min-w-[2rem] px-1.5 text-[17px]"}`}
@@ -87,8 +91,8 @@ export default function FaceAFace({ elle, proches }: { elle: Personne; proches: 
             {/* L'année complète, en tête */}
             <tr className="bg-white/90">
               <td className="rounded-l-xl px-3 py-2 font-bold text-ink">Année {annee}</td>
-              <td className="px-3 py-2 text-center"><Pastille v={apA} grand /><span className="ml-2 align-middle text-[12px] font-medium text-ink/70">{MOT_DU_NOMBRE[apA]}</span></td>
-              <td className="rounded-r-xl px-3 py-2 text-center"><Pastille v={apB} grand /><span className="ml-2 align-middle text-[12px] font-medium text-ink/70">{MOT_DU_NOMBRE[apB]}</span></td>
+              <td className="px-3 py-2 text-center"><Pastille v={apA} grand couleur /><span className="ml-2 align-middle text-[12px] font-medium text-ink/70">{MOT_DU_NOMBRE[apA]}</span></td>
+              <td className="rounded-r-xl px-3 py-2 text-center"><Pastille v={apB} grand couleur /><span className="ml-2 align-middle text-[12px] font-medium text-ink/70">{MOT_DU_NOMBRE[apB]}</span></td>
             </tr>
             {MOIS.map((nom, i) => {
               const mA = moisPersonnel(apA, i + 1);
@@ -99,8 +103,8 @@ export default function FaceAFace({ elle, proches }: { elle: Personne; proches: 
                   <td className={`rounded-l-xl px-3 py-1.5 font-medium capitalize text-ink ${maintenant ? "font-bold" : ""}`}>
                     {nom}{maintenant && <span className="ml-1.5 text-[11px] font-semibold normal-case text-gold-dark">· ce mois-ci</span>}
                   </td>
-                  <td className="px-3 py-1.5 text-center"><Pastille v={mA} /></td>
-                  <td className="rounded-r-xl px-3 py-1.5 text-center"><Pastille v={mB} /></td>
+                  <td className="px-3 py-1.5 text-center"><Pastille v={mA} couleur={maintenant} /></td>
+                  <td className="rounded-r-xl px-3 py-1.5 text-center"><Pastille v={mB} couleur={maintenant} /></td>
                 </tr>
               );
             })}
