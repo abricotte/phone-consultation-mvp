@@ -15,12 +15,12 @@ import { Pilules } from "@/components/Ornements";
 // Les boosts : un fichier audio par boost (fourni par Elena, dans
 // public/audio/boosts), sa durée ; sans fichier, le boost est « bientôt ».
 type Boost = { titre: string; src?: string; duree?: string };
+// Trois boosts gardés (Elena, 16 octobre). Mis de côté, à reprendre plus
+// tard : « Avant de lui écrire », « Après une rupture ».
 const BOOSTS: Boost[] = [
   { titre: "La vulnérabilité, c'est beau aussi", src: "/audio/boosts/la-vulnerabilite.mp4", duree: "2 min 37" },
-  { titre: "Avant de lui écrire" },
   { titre: "La solitude est belle, profitez-en" },
-  { titre: "Après une rupture" },
-  { titre: "Est-ce que vous l'aimez vraiment ?" },
+  { titre: "Est-ce l'égo ou l'amour qui parle ?" },
 ];
 
 // Mes articles — ils vivent sur le site ; ici, l'étagère. Trois rubriques.
