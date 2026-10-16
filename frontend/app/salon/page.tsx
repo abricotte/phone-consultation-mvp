@@ -91,10 +91,11 @@ function BoiteAIdees() {
   return (
     <div className="mt-8 rounded-[24px] border border-gold/30 bg-gradient-to-br from-[#FBF3E2] to-ivory p-5 md:p-6">
       <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Une idée de boost ?</p>
-      <h3 className="mt-1 font-serif text-[24px] font-semibold leading-tight text-aubergine">Soufflez-moi un thème</h3>
+      <h3 className="mt-1 font-serif text-[24px] font-semibold leading-tight text-aubergine">
+        Vous avez envie que j&apos;aborde un sujet particulier ?
+      </h3>
       <p className="mt-1.5 max-w-lg text-[14px] text-ink/80">
-        Ce que vous aimeriez m&apos;entendre dire, un soir où ça tourne. Un mot, une situation, une question : je lis tout, et
-        j&apos;enregistre ce qui revient le plus.
+        Soumettez-moi l&apos;idée. Un mot, une situation, une question : je lis tout, et j&apos;enregistre ce qui revient le plus.
       </p>
       <label className="mt-4 block">
         <span className="sr-only">Votre idée</span>
@@ -115,7 +116,7 @@ function BoiteAIdees() {
           onClick={envoyer}
           className="rounded-full bg-aubergine px-5 py-2.5 text-[14px] font-semibold text-cream hover:bg-aubergine/90 disabled:opacity-50"
         >
-          {envoi ? "Envoi…" : "Souffler mon idée à Elena"}
+          {envoi ? "Envoi…" : "Soumettre mon idée"}
         </button>
         {merci && <p className="text-[13px] text-gold-dark"><span className="mr-1">✦</span>Reçue. Elena la lit dans son cabinet.</p>}
       </div>
