@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import CabinetShell from "@/components/CabinetShell";
 import { CATALOGUE } from "@/lib/tests";
 import SesNombres from "@/components/cabinet/SesNombres";
+import FaceAFace from "@/components/cabinet/FaceAFace";
 import FilChronologique, {
   type EvenementFil,
 } from "@/components/FilChronologique";
@@ -534,6 +535,15 @@ export default function FicheClientePage() {
               />
             ))}
           </div>
+          {/* Face à face : elle et un proche, mois par mois (Elena, 16 octobre) */}
+          {fiche.dateNaissance && (
+            <div className="mt-4">
+              <FaceAFace
+                elle={{ prenom: fiche.prenom, dateNaissance: fiche.dateNaissance }}
+                proches={fiche.proches.map((p) => ({ ...p, libelle: `${p.prenom} · ${LIEN_LABELS[p.lien] || "Autre"}` }))}
+              />
+            </div>
+          )}
         </div>
       )}
 
