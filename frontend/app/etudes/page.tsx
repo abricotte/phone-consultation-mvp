@@ -152,7 +152,10 @@ export default function EtudesPage() {
       <section>
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h2 className="font-serif text-[32px] font-semibold leading-tight text-aubergine">Qui suis-je ?</h2>
-          <span className="rounded-full bg-gold/15 px-3 py-1 text-[12px] font-semibold text-gold-dark">offert</span>
+          {/* « Cadeau d'Elena », le rose poudré des cadeaux (Elena, 16 octobre) */}
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#FAD3E2] px-3 py-1 text-[12px] font-bold uppercase tracking-[0.08em] text-[#A3245A] ring-1 ring-[#F2B3CB]">
+            🎁 Cadeau d&apos;Elena
+          </span>
         </div>
         <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <li className="rounded-[20px] border border-[#DED6EC] bg-[#F1EDF8] p-5">
