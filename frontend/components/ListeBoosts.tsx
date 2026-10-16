@@ -48,7 +48,7 @@ export function ClefDeLaSemaine() {
   const b = BOOSTS.find((x) => x.semaine && x.src) ?? BOOSTS.find((x) => x.src);
   if (!b) return null;
   return (
-    <section className="max-w-2xl rounded-[24px] border border-[#F2B3CB] bg-[#FDF0F5] p-5 md:p-6">
+    <section className="rounded-[24px] border border-[#F2B3CB] bg-[#FDF0F5] p-5 md:p-6">
       <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#A3245A]">La petite clef de la semaine</p>
       <p className="mt-1 font-serif text-[26px] font-semibold leading-tight text-aubergine">{b.titre}</p>
       {b.duree && <p className="text-[13px] text-mention">{b.duree} · la voix d&apos;Elena</p>}

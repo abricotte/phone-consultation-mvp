@@ -5,7 +5,6 @@ import { api } from "@/lib/api";
 import EspaceShell from "@/components/EspaceShell";
 import IllustrationSalon from "@/components/IllustrationSalon";
 import { ClefDeLaSemaine } from "@/components/ListeBoosts";
-import { Pilules } from "@/components/Ornements";
 
 // LE PETIT SALON D'ELENA — là où l'on vient se poser avec elle (Elena,
 // 16 octobre). Apprendre, c'est là où l'on apprend ; le salon, c'est la
@@ -14,6 +13,8 @@ import { Pilules } from "@/components/Ornements";
 // pose une question sur la spiritualité, l'amour, les comportements — pas
 // sur sa propre histoire, c'est la consultation ; Elena répond ici, en
 // privé, ou dans une petite clef) et Lire (ses articles, sur le site).
+// En tableau de bord, pas en enfilade (Elena, 16 octobre) : la petite clef
+// et les questions à gauche, les textes à droite ; une colonne sur téléphone.
 // Plus tard : la carte du jour, quand le jeu de la Petite Pythie sera prêt.
 
 
@@ -84,7 +85,7 @@ function BoiteAIdees() {
   }
 
   return (
-    <div className="max-w-2xl rounded-[24px] border border-gold/30 bg-gradient-to-br from-[#FBF3E2] to-ivory p-5 md:p-6">
+    <div className="rounded-[24px] border border-gold/30 bg-gradient-to-br from-[#FBF3E2] to-ivory p-5 md:p-6">
       <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Vos questions, mes réponses</p>
       <h3 className="mt-1 font-serif text-[24px] font-semibold leading-tight text-aubergine">
         Vous avez envie que j&apos;aborde un sujet particulier ?
@@ -93,9 +94,11 @@ function BoiteAIdees() {
         Posez-moi votre question, ou soumettez-moi une idée : la spiritualité, l&apos;amour, ce qui se joue entre deux âmes, nos
         façons d&apos;aimer… Je lis tout. Je vous réponds ici, ou j&apos;en fais une petite clef.
       </p>
+      {/* Le cadre, dit gentiment (Elena, 16 octobre) : du général ici, sa propre histoire en consultation */}
       <p className="mt-2 max-w-lg rounded-xl bg-white/70 px-3 py-2 text-[12.5px] leading-snug text-ink/75">
-        <span className="mr-1 text-gold">✦</span>Pour votre histoire à vous, ce qui vous arrive, l&apos;autre, ce qui vient, c&apos;est en
-        consultation que je peux vraiment vous répondre.
+        Ici, on parle de tout, en général, comme autour d&apos;une tasse de thé 🙂 Merci de garder vos histoires personnelles pour la
+        consultation : c&apos;est là que je peux vraiment vous répondre. Et votre question deviendra peut-être une petite clef que tout
+        le monde écoutera.
       </p>
       <label className="mt-4 block">
         <span className="sr-only">Votre question ou votre idée</span>
@@ -146,52 +149,44 @@ function BoiteAIdees() {
 }
 
 export default function SalonPage() {
-  const [onglet, setOnglet] = useState<"questions" | "lire">("questions");
-
   return (
     <EspaceShell>
-      <header className="mb-8 max-w-2xl">
-        <h1 className="font-serif text-4xl font-semibold leading-tight text-aubergine md:text-[46px]">
-          Le petit salon d&apos;Elena
-        </h1>
-        <p className="mt-3 font-serif text-xl italic leading-relaxed text-mention">
-          Ma voix, vos questions, mes textes — ce que je vous laisse entre deux consultations.
-        </p>
+      {/* En tête : le titre à gauche, le thé à droite */}
+      <header className="mb-8 grid items-center gap-4 lg:grid-cols-2">
+        <div>
+          <h1 className="font-serif text-4xl font-semibold leading-tight text-aubergine md:text-[46px]">
+            Le petit salon d&apos;Elena
+          </h1>
+          <p className="mt-3 font-serif text-xl italic leading-relaxed text-mention">
+            Ma voix, vos questions, mes textes — ce que je vous laisse entre deux consultations.
+          </p>
+        </div>
+        {/* Le thé, les cartes, les étoiles (Elena, 16 octobre) */}
+        <IllustrationSalon className="w-full" />
       </header>
 
-      {/* Le thé, les cartes, les étoiles (Elena, 16 octobre) */}
-      <IllustrationSalon className="-mt-2 mb-6 w-full max-w-2xl" />
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        {/* À gauche : la petite clef de la semaine, puis vos questions */}
+        <div className="flex min-w-0 flex-col gap-6 lg:col-span-2">
+          <ClefDeLaSemaine />
+          <BoiteAIdees />
+        </div>
 
-      {/* La petite clef de la semaine — un rendez-vous, pas la liste */}
-      <ClefDeLaSemaine />
-
-      <div className="mt-8">
-        <Pilules
-          label="Le salon"
-          valeur={onglet}
-          onChange={setOnglet}
-          options={[["questions", "Vos questions"], ["lire", "Lire"]] as const}
-        />
-      </div>
-
-      {onglet === "questions" && <BoiteAIdees />}
-
-      {onglet === "lire" && (
-        <section>
+        {/* À droite : mes textes */}
+        <section className="rounded-[24px] border border-greige/60 bg-ivory p-5 shadow-soft">
           <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Lire</p>
-          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Mes textes</h2>
-          <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
-            Ce que dix-neuf ans de consultations m&apos;ont appris, en dix-sept textes. Ils vivent sur mon site — à lire quand vous
-            voulez, à relire quand il faut.
+          <h2 className="mt-1 font-serif text-[24px] font-semibold text-aubergine">Mes textes</h2>
+          <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink/80">
+            Ce que dix-neuf ans de consultations m&apos;ont appris. À lire quand vous voulez, à relire quand il faut.
           </p>
-          <div className="mt-6 grid gap-6 md:grid-cols-3">
+          <div className="mt-4 space-y-5">
             {ARTICLES.map((r) => (
-              <div key={r.rubrique} className="rounded-[20px] border border-greige/60 bg-ivory p-5">
+              <div key={r.rubrique}>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-dark">{r.rubrique}</p>
-                <ul className="mt-3 space-y-2">
+                <ul className="mt-2 space-y-1.5">
                   {r.textes.map(([slug, titre]) => (
                     <li key={slug}>
-                      <a href={`${SITE}/${slug}`} className="text-[14px] font-semibold leading-snug text-aubergine hover:text-prix hover:underline">
+                      <a href={`${SITE}/${slug}`} className="text-[13.5px] font-semibold leading-snug text-aubergine hover:text-prix hover:underline">
                         {titre}
                       </a>
                     </li>
@@ -201,7 +196,7 @@ export default function SalonPage() {
             ))}
           </div>
         </section>
-      )}
+      </div>
 
       <p className="mt-10 text-[14px] text-ink/80">
         <span className="mr-2 text-gold">✦</span>
