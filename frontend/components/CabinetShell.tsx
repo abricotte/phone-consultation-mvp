@@ -29,6 +29,8 @@ const ONGLETS: { href: string; label: string; court: string; icone: NomIcone }[]
   { href: "/cabinet-ew/calendly", label: "Calendly", court: "Calendly", icone: "reserver" },
   { href: "/cabinet-ew/clientes", label: "Clientes", court: "Clientes", icone: "clientes" },
   { href: "/cabinet-ew/commandes", label: "Commandes", court: "Commandes", icone: "livre" },
+  // Les questions et idées du petit salon (Elena, 16 octobre)
+  { href: "/cabinet-ew/questions", label: "Questions", court: "Questions", icone: "bulle" },
   { href: "/cabinet-ew/journal", label: "Journal", court: "Journal", icone: "lune" },
   { href: "/cabinet-ew/revenus", label: "Revenus", court: "Revenus", icone: "revenus" },
   { href: "/cabinet-ew/profil", label: "Profil", court: "Profil", icone: "compte" },

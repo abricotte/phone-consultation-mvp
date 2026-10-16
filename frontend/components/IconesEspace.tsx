@@ -23,7 +23,8 @@ export type NomIcone =
   | "livre"
   | "casque"
   | "boussole"
-  | "oeil";
+  | "oeil"
+  | "bulle";
 
 export function Icone({
   nom,
@@ -155,6 +156,12 @@ export function Icone({
           <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
           <rect x="3" y="13" width="4" height="7" rx="1.5" />
           <rect x="17" y="13" width="4" height="7" rx="1.5" />
+        </svg>
+      );
+    case "bulle":
+      return (
+        <svg {...commun}>
+          <path d="M4 5.5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-9l-4.5 3.5V16.5H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z" />
         </svg>
       );
     case "oeil":

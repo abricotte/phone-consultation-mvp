@@ -5,8 +5,7 @@ import { notFound, useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import CabinetShell from "@/components/CabinetShell";
 import { CATALOGUE } from "@/lib/tests";
-import { nombres, MOT_DU_NOMBRE, COULEUR_DU_NOMBRE, SENS_DETTE, SENS_LECON, SENS_PASSION } from "@/lib/numerologie";
-import { jourPersonnel } from "@/lib/journee";
+import SesNombres from "@/components/cabinet/SesNombres";
 import FilChronologique, {
   type EvenementFil,
 } from "@/components/FilChronologique";
@@ -509,85 +508,34 @@ export default function FicheClientePage() {
         </div>
       </section>
 
-      {/* Ses nombres — pour Elena seule : la cliente ne voit jamais de
-          numérologie dans son espace (décision du 14 octobre). Calculés
-          d'après sa date de naissance et son nom, règles du moteur du site. */}
-      {(() => {
-        const n = fiche.dateNaissance ? nombres(fiche.dateNaissance, `${fiche.prenom} ${fiche.nom}`.trim()) : null;
-        const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
-        const Nb = ({ v, label, sous }: { v: number | null; label: string; sous?: string }) => (
-          <li
-            className="flex items-baseline gap-3 rounded-xl border border-white/70 px-4 py-2.5"
-            style={{ backgroundColor: v ? COULEUR_DU_NOMBRE[v]?.fond : "#FBF7F2" }}
-          >
-            <span
-              className="w-12 shrink-0 font-serif text-[34px] font-bold leading-none"
-              style={{ color: v ? COULEUR_DU_NOMBRE[v]?.encre : "#232B45" }}
-            >
-              {v ?? "—"}
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[15px] font-bold text-ink">{label}</span>
-              <span className="block text-[13px] font-medium text-ink/70">{sous ?? (v ? MOT_DU_NOMBRE[v] : "renseigner le nom")}</span>
-            </span>
-          </li>
-        );
-        return (
-          <section className="mt-5 rounded-3xl border border-gold/40 bg-gradient-to-br from-gold/[0.07] to-ivory p-7 shadow-soft">
-            <h2 className="font-jakarta text-xl font-bold tracking-tight text-aubergine">Ses nombres</h2>
-            <p className="mt-0.5 text-sm font-medium text-ink/70">
-              Pour vous seule — elle ne les voit pas dans son espace. D&apos;après sa date de naissance{n?.expression != null ? " et son nom" : ""}.
-            </p>
-            {!n ? (
-              <p className="mt-3 text-sm font-medium text-ink/70">Pas de date de naissance renseignée.</p>
-            ) : (
-              <>
-                <ul className="mt-4 grid gap-2 sm:grid-cols-3">
-                  <Nb v={fiche.dateNaissance ? jourPersonnel(fiche.dateNaissance) : null} label="Jour personnel · aujourd'hui" sous="la tonalité de « Ma journée » dans son espace — elle ne voit pas le chiffre" />
-                  <Nb v={n.moisPersonnel} label={`Mois personnel · ${MOIS[n.moisCivil - 1]}`} />
-                  <Nb v={n.anneePersonnelle} label={`Année personnelle ${n.anneeCivile}`} />
-                  <Nb v={n.cheminDeVie} label="Chemin de vie" />
-                  <Nb v={n.expression} label="Expression" />
-                  <Nb v={n.elan} label="Élan de l'âme" />
-                  <Nb v={n.personnalite} label="Personnalité" />
-                </ul>
-                {/* Dettes, leçons, passion : le chiffre en couleur, et une ligne de sens */}
-                <div className="mt-4 grid gap-3 md:grid-cols-3">
-                  {[
-                    { titre: "Dettes karmiques", liste: n.dettes, sens: SENS_DETTE, vide: "Aucune dette karmique." },
-                    { titre: "Leçons karmiques", liste: n.lecons, sens: SENS_LECON, vide: n.expression != null ? "Aucune leçon : tous les chiffres sont dans son nom." : "Renseigner le nom." },
-                    { titre: "Passion cachée", liste: n.passion, sens: SENS_PASSION, vide: n.expression != null ? "Pas de passion dominante." : "Renseigner le nom." },
-                  ].map((bloc) => (
-                    <div key={bloc.titre} className="rounded-xl border border-greige/50 bg-white/70 px-4 py-3">
-                      <p className="text-[13px] font-bold uppercase tracking-[0.08em] text-gold-dark">{bloc.titre}</p>
-                      {bloc.liste.length === 0 ? (
-                        <p className="mt-1.5 text-[13px] font-medium text-ink/70">{bloc.vide}</p>
-                      ) : (
-                        <ul className="mt-2 space-y-2">
-                          {bloc.liste.map((x) => {
-                            const c = COULEUR_DU_NOMBRE[x] ?? COULEUR_DU_NOMBRE[x % 9 || 9];
-                            return (
-                              <li key={x} className="flex items-start gap-2.5">
-                                <span
-                                  className="flex h-8 min-w-[2rem] shrink-0 items-center justify-center rounded-full px-1.5 font-serif text-[17px] font-bold"
-                                  style={{ backgroundColor: c?.fond, color: c?.encre }}
-                                >
-                                  {x}
-                                </span>
-                                <span className="text-[13px] font-medium leading-snug text-ink/85">{bloc.sens[x] ?? ""}</span>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </section>
-        );
-      })()}
+      {/* SES NOMBRES — pour Elena seule (la cliente ne voit jamais de
+          numérologie). En tableau de bord, avec un calendrier pour faire
+          défiler les mois et les jours (Elena, 16 octobre). D'abord elle,
+          puis les personnes pour qui elle appelle. */}
+      <div className="mt-5">
+        <SesNombres
+          titre="Ses nombres"
+          sousTitre={`Pour vous seule — elle ne les voit pas dans son espace. D'après sa date de naissance${fiche.nom ? " et son nom" : ""}.`}
+          dateNaissance={fiche.dateNaissance}
+          nomComplet={`${fiche.prenom} ${fiche.nom}`.trim()}
+        />
+      </div>
+      {fiche.proches.some((p) => p.dateNaissance) && (
+        <div className="mt-5">
+          <h2 className="font-jakarta text-lg font-bold tracking-tight text-aubergine">Les nombres de ses proches</h2>
+          <p className="mt-0.5 text-sm font-medium text-ink/70">Quand elle vous appelle pour l&apos;un d&apos;eux. D&apos;après leur date de naissance seulement.</p>
+          <div className="mt-3 grid items-start gap-4 xl:grid-cols-2">
+            {fiche.proches.filter((p) => p.dateNaissance).map((p, i) => (
+              <SesNombres
+                key={`${p.prenom}-${i}`}
+                compact
+                titre={`${p.prenom} · ${LIEN_LABELS[p.lien] || "Autre"}`}
+                dateNaissance={p.dateNaissance}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Ses tests spirituels — elle sait qu'Elena les voit ici */}
       <section className="mt-5 rounded-3xl border border-greige/40 bg-ivory p-7 shadow-soft">
