@@ -166,9 +166,9 @@ export default function SesNombres({
                     type="button"
                     onClick={() => setJour(d)}
                     title={`${d} ${MOIS[vue.m - 1]} · jour ${v ?? "—"}`}
-                    className={`flex aspect-square flex-col items-center justify-center rounded-lg bg-cream/70 text-[10.5px] leading-none text-aubergine transition hover:bg-cream ${jour === d ? "ring-2 ring-aubergine" : aujourdhui ? "ring-2 ring-gold" : ""}`}
+                    className={`flex aspect-square flex-col items-center justify-center rounded-lg text-[10.5px] leading-none text-aubergine transition ${aujourdhui ? "bg-[#EAD7A8] font-semibold" : "bg-cream/70 hover:bg-cream"} ${jour === d ? "ring-2 ring-aubergine" : aujourdhui ? "ring-2 ring-gold" : ""}`}
                   >
-                    <span className="text-mention">{d}</span>
+                    <span className={aujourdhui ? "text-aubergine/80" : "text-mention"}>{d}</span>
                     <span className="mt-0.5 font-serif text-[14px] font-bold">{v}</span>
                   </button>
                 );
