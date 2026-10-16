@@ -12,6 +12,13 @@ import { SIGNES_LISTE, signeAstrologique, signeParCode } from "@/lib/astro";
 // et le thème astral à venir) ; puis les études complètes, payantes — les
 // tarifs sont à décider par Elena, donc aucun prix n'est affiché ; et la
 // carte des sagesses du monde. On ne donne pas les clés de la méthode.
+//
+// EN OFF (Elena, 16 octobre) : seule la partie offerte est visible pendant
+// qu'Elena peaufine les études. RIEN N'EST SUPPRIMÉ : toutes les études et
+// la carte restent ci-dessous, cachées. Pour en rallumer une, ajouter son
+// titre exact dans ETUDES_VISIBLES ; pour la carte, CARTE_VISIBLE = true.
+const ETUDES_VISIBLES: string[] = [];
+const CARTE_VISIBLE = false;
 
 // ── Les compatibilités, par élément : la lecture classique, celle qu'on
 // trouve partout. Ce qui est propre à la cliente, c'est l'étude.
@@ -115,6 +122,9 @@ export default function EtudesPage() {
   const signe = signeAstrologique(profil?.dateNaissance);
   const ascendant = signeParCode(profil?.ascendant);
   const civ = MONDE.find((m) => m.cle === pays)!;
+  const questionsVisibles = QUESTIONS
+    .map((q) => ({ ...q, etudes: q.etudes.filter((e) => ETUDES_VISIBLES.includes(e.titre)) }))
+    .filter((q) => q.etudes.length > 0);
 
   return (
     <EspaceShell>
@@ -127,8 +137,14 @@ export default function EtudesPage() {
           Je vous propose d&apos;apprendre à mieux vous connaître, et à mieux connaître vos proches, suivant la méthode Wolska.
         </p>
         <p className="mt-3 text-[15px] leading-relaxed text-ink/85">
-          Une part vous est offerte ici. Les études complètes sont calculées d&apos;après la méthode Wolska, et vous sont
-          remises dans votre espace sous 48 heures.
+          {questionsVisibles.length > 0 ? (
+            <>
+              Une part vous est offerte ici. Les études complètes sont calculées d&apos;après la méthode Wolska, et vous sont
+              remises dans votre espace sous 48 heures.
+            </>
+          ) : (
+            <>Voici ce que je vous offre. Les études complètes, je les prépare pour vous : elles arrivent bientôt.</>
+          )}
         </p>
       </header>
 
@@ -215,16 +231,16 @@ export default function EtudesPage() {
         </ul>
       </section>
 
-      <Filet />
-
       {/* ── Les études complètes — payantes, prix à venir ── */}
+      {questionsVisibles.length > 0 && (<>
+      <Filet />
       <section>
         <h2 className="font-serif text-[32px] font-semibold leading-tight text-aubergine">Pour aller plus loin</h2>
         <p className="mt-2 max-w-2xl font-serif text-lg italic leading-relaxed text-mention">
           Les études complètes, par la question que vous vous posez. Sur vous, sur l&apos;autre, sur vous deux, sur votre chemin,
           sur d&apos;où vous venez.
         </p>
-        {QUESTIONS.map((q) => (
+        {questionsVisibles.map((q) => (
           <div key={q.titre} className="mt-8">
             <h3 className="font-serif text-[24px] font-semibold text-aubergine">{q.titre}</h3>
             <p className="mt-1 text-[14px] text-mention">{q.intro}</p>
@@ -235,10 +251,11 @@ export default function EtudesPage() {
         ))}
         <Bientot>Les études se commandent ici dans quelques semaines</Bientot>
       </section>
-
-      <Filet />
+      </>)}
 
       {/* ── Les sagesses du monde ── */}
+      {CARTE_VISIBLE && (<>
+      <Filet />
       <section>
         <div className="grid items-center gap-6 md:grid-cols-5">
           <div className="md:col-span-3">
@@ -325,6 +342,7 @@ export default function EtudesPage() {
           )}
         </div>
       </section>
+      </>)}
     </EspaceShell>
   );
 }
