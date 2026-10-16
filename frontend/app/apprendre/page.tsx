@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import EspaceShell from "@/components/EspaceShell";
 import Bibliotheque from "@/components/Bibliotheque";
+import ListeBoosts, { BOOSTS } from "@/components/ListeBoosts";
 import { Bientot, Pilules } from "@/components/Ornements";
 import { CARTES_MINUTE, SPOTIFY_PODCAST } from "@/lib/minute-voyance";
 
@@ -20,6 +21,8 @@ export default function ApprendrePage() {
     const o = new URLSearchParams(window.location.search).get("onglet");
     if (o === "formation" || o === "ecouter" || o === "lire") setOnglet(o);
   }, []);
+  // La saison choisie (Elena, 16 octobre) : deux bulles, Lenormand ou boosts
+  const [saison, setSaison] = useState<1 | 2>(1);
   // L'épisode à l'écoute : le premier, par défaut
   const [carte, setCarte] = useState<number>(1);
   const enCours = CARTES_MINUTE.find((c) => c.numero === carte && c.episode);
@@ -57,9 +60,45 @@ export default function ApprendrePage() {
 
       {onglet === "ecouter" && (
         <section>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">
-            Mon podcast · La Minute Voyance · saison 1
-          </p>
+          {/* LES DEUX SAISONS, en bulles : on choisit, la saison s'ouvre dessous */}
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Mon podcast · La Minute Voyance</p>
+          <div className="mt-3 grid max-w-2xl grid-cols-2 gap-3">
+            {([
+              { n: 1 as const, titre: "Le Petit Lenormand", sous: `${CARTES_MINUTE.filter((c) => c.episode).length} cartes sur 36`, fond: "bg-aubergine text-gold-light" },
+              { n: 2 as const, titre: "Les petits boosts", sous: `${BOOSTS.length} boosts`, fond: "bg-[#E6A9C3] text-aubergine" },
+            ]).map((x) => (
+              <button
+                key={x.n}
+                type="button"
+                onClick={() => setSaison(x.n)}
+                aria-pressed={saison === x.n}
+                className={`flex items-center gap-3 rounded-full border p-2 pr-4 text-left transition ${saison === x.n ? "border-aubergine bg-white shadow-soft" : "border-greige bg-white/60 hover:border-gold/60"}`}
+              >
+                <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full font-serif text-[18px] font-semibold ${x.fond}`}>S{x.n}</span>
+                <span className="min-w-0">
+                  <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-gold-dark">Saison {x.n}</span>
+                  <span className="block font-serif text-[18px] font-semibold leading-tight text-aubergine">{x.titre}</span>
+                  <span className="block text-[12px] text-mention">{x.sous}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {saison === 2 && (
+            <div className="mt-7">
+              <h2 className="font-serif text-[30px] font-semibold text-aubergine">Les petits boosts</h2>
+              <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
+                Quelques minutes à écouter autour d&apos;une réflexion qui ouvre une perspective, bouscule une certitude ou tout
+                simplement, apaise. Pour les soirs où ça tourne.
+              </p>
+              <ListeBoosts />
+              <p className="mt-3 text-[13px] text-mention">
+                Une idée de boost ? <a href="/salon" className="font-semibold text-prix hover:underline">Soumettez-la dans le petit salon →</a>
+              </p>
+            </div>
+          )}
+
+          {saison === 1 && (<div className="mt-7">
           <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Le Petit Lenormand en une minute</h2>
           <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
             Les 36 cartes du Petit Lenormand, une par épisode : chaque carte racontée en une minute, son sens, sa force, ce
@@ -122,16 +161,7 @@ export default function ApprendrePage() {
             {CARTES_MINUTE.filter((c) => c.episode).length} cartes sur 36 enregistrées ·{" "}
             <a href={SPOTIFY_PODCAST} className="font-semibold text-prix hover:underline">le podcast sur Spotify →</a>
           </p>
-          {/* La saison 2 : les boosts, dans le petit salon (Elena, 16 octobre) */}
-          <a href="/salon" className="mt-6 flex max-w-2xl items-center gap-4 rounded-[20px] border border-[#F2B3CB] bg-[#FDF0F5] px-5 py-4 hover:shadow-soft">
-            <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-aubergine font-serif text-[15px] font-semibold text-gold-light">S2</span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#A3245A]">La Minute Voyance · saison 2</span>
-              <span className="block font-serif text-[19px] font-semibold text-aubergine">Les boosts : deux minutes avec Elena</span>
-              <span className="block text-[13px] text-ink/75">Pour les soirs où ça tourne. À écouter dans le petit salon.</span>
-            </span>
-            <span className="text-[14px] font-semibold text-prix">Écouter →</span>
-          </a>
+          </div>)}
           <p className="mt-3 text-[13px] text-mention">
             Pour aller plus loin que la minute :{" "}
             <a href="/librairie" className="font-semibold text-prix hover:underline">
