@@ -22,7 +22,8 @@ export type NomIcone =
   // l'espace, après le lancement
   | "livre"
   | "casque"
-  | "boussole";
+  | "boussole"
+  | "oeil";
 
 export function Icone({
   nom,
@@ -154,6 +155,13 @@ export function Icone({
           <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
           <rect x="3" y="13" width="4" height="7" rx="1.5" />
           <rect x="17" y="13" width="4" height="7" rx="1.5" />
+        </svg>
+      );
+    case "oeil":
+      return (
+        <svg {...commun}>
+          <path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z" />
+          <circle cx="12" cy="12" r="2.8" />
         </svg>
       );
     case "boussole":

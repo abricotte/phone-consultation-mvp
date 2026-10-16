@@ -62,6 +62,8 @@ export const GROUPES_ESPACE: GroupeEspace[] = [
       { href: "/apprendre", label: "Apprendre", court: "Apprendre", icone: "modifier" },
       // Tout ce qui s'achète, en vitrine : carnets, jeux, oracle (Elena, 15 octobre)
       { href: "/librairie", label: "La librairie", court: "Librairie", icone: "livre" },
+      // Les mystères : tous les « et si… » qui bousculent notre regard sur la réalité (Elena, 16 octobre)
+      { href: "/mysteres", label: "Les mystères", court: "Mystères", icone: "oeil" },
       // Voyages spirituels : en off tant que ce n'est pas abouti (Elena, 14 octobre) — la page reste, hors menu.
       // { href: "/voyages", label: "Voyages spirituels", court: "Voyages", icone: "boussole" },
     ],
