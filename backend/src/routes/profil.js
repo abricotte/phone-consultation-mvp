@@ -489,12 +489,13 @@ router.get('/suggestions', authMiddleware, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('suggestions_clientes')
-      .select('id, sujet, texte, cree_le')
+      .select('id, sujet, texte, cree_le, reponse, repondu_le')
       .eq('client_id', req.user.id)
       .order('cree_le', { ascending: false })
       .limit(20);
     if (error) throw error;
-    res.json({ suggestions: (data || []).map((s) => ({ id: s.id, sujet: s.sujet, texte: s.texte, creeLe: s.cree_le })) });
+    // La réponse d'Elena (migration 020), visible de la seule cliente qui a écrit
+    res.json({ suggestions: (data || []).map((s) => ({ id: s.id, sujet: s.sujet, texte: s.texte, creeLe: s.cree_le, reponse: s.reponse || null, reponduLe: s.repondu_le || null })) });
   } catch (err) {
     console.error('Erreur suggestions:', err);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -506,7 +507,7 @@ router.post('/suggestions', authMiddleware, async (req, res) => {
   try {
     const { texte, sujet } = req.body || {};
     const t = typeof texte === 'string' ? texte.trim().slice(0, 600) : '';
-    if (!t) return res.status(400).json({ error: 'Écrivez votre idée.' });
+    if (!t) return res.status(400).json({ error: 'Écrivez votre question ou votre idée.' });
     const s = sujet === undefined ? 'boost' : sujet;
     if (s !== 'boost') return res.status(400).json({ error: 'Sujet invalide.' });
     const { data, error } = await supabase
@@ -515,7 +516,7 @@ router.post('/suggestions', authMiddleware, async (req, res) => {
       .select('id, sujet, texte, cree_le')
       .single();
     if (error) throw error;
-    res.status(201).json({ suggestion: { id: data.id, sujet: data.sujet, texte: data.texte, creeLe: data.cree_le } });
+    res.status(201).json({ suggestion: { id: data.id, sujet: data.sujet, texte: data.texte, creeLe: data.cree_le, reponse: null, reponduLe: null } });
   } catch (err) {
     console.error('Erreur suggestion:', err);
     res.status(500).json({ error: 'Erreur serveur' });

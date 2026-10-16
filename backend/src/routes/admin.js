@@ -2690,7 +2690,7 @@ router.get('/suggestions', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('suggestions_clientes')
-      .select('id, client_id, sujet, texte, lue, cree_le, users:client_id (first_name, last_name)')
+      .select('id, client_id, sujet, texte, lue, cree_le, reponse, repondu_le, users:client_id (first_name, last_name)')
       .order('lue', { ascending: true })
       .order('cree_le', { ascending: false })
       .limit(300);
@@ -2700,6 +2700,7 @@ router.get('/suggestions', async (req, res) => {
         id: s.id, clientId: s.client_id,
         prenom: s.users?.first_name || 'Cliente', nom: s.users?.last_name || '',
         sujet: s.sujet, texte: s.texte, lue: s.lue, creeLe: s.cree_le,
+        reponse: s.reponse || null, reponduLe: s.repondu_le || null,
       })),
     });
   } catch (err) {
@@ -2708,19 +2709,34 @@ router.get('/suggestions', async (req, res) => {
   }
 });
 
-// PATCH /api/admin/suggestions/:id — { lue }
+// PATCH /api/admin/suggestions/:id — { lue?, reponse? }
+// La réponse (migration 020) : quelques lignes, visibles de la seule
+// cliente qui a écrit ; null ou "" l'efface. Répondre vaut « lue ».
 router.patch('/suggestions/:id', async (req, res) => {
   try {
-    const { lue } = req.body || {};
-    if (typeof lue !== 'boolean') return res.status(400).json({ error: 'Valeur invalide.' });
+    const corps = req.body || {};
+    const maj = {};
+    if ('lue' in corps) {
+      if (typeof corps.lue !== 'boolean') return res.status(400).json({ error: 'Valeur invalide.' });
+      maj.lue = corps.lue;
+    }
+    if ('reponse' in corps) {
+      const r = corps.reponse;
+      if (r !== null && typeof r !== 'string') return res.status(400).json({ error: 'Réponse invalide.' });
+      const texte = typeof r === 'string' ? r.trim().slice(0, 2000) : '';
+      maj.reponse = texte || null;
+      maj.repondu_le = texte ? new Date().toISOString() : null;
+      if (texte) maj.lue = true;
+    }
+    if (Object.keys(maj).length === 0) return res.status(400).json({ error: 'Rien à modifier.' });
     const { data, error } = await supabase
       .from('suggestions_clientes')
-      .update({ lue })
+      .update(maj)
       .eq('id', req.params.id)
-      .select('id, lue')
+      .select('id, lue, reponse, repondu_le')
       .single();
     if (error) throw error;
-    res.json({ suggestion: { id: data.id, lue: data.lue } });
+    res.json({ suggestion: { id: data.id, lue: data.lue, reponse: data.reponse || null, reponduLe: data.repondu_le || null } });
   } catch (err) {
     console.error('Erreur maj suggestion:', err);
     res.status(500).json({ error: 'Erreur serveur' });

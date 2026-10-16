@@ -16,13 +16,14 @@ import { CARTES_MINUTE, SPOTIFY_PODCAST } from "@/lib/minute-voyance";
 
 export default function ApprendrePage() {
   const [onglet, setOnglet] = useState<"formation" | "ecouter" | "lire">("formation");
+  // La saison choisie (Elena, 16 octobre) : deux bulles, Lenormand ou les petites clefs
+  const [saison, setSaison] = useState<1 | 2>(1);
   // Un lien peut ouvrir un onglet précis : /apprendre?onglet=lire
   useEffect(() => {
     const o = new URLSearchParams(window.location.search).get("onglet");
     if (o === "formation" || o === "ecouter" || o === "lire") setOnglet(o);
+    if (new URLSearchParams(window.location.search).get("saison") === "2") setSaison(2);
   }, []);
-  // La saison choisie (Elena, 16 octobre) : deux bulles, Lenormand ou les petites clefs
-  const [saison, setSaison] = useState<1 | 2>(1);
   // L'épisode à l'écoute : le premier, par défaut
   const [carte, setCarte] = useState<number>(1);
   const enCours = CARTES_MINUTE.find((c) => c.numero === carte && c.episode);

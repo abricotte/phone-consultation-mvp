@@ -4,11 +4,12 @@
 
 // Les boosts : un fichier audio par boost (fourni par Elena, dans
 // public/audio/boosts), sa durée ; sans fichier, le boost est « bientôt ».
-type Boost = { titre: string; src?: string; duree?: string };
+type Boost = { titre: string; src?: string; duree?: string; semaine?: boolean };
 // Trois boosts gardés (Elena, 16 octobre). Mis de côté, à reprendre plus
 // tard : « Avant de lui écrire », « Après une rupture ».
 export const BOOSTS: Boost[] = [
-  { titre: "La vulnérabilité, c'est beau aussi", src: "/audio/boosts/la-vulnerabilite.mp4", duree: "2 min 37" },
+  // semaine : la petite clef mise en avant dans le salon (une seule)
+  { titre: "La vulnérabilité, c'est beau aussi", src: "/audio/boosts/la-vulnerabilite.mp4", duree: "2 min 37", semaine: true },
   { titre: "La solitude est belle, profitez-en" },
   { titre: "Est-ce l'égo ou l'amour qui parle ?" },
 ];
@@ -39,4 +40,25 @@ export default function ListeBoosts() {
         </li>
       ))}
     </ul>  );
+}
+
+/** La petite clef de la semaine, pour le salon : une seule, avec son lecteur.
+ *  Celle marquée « semaine », sinon la première enregistrée. */
+export function ClefDeLaSemaine() {
+  const b = BOOSTS.find((x) => x.semaine && x.src) ?? BOOSTS.find((x) => x.src);
+  if (!b) return null;
+  return (
+    <section className="max-w-2xl rounded-[24px] border border-[#F2B3CB] bg-[#FDF0F5] p-5 md:p-6">
+      <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#A3245A]">La petite clef de la semaine</p>
+      <p className="mt-1 font-serif text-[26px] font-semibold leading-tight text-aubergine">{b.titre}</p>
+      {b.duree && <p className="text-[13px] text-mention">{b.duree} · la voix d&apos;Elena</p>}
+      {/* Un mp4 avec une piste audio se lit dans <audio> : le navigateur ignore l'image. */}
+      <audio controls preload="metadata" src={b.src} className="mt-3 w-full">
+        Votre navigateur ne lit pas cet audio.
+      </audio>
+      <a href="/apprendre?onglet=ecouter&saison=2" className="mt-3 inline-block text-[13px] font-semibold text-prix hover:underline">
+        Toutes les petites clefs, dans Apprendre →
+      </a>
+    </section>
+  );
 }

@@ -17,7 +17,7 @@ type Commande = {
   montant: number; paye: boolean; noteElena: string | null; creeLe: string; livreLe: string | null;
 };
 // Les idées de boosts soufflées depuis le salon (migration 016)
-type Suggestion = { id: string; clientId: string; prenom: string; nom: string; texte: string; lue: boolean; creeLe: string };
+type Suggestion = { id: string; clientId: string; prenom: string; nom: string; texte: string; lue: boolean; creeLe: string; reponse?: string | null; reponduLe?: string | null };
 
 const TYPES: Record<Commande["type"], string> = { pythie: "La Petite Pythie", grand_tableau: "Le Grand Tableau" };
 const STATUTS: { code: Commande["statut"]; label: string; teinte: string }[] = [
@@ -42,6 +42,10 @@ export default function CommandesPage() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [idees, setIdees] = useState<Suggestion[]>([]);
   const [toutesIdees, setToutesIdees] = useState(false);
+  // Répondre à une question (migration 020) : la réponse n'est visible que de la cliente
+  const [brouillons, setBrouillons] = useState<Record<string, string>>({});
+  const [ouverte, setOuverte] = useState<string | null>(null);
+  const [envoiReponse, setEnvoiReponse] = useState(false);
 
   useEffect(() => {
     api.adminGetCommandes()
@@ -57,6 +61,15 @@ export default function CommandesPage() {
     const d = await api.adminMajSuggestion(id, { lue }).catch(() => null);
     if (!d?.suggestion) return;
     setIdees((is) => is.map((i) => (i.id === id ? { ...i, lue } : i)));
+  }
+  async function repondre(id: string) {
+    const texte = (brouillons[id] ?? "").trim();
+    setEnvoiReponse(true);
+    const d = await api.adminMajSuggestion(id, { reponse: texte || null }).catch(() => null);
+    setEnvoiReponse(false);
+    if (!d?.suggestion) return;
+    setIdees((is) => is.map((i) => (i.id === id ? { ...i, lue: d.suggestion.lue, reponse: d.suggestion.reponse, reponduLe: d.suggestion.reponduLe } : i)));
+    setOuverte(null);
   }
   const ideesVisibles = toutesIdees ? idees : idees.filter((i) => !i.lue);
   const ideesNonLues = idees.filter((i) => !i.lue).length;
@@ -151,9 +164,9 @@ export default function CommandesPage() {
       <section className="mt-12">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="font-jakarta text-2xl font-bold tracking-tight text-aubergine">Idées de petites clefs</h2>
+            <h2 className="font-jakarta text-2xl font-bold tracking-tight text-aubergine">Questions et idées</h2>
             <p className="mt-1 text-sm text-mention">
-              Ce que vos clientes aimeraient vous entendre dire. {ideesNonLues > 0 ? `${ideesNonLues} à lire.` : "Rien de nouveau."}
+              Leurs questions et leurs idées, posées dans le salon. {ideesNonLues > 0 ? `${ideesNonLues} à lire.` : "Rien de nouveau."}
             </p>
           </div>
           {idees.some((i) => i.lue) && (
@@ -176,6 +189,35 @@ export default function CommandesPage() {
                     <a href={`/cabinet-ew/clientes/${i.clientId}`} className="font-medium text-prix hover:underline">{i.prenom} {i.nom}</a>
                     {" · "}{dateCourte(i.creeLe)}
                   </p>
+                  {i.reponse && ouverte !== i.id && (
+                    <p className="mt-2 rounded-xl border-l-4 border-gold/60 bg-white px-3 py-2 text-sm leading-relaxed text-ink">
+                      {i.reponse}
+                      <span className="mt-1 block text-[11px] text-mention">Votre réponse{i.reponduLe ? ` · ${dateCourte(i.reponduLe)}` : ""} — elle seule la voit</span>
+                    </p>
+                  )}
+                  {ouverte === i.id ? (
+                    <div className="mt-2">
+                      <textarea
+                        rows={4}
+                        maxLength={2000}
+                        value={brouillons[i.id] ?? i.reponse ?? ""}
+                        onChange={(e) => setBrouillons((b) => ({ ...b, [i.id]: e.target.value }))}
+                        placeholder="Quelques lignes, pour elle seule…"
+                        className="w-full rounded-xl border border-greige bg-white px-3 py-2 text-sm text-ink"
+                      />
+                      <div className="mt-1.5 flex flex-wrap items-center gap-3">
+                        <button type="button" disabled={envoiReponse} onClick={() => repondre(i.id)} className="rounded-full bg-aubergine px-4 py-1.5 text-xs font-semibold text-cream disabled:opacity-50">
+                          {envoiReponse ? "Envoi…" : "Enregistrer ma réponse"}
+                        </button>
+                        <button type="button" onClick={() => setOuverte(null)} className="text-xs text-mention hover:underline">Annuler</button>
+                        <span className="text-[11px] text-mention">Elle la verra dans le salon, sous sa question. Aucun mail n&apos;est envoyé.</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => setOuverte(i.id)} className="mt-2 text-xs font-semibold text-prix hover:underline">
+                      {i.reponse ? "Modifier ma réponse" : "Répondre"}
+                    </button>
+                  )}
                 </div>
                 <label className="flex items-center gap-1.5 text-xs text-ink">
                   <input type="checkbox" checked={i.lue} onChange={(e) => marquerLue(i.id, e.target.checked)} /> lue

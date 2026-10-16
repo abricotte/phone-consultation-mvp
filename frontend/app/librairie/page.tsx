@@ -53,16 +53,6 @@ export default function LibrairiePage() {
         </p>
       </header>
 
-      {/* Vers sa bibliothèque : les livres qui l'ont nourrie (Elena, 16 octobre) */}
-      <a href="/apprendre?onglet=lire" className="group mb-10 flex max-w-3xl items-center gap-4 rounded-[22px] border border-gold/40 bg-[#FBF3E2] px-5 py-4 transition hover:shadow-soft">
-        <span aria-hidden className="text-3xl">📚</span>
-        <span className="min-w-0 flex-1">
-          <span className="block font-serif text-[20px] font-semibold text-aubergine">Ma bibliothèque</span>
-          <span className="block text-[13.5px] text-ink/80">Plus de 100 livres qui ont éclairé, nourri et transformé mon chemin.</span>
-        </span>
-        <span className="text-[14px] font-semibold text-prix group-hover:underline">Entrer →</span>
-      </a>
-
       {/* Les Carnets d'Elena */}
       <section>
         <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Une couleur par thème</p>

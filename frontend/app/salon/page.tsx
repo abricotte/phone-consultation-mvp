@@ -4,14 +4,17 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import EspaceShell from "@/components/EspaceShell";
 import IllustrationSalon from "@/components/IllustrationSalon";
-import ListeBoosts from "@/components/ListeBoosts";
+import { ClefDeLaSemaine } from "@/components/ListeBoosts";
 import { Pilules } from "@/components/Ornements";
 
-// LE SALON — ma voix et mes textes, pour se faire du bien. Deux rayons
-// (Elena, 15 octobre) : Écouter (les boosts, offerts, et une boîte à idées
-// pour souffler un thème) et Lire (mes articles, sur le site). Tout est
-// gratuit ici : les carnets et le jeu de la Pythie sont dans La librairie,
-// les mots cachés dans Apprendre.
+// LE PETIT SALON D'ELENA — là où l'on vient se poser avec elle (Elena,
+// 16 octobre). Apprendre, c'est là où l'on apprend ; le salon, c'est la
+// tasse de thé. En haut, la petite clef de la semaine (une seule ; toutes
+// sont dans Apprendre, saison 2). Puis deux onglets : Vos questions (on
+// pose une question sur la spiritualité, l'amour, les comportements — pas
+// sur sa propre histoire, c'est la consultation ; Elena répond ici, en
+// privé, ou dans une petite clef) et Lire (ses articles, sur le site).
+// Plus tard : la carte du jour, quand le jeu de la Petite Pythie sera prêt.
 
 
 
@@ -52,7 +55,7 @@ const ARTICLES: { rubrique: string; textes: [string, string][] }[] = [
   },
 ];
 
-type Suggestion = { id: string; texte: string; creeLe: string };
+type Suggestion = { id: string; texte: string; creeLe: string; reponse?: string | null; reponduLe?: string | null };
 
 function BoiteAIdees() {
   const [texte, setTexte] = useState("");
@@ -81,22 +84,27 @@ function BoiteAIdees() {
   }
 
   return (
-    <div className="mt-8 rounded-[24px] border border-gold/30 bg-gradient-to-br from-[#FBF3E2] to-ivory p-5 md:p-6">
-      <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Une idée de petite clef ?</p>
+    <div className="max-w-2xl rounded-[24px] border border-gold/30 bg-gradient-to-br from-[#FBF3E2] to-ivory p-5 md:p-6">
+      <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Vos questions, mes réponses</p>
       <h3 className="mt-1 font-serif text-[24px] font-semibold leading-tight text-aubergine">
         Vous avez envie que j&apos;aborde un sujet particulier ?
       </h3>
       <p className="mt-1.5 max-w-lg text-[14px] text-ink/80">
-        Soumettez-moi l&apos;idée. Un mot, une situation, une question : je lis tout, et j&apos;enregistre ce qui revient le plus.
+        Posez-moi votre question, ou soumettez-moi une idée : la spiritualité, l&apos;amour, ce qui se joue entre deux âmes, nos
+        façons d&apos;aimer… Je lis tout. Je vous réponds ici, ou j&apos;en fais une petite clef.
+      </p>
+      <p className="mt-2 max-w-lg rounded-xl bg-white/70 px-3 py-2 text-[12.5px] leading-snug text-ink/75">
+        <span className="mr-1 text-gold">✦</span>Pour votre histoire à vous, ce qui vous arrive, l&apos;autre, ce qui vient, c&apos;est en
+        consultation que je peux vraiment vous répondre.
       </p>
       <label className="mt-4 block">
-        <span className="sr-only">Votre idée</span>
+        <span className="sr-only">Votre question ou votre idée</span>
         <textarea
           rows={3}
           value={texte}
           onChange={(e) => { setTexte(e.target.value); setMerci(false); }}
           maxLength={600}
-          placeholder="Une clef pour le soir où il ne répond pas…"
+          placeholder="Pourquoi a-t-on peur de se laisser aimer ?"
           className="w-full rounded-[14px] border border-greige bg-white px-3.5 py-2.5 text-[14px] text-ink"
         />
       </label>
@@ -108,18 +116,26 @@ function BoiteAIdees() {
           onClick={envoyer}
           className="rounded-full bg-aubergine px-5 py-2.5 text-[14px] font-semibold text-cream hover:bg-aubergine/90 disabled:opacity-50"
         >
-          {envoi ? "Envoi…" : "Soumettre mon idée"}
+          {envoi ? "Envoi…" : "Envoyer à Elena"}
         </button>
-        {merci && <p className="text-[13px] text-gold-dark"><span className="mr-1">✦</span>Reçue. Elena la lit dans son cabinet.</p>}
+        {merci && <p className="text-[13px] text-gold-dark"><span className="mr-1">✦</span>Reçue. Je la lis dans mon cabinet.</p>}
       </div>
       {envoyees.length > 0 && (
-        <details className="mt-4">
-          <summary className="cursor-pointer text-[12px] text-mention">Mes idées envoyées ({envoyees.length})</summary>
-          <ul className="mt-2 space-y-1.5">
+        <details className="mt-4" open={envoyees.some((s) => s.reponse)}>
+          <summary className="cursor-pointer text-[12px] text-mention">
+            Mes questions ({envoyees.length}){envoyees.some((s) => s.reponse) ? " · Elena vous a répondu" : ""}
+          </summary>
+          <ul className="mt-2 space-y-3">
             {envoyees.map((s) => (
               <li key={s.id} className="text-[13px] text-ink/80">
                 <span className="text-mention">{new Date(s.creeLe).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} · </span>
                 {s.texte}
+                {s.reponse && (
+                  <span className="mt-1.5 block rounded-xl border-l-4 border-gold/60 bg-white px-3 py-2 font-serif text-[15px] italic leading-relaxed text-ink">
+                    {s.reponse}
+                    <span className="mt-1 block font-sans text-[11.5px] not-italic text-mention">— Elena</span>
+                  </span>
+                )}
               </li>
             ))}
           </ul>
@@ -130,7 +146,7 @@ function BoiteAIdees() {
 }
 
 export default function SalonPage() {
-  const [onglet, setOnglet] = useState<"ecouter" | "lire">("ecouter");
+  const [onglet, setOnglet] = useState<"questions" | "lire">("questions");
 
   return (
     <EspaceShell>
@@ -139,35 +155,26 @@ export default function SalonPage() {
           Le petit salon d&apos;Elena
         </h1>
         <p className="mt-3 font-serif text-xl italic leading-relaxed text-mention">
-          Ma voix et mes textes — ce que je vous laisse entre deux consultations.
+          Ma voix, vos questions, mes textes — ce que je vous laisse entre deux consultations.
         </p>
       </header>
 
       {/* Le thé, les cartes, les étoiles (Elena, 16 octobre) */}
       <IllustrationSalon className="-mt-2 mb-6 w-full max-w-2xl" />
 
-      <Pilules
-        label="Le salon"
-        valeur={onglet}
-        onChange={setOnglet}
-        options={[["ecouter", "Écouter"], ["lire", "Lire"]] as const}
-      />
+      {/* La petite clef de la semaine — un rendez-vous, pas la liste */}
+      <ClefDeLaSemaine />
 
-      {onglet === "ecouter" && (
-        <section>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">La Minute Voyance, saison 2</p>
-          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les petites clefs d&apos;Elena</h2>
-          <p className="mt-2 max-w-md text-[14px] text-ink/80">
-            Quelques minutes à écouter autour d&apos;une réflexion qui ouvre une perspective, bouscule une
-            certitude ou tout simplement, apaise.
-          </p>
-          <p className="mt-1.5 text-[13px] text-mention">
-            La saison 1, <a href="/apprendre?onglet=ecouter" className="font-semibold text-prix hover:underline">le Petit Lenormand en une minute</a>, est dans Apprendre.
-          </p>
-          <ListeBoosts />
-          <BoiteAIdees />
-        </section>
-      )}
+      <div className="mt-8">
+        <Pilules
+          label="Le salon"
+          valeur={onglet}
+          onChange={setOnglet}
+          options={[["questions", "Vos questions"], ["lire", "Lire"]] as const}
+        />
+      </div>
+
+      {onglet === "questions" && <BoiteAIdees />}
 
       {onglet === "lire" && (
         <section>

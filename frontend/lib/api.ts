@@ -102,7 +102,7 @@ export const api = {
   suggerer: (body: { texte: string; sujet?: "boost" }) =>
     request("/profil/suggestions", { method: "POST", body: JSON.stringify(body) }),
   adminGetSuggestions: () => request("/admin/suggestions"),
-  adminMajSuggestion: (id: string, body: { lue: boolean }) =>
+  adminMajSuggestion: (id: string, body: { lue?: boolean; reponse?: string | null }) =>
     request(`/admin/suggestions/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   updateProfil: (body: {
     dateNaissance?: string | null;
