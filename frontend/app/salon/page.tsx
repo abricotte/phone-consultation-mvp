@@ -82,7 +82,7 @@ function BoiteAIdees() {
 
   return (
     <div className="mt-8 rounded-[24px] border border-gold/30 bg-gradient-to-br from-[#FBF3E2] to-ivory p-5 md:p-6">
-      <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Une idée de boost ?</p>
+      <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Une idée de petite clef ?</p>
       <h3 className="mt-1 font-serif text-[24px] font-semibold leading-tight text-aubergine">
         Vous avez envie que j&apos;aborde un sujet particulier ?
       </h3>
@@ -96,7 +96,7 @@ function BoiteAIdees() {
           value={texte}
           onChange={(e) => { setTexte(e.target.value); setMerci(false); }}
           maxLength={600}
-          placeholder="Un boost pour le soir où il ne répond pas…"
+          placeholder="Une clef pour le soir où il ne répond pas…"
           className="w-full rounded-[14px] border border-greige bg-white px-3.5 py-2.5 text-[14px] text-ink"
         />
       </label>
@@ -155,8 +155,8 @@ export default function SalonPage() {
 
       {onglet === "ecouter" && (
         <section>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">Les boosts · La Minute Voyance, saison 2</p>
-          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Deux minutes avec Elena</h2>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-gold-dark">La Minute Voyance, saison 2</p>
+          <h2 className="mt-1 font-serif text-[30px] font-semibold text-aubergine">Les petites clefs d&apos;Elena</h2>
           <p className="mt-2 max-w-md text-[14px] text-ink/80">
             Quelques minutes à écouter autour d&apos;une réflexion qui ouvre une perspective, bouscule une
             certitude ou tout simplement, apaise.

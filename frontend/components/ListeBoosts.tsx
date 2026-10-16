@@ -1,4 +1,4 @@
-// LES BOOSTS — La Minute Voyance, saison 2 : quelques minutes de la voix
+// LES PETITES CLEFS D'ELENA (nom choisi par Elena le 16 octobre ; on disait « les boosts ») — La Minute Voyance, saison 2 : quelques minutes de la voix
 // d'Elena autour d'une réflexion qui ouvre une perspective, bouscule une
 // certitude ou apaise. Partagé par Apprendre (en écoutant) et le petit salon.
 

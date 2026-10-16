@@ -21,7 +21,7 @@ export default function ApprendrePage() {
     const o = new URLSearchParams(window.location.search).get("onglet");
     if (o === "formation" || o === "ecouter" || o === "lire") setOnglet(o);
   }, []);
-  // La saison choisie (Elena, 16 octobre) : deux bulles, Lenormand ou boosts
+  // La saison choisie (Elena, 16 octobre) : deux bulles, Lenormand ou les petites clefs
   const [saison, setSaison] = useState<1 | 2>(1);
   // L'épisode à l'écoute : le premier, par défaut
   const [carte, setCarte] = useState<number>(1);
@@ -65,7 +65,7 @@ export default function ApprendrePage() {
           <div className="mt-3 grid max-w-2xl grid-cols-2 gap-3">
             {([
               { n: 1 as const, titre: "Le Petit Lenormand", sous: `${CARTES_MINUTE.filter((c) => c.episode).length} cartes sur 36`, fond: "bg-aubergine text-gold-light" },
-              { n: 2 as const, titre: "Les petits boosts", sous: `${BOOSTS.length} boosts`, fond: "bg-[#E6A9C3] text-aubergine" },
+              { n: 2 as const, titre: "Les petites clefs d'Elena", sous: `${BOOSTS.length} clefs`, fond: "bg-[#E6A9C3] text-aubergine" },
             ]).map((x) => (
               <button
                 key={x.n}
@@ -86,14 +86,14 @@ export default function ApprendrePage() {
 
           {saison === 2 && (
             <div className="mt-7">
-              <h2 className="font-serif text-[30px] font-semibold text-aubergine">Les petits boosts</h2>
+              <h2 className="font-serif text-[30px] font-semibold text-aubergine">Les petites clefs d&apos;Elena</h2>
               <p className="mt-2 max-w-2xl text-[15px] text-ink/85">
                 Quelques minutes à écouter autour d&apos;une réflexion qui ouvre une perspective, bouscule une certitude ou tout
                 simplement, apaise. Pour les soirs où ça tourne.
               </p>
               <ListeBoosts />
               <p className="mt-3 text-[13px] text-mention">
-                Une idée de boost ? <a href="/salon" className="font-semibold text-prix hover:underline">Soumettez-la dans le petit salon →</a>
+                Une idée de clef ? <a href="/salon" className="font-semibold text-prix hover:underline">Soumettez-la dans le petit salon →</a>
               </p>
             </div>
           )}

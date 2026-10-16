@@ -151,7 +151,7 @@ export default function CommandesPage() {
       <section className="mt-12">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="font-jakarta text-2xl font-bold tracking-tight text-aubergine">Idées de boosts</h2>
+            <h2 className="font-jakarta text-2xl font-bold tracking-tight text-aubergine">Idées de petites clefs</h2>
             <p className="mt-1 text-sm text-mention">
               Ce que vos clientes aimeraient vous entendre dire. {ideesNonLues > 0 ? `${ideesNonLues} à lire.` : "Rien de nouveau."}
             </p>
@@ -164,7 +164,7 @@ export default function CommandesPage() {
         </div>
         {ideesVisibles.length === 0 ? (
           <p className="mt-4 rounded-2xl border border-dashed border-greige bg-cream/60 px-5 py-6 text-center text-sm text-mention">
-            {idees.length === 0 ? "Aucune idée pour l'instant — la boîte est dans le salon, sous les boosts." : "Tout est lu."}
+            {idees.length === 0 ? "Aucune idée pour l'instant — la boîte est dans le salon, sous les petites clefs." : "Tout est lu."}
           </p>
         ) : (
           <ul className="mt-4 space-y-2">
