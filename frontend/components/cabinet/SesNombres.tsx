@@ -103,36 +103,6 @@ export default function SesNombres({
               )}
             </ul>
 
-            {!compact && (
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                {[
-                  { titre: "Dettes karmiques", liste: n.dettes, sens: SENS_DETTE, vide: "Aucune dette karmique." },
-                  { titre: "Leçons karmiques", liste: n.lecons, sens: SENS_LECON, vide: n.expression != null ? "Aucune leçon : tous les chiffres sont dans son nom." : "Renseigner le nom." },
-                  { titre: "Passion cachée", liste: n.passion, sens: SENS_PASSION, vide: n.expression != null ? "Pas de passion dominante." : "Renseigner le nom." },
-                ].map((bloc) => (
-                  <div key={bloc.titre} className="rounded-xl border border-greige/50 bg-white/70 px-4 py-3">
-                    <p className="text-[13px] font-bold uppercase tracking-[0.08em] text-gold-dark">{bloc.titre}</p>
-                    {bloc.liste.length === 0 ? (
-                      <p className="mt-1.5 text-[13px] font-medium text-ink/70">{bloc.vide}</p>
-                    ) : (
-                      <ul className="mt-2 space-y-2">
-                        {bloc.liste.map((x) => {
-                          const c = teinte(x);
-                          return (
-                            <li key={x} className="flex items-start gap-2.5">
-                              <span className="flex h-8 min-w-[2rem] shrink-0 items-center justify-center rounded-full px-1.5 font-serif text-[17px] font-bold" style={{ backgroundColor: c.fond, color: c.encre }}>
-                                {x}
-                              </span>
-                              <span className="text-[13px] font-medium leading-snug text-ink/85">{bloc.sens[x] ?? ""}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
             {compact && n.dettes.length > 0 && (
               <p className="mt-2 text-[13px] font-medium text-ink/75">
                 Dette karmique : {n.dettes.map((d) => `${d} — ${SENS_DETTE[d] ?? ""}`).join(" · ")}
@@ -181,6 +151,37 @@ export default function SesNombres({
             )}
           </div>
         </div>
+      )}
+      {/* Dettes, leçons, passion : en pleine largeur, sous les nombres et le calendrier */}
+      {n && cal && !compact && (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {[
+                { titre: "Dettes karmiques", liste: n.dettes, sens: SENS_DETTE, vide: "Aucune dette karmique." },
+                { titre: "Leçons karmiques", liste: n.lecons, sens: SENS_LECON, vide: n.expression != null ? "Aucune leçon : tous les chiffres sont dans son nom." : "Renseigner le nom." },
+                { titre: "Passion cachée", liste: n.passion, sens: SENS_PASSION, vide: n.expression != null ? "Pas de passion dominante." : "Renseigner le nom." },
+              ].map((bloc) => (
+                <div key={bloc.titre} className="rounded-xl border border-greige/50 bg-white/70 px-4 py-3">
+                  <p className="text-[13px] font-bold uppercase tracking-[0.08em] text-gold-dark">{bloc.titre}</p>
+                  {bloc.liste.length === 0 ? (
+                    <p className="mt-1.5 text-[13px] font-medium text-ink/70">{bloc.vide}</p>
+                  ) : (
+                    <ul className="mt-2 space-y-2">
+                      {bloc.liste.map((x) => {
+                        const c = teinte(x);
+                        return (
+                          <li key={x} className="flex items-start gap-2.5">
+                            <span className="flex h-8 min-w-[2rem] shrink-0 items-center justify-center rounded-full px-1.5 font-serif text-[17px] font-bold" style={{ backgroundColor: c.fond, color: c.encre }}>
+                              {x}
+                            </span>
+                            <span className="text-[13px] font-medium leading-snug text-ink/85">{bloc.sens[x] ?? ""}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
       )}
     </section>
   );
